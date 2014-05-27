@@ -1,0 +1,21 @@
+/**
+ * Automatically generated file
+ *
+ * {{=it.app.name}}
+ * Created on: {{=new Date()}}
+ */
+
+configuration {{=it.app.name}} {
+}
+
+implementation {
+
+    // Component
+   {{~ it.components :cpnt}} components {{=cpnt.base }}{{? cpnt.name }} as {{=cpnt.name}}{{?}};
+   {{~}}
+   {{~ it.generic_components :cpnt}} components new {{=cpnt.base }}(){{? cpnt.name }} as {{=cpnt.name}}{{?}};
+   {{~}}
+
+   {{~ it.wirings :wire}} {{=wire.src }} -> {{=wire.dst}};
+   {{~}}
+}
