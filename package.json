@@ -9,10 +9,14 @@
   "keywords": [
       "webgme"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pillforge/mcr_ide.git"
+  },
   "license": "MIT",
   "dependencies": {
       "webgme": "https://github.com/webgme/webgme/tarball/master",
-      "dot": ">=1.0.2"
+      "dot": ">=1.0.2",
       "libxmljs": ">=0.9"
   },
   "devDependencies": {},
