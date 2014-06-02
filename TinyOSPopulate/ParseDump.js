@@ -27,7 +27,7 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
       if (topdir)
         this.topdir = topdir;
       else
-        this.topdir = process.env['TOSROOT'];
+        this.topdir = process.env.TOSROOT;
       this.logger = LogManager.create('TinyOSPopulate.ParseDump');
     };
 
@@ -38,10 +38,8 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
         file_path = "MainC.xml"; // For dev
 
       var test_file = path.resolve(file_path);
-      var xml = fs.readFileSync(test_file);
       self._wi("Test file: " + test_file);
-      // self._wi(xml.toString());
-
+      var xml = fs.readFileSync(test_file);
       var xml_doc = libxmljs.parseXml(xml, {noblanks: true });
 
       // The namespace has to be defined and
@@ -98,7 +96,7 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
       components.forEach(function(x) {
         var comp_inst = x.get("xmlns:instance", ns);
         if (!comp_inst) {
-          var comp_name = x.attr('qname').value()
+          var comp_name = x.attr('qname').value();
           to_js(comp_name);
         }
       });
@@ -129,9 +127,10 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
 
       function to_js(comp_name) {
         var specs = speclist[comp_name];
-        var comp = qnameidx[comp_name]
+        var comp = qnameidx[comp_name];
         var comp_type = "";
         var is_abstract = false;
+        var is_safe = false;
         // Get component type
         if (comp.get("xmlns:configuration", ns)) {
           comp_type = "Configuration";
@@ -143,11 +142,16 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
           is_abstract = true;
         }
 
+        if (comp.attr('safe')) {
+          is_safe = true;
+        }
+
         var jsobj = {
           name: comp_name,
           file_path: get_path(comp),
           comp_type: comp_type,
           abstract: is_abstract,
+          safe: is_safe,
           interface_types: [],
           function_declerations: [],
           parameters: []
@@ -163,7 +167,7 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
               name: intf_name,
               as: intf_as,
               provided: provided
-            }
+            };
             jsobj.interface_types.push(int_type);
           });
         }

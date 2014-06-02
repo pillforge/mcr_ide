@@ -41,7 +41,7 @@ define(
             var tos_comps = pd.parse(path.resolve(cwd, 'MainC.xml'));
 
             // console.dir(tos_comps);
-            // self._wi(JSON.stringify(tos_comps, null, 2));
+            self._wi(JSON.stringify(tos_comps, null, 2));
             
             self._populate(tos_comps);
             self.save();
@@ -105,13 +105,19 @@ define(
       // Create the app, if the input is for an application
       // For now, just assume the application has the word "AppC" in their
       //   configuration files
+      // for (comp in tos_comps) {
+      //   if (comp.toLowerCase().indexOf('appc') > 0) {
+      //     c("Create App for " + comp);
+      //     self._createApp(tos_comps[comp]);
+      //   }
+      // }
+
       for (comp in tos_comps) {
-        if (comp.toLowerCase().indexOf('appc') > 0) {
+        if (tos_comps[comp].file_path.indexOf('/') < 0) {
           c("Create App for " + comp);
           self._createApp(tos_comps[comp]);
         }
       }
-
 
 
 
@@ -123,20 +129,30 @@ define(
     TinyOSPopulate.prototype._createApp = function (component) {
       var self = this;
 
-      var app_node = self.core.createNode({
-        base: self.META.App,
+      // var app_node = self.core.createNode({
+      //   base: self.META.App,
+      //   parent: self.rootNode
+      // });
+      // var name = component.name.substring(0,
+      //                           component.name.toLowerCase().indexOf('appc'));
+      // self.core.setAttribute(app_node, 'name', name);
+      // self._cacheNode(app_node);
+
+      self._wi(self.META.Configuration);
+      self._wi(typeof(self.META.Configuration));
+      console.dir(self.META);
+
+      var base = null;
+      if (component.comp_type == 'Configuration')
+        base = self.META.Configuration;
+      if (component.comp_type == 'Module')
+        base = self.META.Module;
+      var app_configuration_node = self.core.createNode({
+        base: base,
         parent: self.rootNode
       });
-      var name = component.name.substring(0,
-                                component.name.toLowerCase().indexOf('appc'));
-      self.core.setAttribute(app_node, 'name', name);
-      self._cacheNode(app_node);
-
-      var app_configuration_node = self.core.createNode({
-        base: self.META.Configuration,
-        parent: app_node
-      });
       self.core.setAttribute(app_configuration_node, 'name', component.name);
+      self.core.setAttribute(app_configuration_node, 'safe', component.safe);
       self._cacheNode(app_configuration_node);
     };
 
