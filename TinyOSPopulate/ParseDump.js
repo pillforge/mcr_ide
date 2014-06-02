@@ -95,6 +95,14 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
 
       var output_dict = {};
 
+      components.forEach(function(x) {
+        var comp_inst = x.get("xmlns:instance", ns);
+        if (!comp_inst) {
+          var comp_name = x.attr('qname').value()
+          to_js(comp_name);
+        }
+      });
+
       /*
        * Modified version of packagename in archive.py
        * This version doesn't replace '/' with '.' and doesn't remove
@@ -102,9 +110,9 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
        * The path returned will be used for locating the file in a local
        * filesystem as well as in * WebGME
        */
-      var get_path = function(comp) {
-        var loc = comp.attr('loc').value()
-        var col = loc.indexOf(':')
+      function get_path(comp) {
+        var loc = comp.attr('loc').value();
+        var col = loc.indexOf(':');
         if (col !== -1) {
           loc = loc.slice(col + 1);
         }
@@ -113,13 +121,13 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
         }
 
         // Not sure why this is necessary
-        if (loc[0] === "/")
-          loc = null;
+        // if (loc[0] === "/")
+        //   loc = null;
 
         return loc;
       }
 
-      var to_js = function(comp_name) {
+      function to_js(comp_name) {
         var specs = speclist[comp_name];
         var comp = qnameidx[comp_name]
         var comp_type = "";
@@ -161,13 +169,6 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
         }
         output_dict[comp_name] = jsobj;
       }
-      components.forEach(function(x) {
-        var comp_inst = x.get("xmlns:instance", ns);
-        if (!comp_inst) {
-          var comp_name = x.attr('qname').value()
-          to_js(comp_name);
-        }
-      });
 
       return output_dict;
     };
