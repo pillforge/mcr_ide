@@ -86,8 +86,12 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
         }
       });
 
-      //self._wi(qnameidx);
-      //self._wi(speclist);
+      // self._wi('all refid');
+      // console.dir(refidx);
+      // self._wi('all qname');
+      // console.dir(qnameidx);
+      // self._wi('all speclist');
+      // console.dir(speclist);
 
       //self._wi("Qname " + Object.keys(qnameidx).length + " elements");
 
@@ -101,29 +105,6 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
         }
       });
 
-      /*
-       * Modified version of packagename in archive.py
-       * This version doesn't replace '/' with '.' and doesn't remove
-       * the file extension.
-       * The path returned will be used for locating the file in a local
-       * filesystem as well as in * WebGME
-       */
-      function get_path(comp) {
-        var loc = comp.attr('loc').value();
-        var col = loc.indexOf(':');
-        if (col !== -1) {
-          loc = loc.slice(col + 1);
-        }
-        if (loc.search(self.topdir) === 0) {
-          loc = loc.slice(self.topdir.length + 1);
-        }
-
-        // Not sure why this is necessary
-        // if (loc[0] === "/")
-        //   loc = null;
-
-        return loc;
-      }
 
       function to_js(comp_name) {
         var specs = speclist[comp_name];
@@ -174,7 +155,47 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
         output_dict[comp_name] = jsobj;
       }
 
-      return output_dict;
+      var interfaces_json = {};
+      for (var key in interfacedefs) {
+        var interfacedef = interfacedefs[key];
+        var qname = interfacedef.attr('qname').value();
+        var loc = get_path(interfacedef);
+        interfaces_json[qname] = {
+          name: qname,
+          loc: loc
+        };
+      }
+
+      var app_json = {};
+      app_json.components = output_dict;
+      app_json.interfaces = interfaces_json;
+
+
+      /*
+       * Modified version of packagename in archive.py
+       * This version doesn't replace '/' with '.' and doesn't remove
+       * the file extension.
+       * The path returned will be used for locating the file in a local
+       * filesystem as well as in * WebGME
+       */
+      function get_path(comp) {
+        var loc = comp.attr('loc').value();
+        var col = loc.indexOf(':');
+        if (col !== -1) {
+          loc = loc.slice(col + 1);
+        }
+        if (loc.search(self.topdir) === 0) {
+          loc = loc.slice(self.topdir.length + 1);
+        }
+
+        // Not sure why this is necessary
+        // if (loc[0] === "/")
+        //   loc = null;
+
+        return loc;
+      }
+
+      return app_json;
     };
 
     ParseDump.prototype._wi = function(msg) {

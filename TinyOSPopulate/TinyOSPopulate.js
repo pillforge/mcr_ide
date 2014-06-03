@@ -38,12 +38,12 @@ define(
             var cwd = path.dirname(module.uri);
             self._wi(cwd);
             var pd = new ParseDump();
-            var tos_comps = pd.parse(path.resolve(cwd, 'MainC.xml'));
+            var app_json = pd.parse(path.resolve(cwd, 'MainC.xml'));
 
-            // console.dir(tos_comps);
-            self._wi(JSON.stringify(tos_comps, null, 2));
+            self._wi('app_json');
+            self._wi(JSON.stringify(app_json, null, 2));
             
-            self._populate(tos_comps);
+            self._populate(app_json);
             self.save();
 
             self.result.setSuccess(true);
@@ -61,99 +61,100 @@ define(
 
       self._wi("TinyOSPopulate main end");
     };
+    
+    TinyOSPopulate.prototype._populate = function (app_json) {
+      var self = this;
+
+      self._wi("Creating Interfaces");
+      for (var key in app_json.interfaces) {
+        self._createInterface(app_json.interfaces[key]);
+      }
+
+      self._wi("Creating Components");
+      for (var key in app_json.components) {
+        self._createComponent(app_json.components[key]);
+      }
+
+    };
+
+    TinyOSPopulate.prototype._createComponent = function (component) {
+      var self = this;
+      self._wi("Creating component: " + component.name);
+      var parent_node = self._mkdir_p(path.dirname(component.file_path));
+      var base = self.META.Configuration;
+      if (component.comp_type == 'Module') base = self.META.Module;
+      var component_node = self.core.createNode({
+        base: base,
+        parent: parent_node
+      });
+      self.core.setAttribute(component_node, 'name', component.name);
+      self.core.setAttribute(component_node, 'safe', component.safe);
+      self._cacheNode(component_node);
+    }    
+
+    TinyOSPopulate.prototype._createInterface = function (curr_interface) {
+      var self = this;
+      self._wi("Creating interface: " + curr_interface.name);
+      var parent_node = self._mkdir_p(path.dirname(curr_interface.loc));
+      var interface_node = self.core.createNode({
+        base: self.META.Interface_Definition,
+        parent: parent_node
+      });
+      self.core.setAttribute(interface_node, 'name', curr_interface.name);
+      self._cacheNode(interface_node);
+    }
 
     /**
      * Make a directory in WebGME. At any directory level,
      * if the provided directory does not exist, it will be created.
      */
-    TinyOSPopulate.prototype._mkdir_p = function (tos_dir) {
+    TinyOSPopulate.prototype._mkdir_p = function (path) {
       var self = this;
-      self._wi("Tos dir " + tos_dir);
-      var dirs = tos_dir.split('/');
-      var par_node = self.rootNode;
+      self._wi("Path: " + path);
+      var dirs = path.split('/');
+      var parent_node = self.rootNode;
       for (var i = 0; i < dirs.length; i++) {
-        var dir_node = self._findNodeByName(par_node, dirs[i]);
-        if (!dir_node){
+        var dir_node = self._findNodeByName(parent_node, dirs[i]);
+        if (!dir_node) {
           self._wi("Creating directory: " + dirs[i]);
           dir_node = self.core.createNode({
-            base:self.META.Folder,
-            parent:par_node
+            base: self.META.Folder,
+            parent: parent_node
           });
           self.core.setAttribute(dir_node, 'name', dirs[i]);
           self._cacheNode(dir_node);
         } else {
           self._wi("Skipping directory: " + dirs[i]);
         }
-        par_node = dir_node;
+        parent_node = dir_node;
       }
-
-    };    
-    
-    TinyOSPopulate.prototype._populate = function (tos_comps) {
-      var self = this;
-
-      // #1
-      // Folder structure
-      for (var comp in tos_comps) {
-        self._wi("Creating component: " + comp);
-        // Mirror the structure of the file_path of the component in WebGME
-        var tos_dir = path.dirname(tos_comps[comp].file_path);
-        self._mkdir_p(tos_dir);
-      }
-
-      // #2
-      // Create the app, if the input is for an application
-      // For now, just assume the application has the word "AppC" in their
-      //   configuration files
-      // for (comp in tos_comps) {
-      //   if (comp.toLowerCase().indexOf('appc') > 0) {
-      //     c("Create App for " + comp);
-      //     self._createApp(tos_comps[comp]);
-      //   }
-      // }
-
-      for (comp in tos_comps) {
-        if (tos_comps[comp].file_path.indexOf('/') < 0) {
-          c("Create App for " + comp);
-          self._createApp(tos_comps[comp]);
-        }
-      }
-
-
-
-      function c(msg) {
-        self._wi(msg);
-      }
+      return parent_node;
     };
 
-    TinyOSPopulate.prototype._createApp = function (component) {
-      var self = this;
+    // to be deleted
+    TinyOSPopulate.prototype._uses_provides_interface = function (component) {
 
-      // var app_node = self.core.createNode({
-      //   base: self.META.App,
-      //   parent: self.rootNode
-      // });
-      // var name = component.name.substring(0,
-      //                           component.name.toLowerCase().indexOf('appc'));
-      // self.core.setAttribute(app_node, 'name', name);
-      // self._cacheNode(app_node);
+      for (var i = component.interface_types.length - 1; i >= 0; i--) {
+        var curr_interface = component.interface_types[i];
+        if (curr_interface.provided == 1) {
+          var base = self.META.Provides_Interface;
+        } else if (curr_interface.provided == 0) {
+          var base = self.META.Uses_Interface;
+        } else {
+          // throw new Error("curr_interface");
+          continue;
+        }
 
-      self._wi(self.META.Configuration);
-      self._wi(typeof(self.META.Configuration));
-      console.dir(self.META);
+        var interface_node = self.core.createNode({
+          base: base,
+          parent: app_configuration_node,
+          // interface: 
+        });
+        self.core.setAttribute(interface_node, 'name', curr_interface.name);
+        self._cacheNode(interface_node);
 
-      var base = null;
-      if (component.comp_type == 'Configuration')
-        base = self.META.Configuration;
-      if (component.comp_type == 'Module')
-        base = self.META.Module;
-      var app_configuration_node = self.core.createNode({
-        base: base,
-        parent: self.rootNode
-      });
-      self.core.setAttribute(app_configuration_node, 'name', component.name);
-      self.core.setAttribute(app_configuration_node, 'safe', component.safe);
-      self._cacheNode(app_configuration_node);
+      };
+
     };
 
 
