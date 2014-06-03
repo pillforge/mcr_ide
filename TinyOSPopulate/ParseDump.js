@@ -159,10 +159,9 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
       for (var key in interfacedefs) {
         var interfacedef = interfacedefs[key];
         var qname = interfacedef.attr('qname').value();
-        var loc = get_path(interfacedef);
         interfaces_json[qname] = {
           name: qname,
-          loc: loc
+          file_path: get_path(interfacedef)
         };
       }
 

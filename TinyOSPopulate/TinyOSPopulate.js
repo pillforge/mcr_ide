@@ -4,8 +4,9 @@ define(
   'fs',
   'path',
   'module',
+  'util',
   './ParseDump'],
-  function (PluginBase, PluginConfig, fs, path, module, ParseDump) {
+  function (PluginBase, PluginConfig, fs, path, module, util, ParseDump) {
     "use strict";
 
     var TinyOSPopulate = function () {
@@ -16,6 +17,9 @@ define(
     TinyOSPopulate.prototype.constructor = TinyOSPopulate;
     TinyOSPopulate.prototype.getName = function() {
       return "TinyOS Populator";
+    };
+    TinyOSPopulate.prototype.getVersion = function () {
+      return '0.1.1';
     };
 
     TinyOSPopulate.getDefaultConfig = function() {
@@ -64,6 +68,7 @@ define(
     
     TinyOSPopulate.prototype._populate = function (app_json) {
       var self = this;
+      self._objectPath = {};
 
       self._wi("Creating Interfaces");
       for (var key in app_json.interfaces) {
@@ -71,8 +76,39 @@ define(
       }
 
       self._wi("Creating Components");
-      for (var key in app_json.components) {
+      for (key in app_json.components) {
         self._createComponent(app_json.components[key]);
+      }
+
+      self._wi("Creating Uses & Provides Interfaces");
+      // var node_cache_string = util.inspect(self._nodeCache, {
+      //   showHidden: true,
+      //   depth: 3
+      // });
+      // self._wi(node_cache_string);
+      for (key in app_json.components) {
+        self._createUsesProvidesInterfaces(app_json.components[key]);
+      }
+
+    };
+
+    TinyOSPopulate.prototype._createUsesProvidesInterfaces = function (
+      component) {
+      var self = this;
+      for (var i = component.interface_types.length - 1; i >= 0; i--) {
+        var curr_interface = component.interface_types[i];
+        self._wi("Creating uses/provides interface: " + curr_interface.name +
+          " at " + component.file_path);
+        var base = self.META.Uses_Interface;
+        if (curr_interface.provided === 1)
+          base = self.META.Provides_Interface;
+        var interface_node = self.core.createNode({
+          base: base,
+          parent: self._nodeCache[self._objectPath[component.file_path]]
+          // interface: 
+        });
+        self.core.setAttribute(interface_node, 'name', curr_interface.name);
+        self._cacheNode(interface_node);
       }
 
     };
@@ -90,19 +126,25 @@ define(
       self.core.setAttribute(component_node, 'name', component.name);
       self.core.setAttribute(component_node, 'safe', component.safe);
       self._cacheNode(component_node);
-    }    
+      self._storeObjectPath(component, component_node);
+    };
 
     TinyOSPopulate.prototype._createInterface = function (curr_interface) {
       var self = this;
       self._wi("Creating interface: " + curr_interface.name);
-      var parent_node = self._mkdir_p(path.dirname(curr_interface.loc));
+      var parent_node = self._mkdir_p(path.dirname(curr_interface.file_path));
       var interface_node = self.core.createNode({
         base: self.META.Interface_Definition,
         parent: parent_node
       });
       self.core.setAttribute(interface_node, 'name', curr_interface.name);
       self._cacheNode(interface_node);
-    }
+      self._storeObjectPath(curr_interface, interface_node);
+    };
+
+    TinyOSPopulate.prototype._storeObjectPath = function (component, node) {
+      this._objectPath[component.file_path] = this.core.getPath(node);
+    };
 
     /**
      * Make a directory in WebGME. At any directory level,
@@ -130,33 +172,6 @@ define(
       }
       return parent_node;
     };
-
-    // to be deleted
-    TinyOSPopulate.prototype._uses_provides_interface = function (component) {
-
-      for (var i = component.interface_types.length - 1; i >= 0; i--) {
-        var curr_interface = component.interface_types[i];
-        if (curr_interface.provided == 1) {
-          var base = self.META.Provides_Interface;
-        } else if (curr_interface.provided == 0) {
-          var base = self.META.Uses_Interface;
-        } else {
-          // throw new Error("curr_interface");
-          continue;
-        }
-
-        var interface_node = self.core.createNode({
-          base: base,
-          parent: app_configuration_node,
-          // interface: 
-        });
-        self.core.setAttribute(interface_node, 'name', curr_interface.name);
-        self._cacheNode(interface_node);
-
-      };
-
-    };
-
 
     // Tamas' implementation
     TinyOSPopulate.prototype._loadNodes = function (start_node, callback) {
@@ -236,8 +251,8 @@ define(
      * If the children argument is given, it will be used instead of fetching it using _getChildren. This is useful when
      * repeated calls to _findNodeByName need to be made.
      */
-    TinyOSPopulate.prototype._findNodeByName = function (node, name, 
-                                                          children) {
+    TinyOSPopulate.prototype._findNodeByName = function (node, name,
+      children) {
       var self = this;
       if (!children)
         children = this._getChildren(node);
