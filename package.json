@@ -1,13 +1,13 @@
 {
   "name": "mcr_ide",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Design Enviroment for Medical Capsule Robots",
   "engines": {
     "node": ">=0.10.0"
   },
   "homepage": "http://github.com/pillforge/mcr_ide",
   "keywords": [
-      "webgme"
+    "webgme"
   ],
   "repository": {
     "type": "git",
@@ -15,9 +15,9 @@
   },
   "license": "MIT",
   "dependencies": {
-      "webgme": "https://github.com/webgme/webgme/tarball/master",
-      "dot": ">=1.0.2",
-      "libxmljs": ">=0.9"
+    "webgme": "https://github.com/webgme/webgme/tarball/master",
+    "dot": ">=1.0.2",
+    "libxmljs": ">=0.9"
   },
   "devDependencies": {},
   "main": "app.js"
