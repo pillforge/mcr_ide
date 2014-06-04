@@ -36,7 +36,11 @@ define(
           callback(err, self.result);
         } else {
           self._wi("Nodes are loaded");
-          
+          // var node_cache_string = util.inspect(self._nodeCache, {
+          //   showHidden: true,
+          //   depth: 3
+          // });
+          // self._wi(node_cache_string);
           try {
             
             var cwd = path.dirname(module.uri);
@@ -87,27 +91,36 @@ define(
       // });
       // self._wi(node_cache_string);
       for (key in app_json.components) {
-        self._createUsesProvidesInterfaces(app_json.components[key]);
+        self._createUsesProvidesInterfaces(app_json.components[key], 
+                                                                    app_json);
       }
 
     };
 
     TinyOSPopulate.prototype._createUsesProvidesInterfaces = function (
-      component) {
+      component, app_json) {
       var self = this;
       for (var i = component.interface_types.length - 1; i >= 0; i--) {
         var curr_interface = component.interface_types[i];
-        self._wi("Creating uses/provides interface: " + curr_interface.name +
+        self._wi("Creating uses/provides interface: " + curr_interface.as +
           " at " + component.file_path);
         var base = self.META.Uses_Interface;
         if (curr_interface.provided === 1)
           base = self.META.Provides_Interface;
         var interface_node = self.core.createNode({
           base: base,
-          parent: self._nodeCache[self._objectPath[component.file_path]]
-          // interface: 
+          parent: self._nodeCache[self._objectPath[component.file_path]],
         });
-        self.core.setAttribute(interface_node, 'name', curr_interface.name);
+        self.core.setAttribute(interface_node, 'name', curr_interface.as);
+
+        if (curr_interface.argument_type) {
+        self.core.setAttribute(interface_node, 'type_arguments',
+                               curr_interface.argument_type);
+        }
+
+        var ref_f_path = app_json.interfaces[curr_interface.name].file_path;
+        self.core.setPointer(interface_node, 'interface',
+                             self._nodeCache[self._objectPath[ref_f_path]]);
         self._cacheNode(interface_node);
       }
 

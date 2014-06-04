@@ -143,11 +143,23 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
             var intf_name = e.get('xmlns:instance/xmlns:interfacedef-ref', ns)
                                                       .attr('qname').value();
             var intf_as = e.attr('name').value();
+
+            // this should be more clever
+            // we shouldn't need to provide full path
+            var argument_type = null;
+            var typedef_path = 'xmlns:instance/xmlns:arguments/' + 
+              'xmlns:type-tag/xmlns:typename/xmlns:typedef-ref';
+            var arguments_node = e.get(typedef_path, ns);
+            if (arguments_node) {
+              argument_type = arguments_node.attr('name').value();
+            }
+            
             // A javascript representation of an interface_type
             var int_type = {
               name: intf_name,
               as: intf_as,
-              provided: provided
+              provided: provided,
+              argument_type: argument_type
             };
             jsobj.interface_types.push(int_type);
           });
