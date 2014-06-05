@@ -75,8 +75,8 @@ define(
       self._objectPath = {};
 
       self._wi("Creating Interfaces");
-      for (var key in app_json.interfaces) {
-        self._createInterface(app_json.interfaces[key]);
+      for (var key in app_json.interfacedefs) {
+        self._createInterface(app_json.interfacedefs[key]);
       }
 
       self._wi("Creating Components");
@@ -95,6 +95,42 @@ define(
                                                                     app_json);
       }
 
+      self._wi("Creating Wirings");
+      for (key in app_json.components) {
+        self._createWirings(app_json.components[key]);
+      }
+
+    };
+
+    TinyOSPopulate.prototype._createWirings = function(component) {
+      var self = this;
+      self._wi("Creating wirings for " + component.name);
+      var created = {};
+      for (var i = component.wiring.length - 1; i >= 0; i--) {
+        var from = component.wiring[i].from;
+        if (component.file_path === from.component_base) continue;
+        if (from.component_base in created) continue;
+        self._createWiringComponent(component.file_path, from);
+        created[from.component_base] = true;
+      }
+      for (i = component.wiring.length - 1; i >= 0; i--) {
+        var to = component.wiring[i].to;
+        if (component.file_path === to.component_base) continue;
+        if (to.component_base in created) continue;
+        self._createWiringComponent(component.file_path, to);
+        created[to.component_base] = true;
+      }
+
+    };
+
+    TinyOSPopulate.prototype._createWiringComponent = function(parent, f) {
+      var self = this;
+      self._wi("Creating wiring component: " +
+               f.component_base + " - " + f.interface);
+      var wiring_component = self.core.createNode({
+        base: self._getObjectByPath(f.component_base),
+        parent: self._getObjectByPath(parent)
+      });
     };
 
     TinyOSPopulate.prototype._createUsesProvidesInterfaces = function (
@@ -118,9 +154,9 @@ define(
                                curr_interface.argument_type);
         }
 
-        var ref_f_path = app_json.interfaces[curr_interface.name].file_path;
+        var ref_fpath = app_json.interfacedefs[curr_interface.name].file_path;
         self.core.setPointer(interface_node, 'interface',
-                             self._nodeCache[self._objectPath[ref_f_path]]);
+                             self._nodeCache[self._objectPath[ref_fpath]]);
         self._cacheNode(interface_node);
       }
 
@@ -153,6 +189,10 @@ define(
       self.core.setAttribute(interface_node, 'name', curr_interface.name);
       self._cacheNode(interface_node);
       self._storeObjectPath(curr_interface, interface_node);
+    };
+
+    TinyOSPopulate.prototype._getObjectByPath = function(path) {
+      return this._nodeCache[this._objectPath[path]];
     };
 
     TinyOSPopulate.prototype._storeObjectPath = function (component, node) {

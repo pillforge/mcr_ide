@@ -127,6 +127,37 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
           is_safe = true;
         }
 
+        var wiring = [];
+        var wiring_nodes = comp.find('xmlns:wiring/xmlns:wire', ns);
+        for (var i = wiring_nodes.length - 1; i >= 0; i--) {
+          var w_node = wiring_nodes[i];
+          var from = w_node.get('xmlns:from/xmlns:interface-ref', ns);
+          var to = w_node.get('xmlns:to/xmlns:interface-ref', ns);
+
+          var from_ref = from.attr('ref').value();
+          var fin = refidx[from_ref];
+          var f_comp = get_path(fin);
+
+          var to_ref = to.attr('ref').value();
+          var tin = refidx[to_ref];
+          var t_comp = get_path(tin);
+
+          var w_obj = {
+            from: {
+              component_base: f_comp,
+              interface: fin.attr('name').value(),
+              ref: from_ref
+            },
+            to: {
+              component_base: t_comp,
+              interface: tin.attr('name').value(),
+              ref: to_ref
+            }
+          };
+          wiring.push(w_obj);
+        }
+
+
         var jsobj = {
           name: comp_name,
           file_path: get_path(comp),
@@ -135,8 +166,10 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
           safe: is_safe,
           interface_types: [],
           function_declerations: [],
-          parameters: []
+          parameters: [],
+          wiring: wiring
         };
+
         if (specs) {
           specs.forEach(function(e) {
             var provided = parseInt(e.attr('provided').value());
@@ -167,11 +200,11 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
         output_dict[comp_name] = jsobj;
       }
 
-      var interfaces_json = {};
+      var interfacedefs_json = {};
       for (var key in interfacedefs) {
         var interfacedef = interfacedefs[key];
         var qname = interfacedef.attr('qname').value();
-        interfaces_json[qname] = {
+        interfacedefs_json[qname] = {
           name: qname,
           file_path: get_path(interfacedef)
         };
@@ -179,7 +212,7 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
 
       var app_json = {};
       app_json.components = output_dict;
-      app_json.interfaces = interfaces_json;
+      app_json.interfacedefs = interfacedefs_json;
 
 
       /*
