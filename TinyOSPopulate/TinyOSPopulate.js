@@ -95,6 +95,8 @@ define(
                                                                     app_json);
       }
 
+      if (true) return;
+
       self._wi("Creating Wirings");
       for (key in app_json.components) {
         self._createWirings(app_json.components[key]);
@@ -166,16 +168,23 @@ define(
       var self = this;
       self._wi("Creating component: " + component.name);
       var parent_node = self._mkdir_p(path.dirname(component.file_path));
-      var base = self.META.Configuration;
-      if (component.comp_type == 'Module') base = self.META.Module;
       var component_node = self.core.createNode({
-        base: base,
+        base: getBase(),
         parent: parent_node
       });
       self.core.setAttribute(component_node, 'name', component.name);
       self.core.setAttribute(component_node, 'safe', component.safe);
       self._cacheNode(component_node);
       self._storeObjectPath(component, component_node);
+
+      function getBase() {
+        if (component.comp_type == 'Module') {
+          return component.generic ?
+            self.META.Generic_Module : self.META.Module;
+        }
+        return component.generic ?
+          self.META.Generic_Configuration : self.META.Configuration;
+      }
     };
 
     TinyOSPopulate.prototype._createInterface = function (curr_interface) {
