@@ -19,7 +19,7 @@ define(
       return "TinyOS Populator";
     };
     TinyOSPopulate.prototype.getVersion = function () {
-      return '0.1.1';
+      return '0.1.2';
     };
 
     TinyOSPopulate.getDefaultConfig = function() {
@@ -36,11 +36,6 @@ define(
           callback(err, self.result);
         } else {
           self._wi("Nodes are loaded");
-          // var node_cache_string = util.inspect(self._nodeCache, {
-          //   showHidden: true,
-          //   depth: 3
-          // });
-          // self._wi(node_cache_string);
           try {
             
             var cwd = path.dirname(module.uri);
@@ -85,17 +80,9 @@ define(
       }
 
       self._wi("Creating Uses & Provides Interfaces");
-      // var node_cache_string = util.inspect(self._nodeCache, {
-      //   showHidden: true,
-      //   depth: 3
-      // });
-      // self._wi(node_cache_string);
       for (key in app_json.components) {
-        self._createUsesProvidesInterfaces(app_json.components[key], 
-                                                                    app_json);
+        self._createUPInterfaces(app_json.components[key], app_json);
       }
-
-      if (true) return;
 
       self._wi("Creating Wirings");
       for (key in app_json.components) {
@@ -109,33 +96,68 @@ define(
       self._wi("Creating wirings for " + component.name);
       var created = {};
       for (var i = component.wiring.length - 1; i >= 0; i--) {
-        var from = component.wiring[i].from;
-        if (component.file_path === from.component_base) continue;
-        if (from.component_base in created) continue;
-        self._createWiringComponent(component.file_path, from);
-        created[from.component_base] = true;
+        var wire = component.wiring[i];
+        var fc = getWiringComponent(wire.from);
+        var tc = getWiringComponent(wire.to);
+        if (fc && tc) {
+          var fi = getWiringInterface(fc, wire.from.interface);
+          var ti = getWiringInterface(tc, wire.to.interface);
+          if (fi && ti) {
+            self._wi("Creating wiring ... " +
+                     component.name + " " + wire.to.interface);
+            var wiring_node = self.core.createNode({
+              base: self.META.Link_Interface,
+              parent: self._getObjectByPath(component.file_path),
+            });
+            self.core.setPointer(wiring_node, 'src', fi);
+            self.core.setPointer(wiring_node, 'dst', ti);
+            self._cacheNode(wiring_node);
+          }
+        }
       }
-      for (i = component.wiring.length - 1; i >= 0; i--) {
-        var to = component.wiring[i].to;
-        if (component.file_path === to.component_base) continue;
-        if (to.component_base in created) continue;
-        self._createWiringComponent(component.file_path, to);
-        created[to.component_base] = true;
+
+      function getWiringInterface(c, c_interface) {
+        var c_ids = self.core.getChildrenRelids(c);
+        var interface_node = null;
+        for (var i = c_ids.length - 1; i >= 0; i--) {
+          var interf_child = self.core.getChild(c, c_ids[i]);
+          var interface_name = self.core.getAttribute(interf_child, 'name');
+          if (interface_name == c_interface) return interf_child;
+        }
+        return null;
+      }
+
+      function getWiringComponent(wc) {
+        if (component.file_path === wc.component_base) {
+          self._wi("Skipping wiring component: " +
+                   wc.component_base + " - " + wc.interface);
+          return null;
+        }
+        if (wc.component_base in created) {
+          self._wi("Wiring component is already created: " +
+                   wc.component_base + " - " + wc.interface);
+          return created[wc.component_base];
+        }
+        created[wc.component_base] = self._createWiringComponent(
+                                                    component.file_path, wc);
+        return created[wc.component_base];
       }
 
     };
 
-    TinyOSPopulate.prototype._createWiringComponent = function(parent, f) {
+    TinyOSPopulate.prototype._createWiringComponent = function(parent_p, f) {
       var self = this;
       self._wi("Creating wiring component: " +
                f.component_base + " - " + f.interface);
       var wiring_component = self.core.createNode({
         base: self._getObjectByPath(f.component_base),
-        parent: self._getObjectByPath(parent)
+        parent: self._getObjectByPath(parent_p)
       });
+      self._cacheNode(wiring_component);
+      return wiring_component;
     };
 
-    TinyOSPopulate.prototype._createUsesProvidesInterfaces = function (
+    TinyOSPopulate.prototype._createUPInterfaces = function (
       component, app_json) {
       var self = this;
       for (var i = component.interface_types.length - 1; i >= 0; i--) {
@@ -279,6 +301,14 @@ define(
       self.logger.info(msg);
     };
 
+    TinyOSPopulate.prototype._wij = function(obj) {
+      var node_cache_string = util.inspect(obj, {
+        showHidden: true,
+        depth: 3
+      });
+      this._wi(node_cache_string);
+    };
+
     TinyOSPopulate.prototype._getNodeName = function (node) {
       return this.core.getAttribute(node, 'name');
     };
@@ -308,9 +338,11 @@ define(
     };
 
     /**
-     * Searches through the children of a given node and finds the first node that has
+     * Searches through the children of a given node and finds the first node
+     * that has
      * the specified name. If a node is not found, null is returned.
-     * If the children argument is given, it will be used instead of fetching it using _getChildren. This is useful when
+     * If the children argument is given, it will be used instead of fetching
+     * it using _getChildren. This is useful when
      * repeated calls to _findNodeByName need to be made.
      */
     TinyOSPopulate.prototype._findNodeByName = function (node, name,
