@@ -42,6 +42,7 @@ define(
             self._wi(cwd);
             var pd = new ParseDump();
             var app_json = pd.parse(path.resolve(cwd, 'MainC.xml'));
+            self._app_json = app_json;
 
             self._wi('app_json');
             self._wi(JSON.stringify(app_json, null, 2));
@@ -129,18 +130,41 @@ define(
 
       function getWiringComponent(wc) {
         if (component.file_path === wc.component_base) {
-          self._wi("Skipping wiring component: " +
-                   wc.component_base + " - " + wc.interface);
+          message("Skipping wiring component");
           return null;
         }
         if (wc.component_base in created) {
-          self._wi("Wiring component is already created: " +
-                   wc.component_base + " - " + wc.interface);
+          message("Wiring component is already created");
           return created[wc.component_base];
+        }
+        if (self._app_json.components[get_name(wc.component_base)].generic) {
+          message("Skipping wiring component: generic type");
+          return createWiringInstance(wc.name);
         }
         created[wc.component_base] = self._createWiringComponent(
                                                     component.file_path, wc);
         return created[wc.component_base];
+
+        function message(msg) {
+          self._wi(msg + ": " + wc.component_base + " - " + wc.interface);
+        }
+
+        function createWiringInstance(name) {
+          message("Creating wiring component instance");
+          var x = self._app_json.instance_components[name];
+          var wiring_component = self.core.createNode({
+            base: self._getObjectByPath(x.base),
+            parent: self._getObjectByPath(component.file_path)
+          });
+          var n = name.split('.');
+          self.core.setAttribute(wiring_component, 'name', n[n.length-1]);
+          self._cacheNode(wiring_component);
+          return wiring_component;
+        }
+      }
+
+      function get_name(c_path) {
+        return path.basename(c_path, '.nc');
       }
 
     };

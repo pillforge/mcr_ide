@@ -65,8 +65,8 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
         refidx[x.attr('ref').value()] = x;
       };
       var add_to_qname = function(x) {
-        var comp_inst = x.get("xmlns:instance", ns);
-        if (!comp_inst)
+        // var comp_inst = x.get("xmlns:instance", ns);
+        // if (!comp_inst)
           qnameidx[x.attr('qname').value()] = x;
       };
 
@@ -94,6 +94,18 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
       // console.dir(speclist);
 
       //self._wi("Qname " + Object.keys(qnameidx).length + " elements");
+
+      var instance_components = {};
+      components.forEach(function(x) {
+        var comp_inst = x.get("xmlns:instance", ns);
+        if (comp_inst) {
+          var comp_name = x.attr('qname').value();
+          instance_components[comp_name] = {
+            name: comp_name,
+            base: get_path(qnameidx[comp_name])
+          };
+        }
+      });
 
       var output_dict = {};
 
@@ -133,30 +145,25 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
           var w_node = wiring_nodes[i];
           var from = w_node.get('xmlns:from/xmlns:interface-ref', ns);
           var to = w_node.get('xmlns:to/xmlns:interface-ref', ns);
-
-          var from_ref = from.attr('ref').value();
-          var fin = refidx[from_ref];
-          var f_comp = get_path(fin);
-
-          var to_ref = to.attr('ref').value();
-          var tin = refidx[to_ref];
-          var t_comp = get_path(tin);
-
           var w_obj = {
-            from: {
-              component_base: f_comp,
-              interface: fin.attr('name').value(),
-              ref: from_ref
-            },
-            to: {
-              component_base: t_comp,
-              interface: tin.attr('name').value(),
-              ref: to_ref
-            }
+            from: get_c_obj(from),
+            to: get_c_obj(to)
           };
           wiring.push(w_obj);
         }
-
+        function get_c_obj(c) {
+          var ref = c.attr('ref').value();
+          var interf = refidx[ref];
+          var component_base = get_path(interf);
+          var name = refidx[ref].get('xmlns:component-ref', ns)
+            .attr('qname').value();
+          return {
+            component_base: component_base,
+            interface: interf.attr('name').value(),
+            ref: ref,
+            name: name
+          };
+        }
 
         var jsobj = {
           name: comp_name,
@@ -213,6 +220,7 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
       var app_json = {};
       app_json.components = output_dict;
       app_json.interfacedefs = interfacedefs_json;
+      app_json.instance_components = instance_components;
 
 
       /*
