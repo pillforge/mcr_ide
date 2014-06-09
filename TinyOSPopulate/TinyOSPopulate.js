@@ -100,6 +100,15 @@ define(
         var wire = component.wiring[i];
         var fc = getWiringComponent(wire.from);
         var tc = getWiringComponent(wire.to);
+        var base_type = self.META.Link_Interface;
+        if (fc && Array.isArray(fc)) {
+          fc = fc[0];
+          base_type = self.META.Equate_Interface;
+        }
+        if (tc && Array.isArray(tc)) {
+          tc = tc[0];
+          base_type = self.META.Equate_Interface;
+        }
         if (fc && tc) {
           var fi = getWiringInterface(fc, wire.from.interface);
           var ti = getWiringInterface(tc, wire.to.interface);
@@ -107,7 +116,7 @@ define(
             self._wi("Creating wiring ... " +
                      component.name + " " + wire.to.interface);
             var wiring_node = self.core.createNode({
-              base: self.META.Link_Interface,
+              base: base_type,
               parent: self._getObjectByPath(component.file_path),
             });
             self.core.setPointer(wiring_node, 'src', fi);
@@ -130,8 +139,8 @@ define(
 
       function getWiringComponent(wc) {
         if (component.file_path === wc.component_base) {
-          message("Skipping wiring component");
-          return null;
+          message("Wiring component is component itself");
+          return [self._getObjectByPath(component.file_path), 'equate'];
         }
         if (wc.component_base in created) {
           message("Wiring component is already created");
