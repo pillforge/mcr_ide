@@ -31,16 +31,17 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
       this.logger = LogManager.create('TinyOSPopulate.ParseDump');
     };
 
-    ParseDump.prototype.parse = function(file_path) {
+    ParseDump.prototype.parse = function(file_path, xml) {
 
       var self = this;
-      if (!file_path)
+      if (!file_path) {
         file_path = "MainC.xml"; // For dev
+      }
+      if (!xml) {
+        xml = fs.readFileSync(path.resolve(file_path));
+      }
 
-      var test_file = path.resolve(file_path);
-      self._wi("Test file: " + test_file);
-      var xml = fs.readFileSync(test_file);
-      var xml_doc = libxmljs.parseXml(xml, {noblanks: true });
+      var xml_doc = libxmljs.parseXml(xml, { noblanks: true });
 
       // The namespace has to be defined and
       // has to match the one in the XML file.

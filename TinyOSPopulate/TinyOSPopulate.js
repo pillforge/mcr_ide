@@ -5,8 +5,10 @@ define(
   'path',
   'module',
   'util',
-  './ParseDump'],
-  function (PluginBase, PluginConfig, fs, path, module, util, ParseDump) {
+  './ParseDump',
+  './NesC_XML_Generator'],
+  function (PluginBase, PluginConfig, fs, path, module, util, ParseDump, 
+    NesC_XML_Generator) {
     "use strict";
 
     var TinyOSPopulate = function () {
@@ -19,7 +21,7 @@ define(
       return "TinyOS Populator";
     };
     TinyOSPopulate.prototype.getVersion = function () {
-      return '0.1.2';
+      return '0.1.3';
     };
 
     TinyOSPopulate.prototype.getDefaultConfig = function() {
@@ -37,21 +39,43 @@ define(
         } else {
           self._wi("Nodes are loaded");
           try {
-            
-            var cwd = path.dirname(module.uri);
-            self._wi(cwd);
+
             var pd = new ParseDump();
-            var app_json = pd.parse(path.resolve(cwd, 'MainC.xml'));
-            self._app_json = app_json;
-
-            self._wi('app_json');
-            self._wi(JSON.stringify(app_json, null, 2));
-            
-            self._populate(app_json);
-            self.save();
-
-            self.result.setSuccess(true);
-            callback(null, self.result);
+            var nxg = new NesC_XML_Generator('telosb');
+            nxg.getDirectories(function(error, directories) {
+              if (error !== null) {
+                self._wi("Can't get platform directories");
+                self.result.setSuccess(false);
+                callback(error, self.result);
+              } else {
+                var components_paths = nxg.getComponents(directories);
+                self._created_components = {};
+                x(0);
+              }
+              function x(index) {
+                if ( index >= components_paths.length ) {
+                  self._wi("Completed");
+                  self.save();
+                  self.result.setSuccess(true);
+                  callback(null, self.result);
+                  return;
+                }
+                nxg.getXML(components_paths[index], function(error, xml) {
+                  if (error !== null) {
+                    self._wi("Error in generating xml: " +
+                      index + components_paths[index]);
+                  } else {
+                    self._wi(index + " " + components_paths[index] + " prog");
+                    var app_json = pd.parse(components_paths[index], xml);
+                    self._app_json = app_json;
+                    self._wi(xml);
+                    self._wij(app_json);
+                    self._populate(app_json);
+                  }
+                  x(index+1);
+                });
+              }
+            });
 
           } catch(error) {
             self._wi("Error in TinyOSPopulate Main");
@@ -72,22 +96,28 @@ define(
 
       self._wi("Creating Interfaces");
       for (var key in app_json.interfacedefs) {
+        if (self._created_components[key]) continue;
         self._createInterface(app_json.interfacedefs[key]);
+        self._created_components[key] = true;
       }
 
       self._wi("Creating Components");
       for (key in app_json.components) {
+        if (self._created_components[key]) continue;
         self._createComponent(app_json.components[key]);
       }
 
       self._wi("Creating Uses & Provides Interfaces");
       for (key in app_json.components) {
+        if (self._created_components[key]) continue;
         self._createUPInterfaces(app_json.components[key], app_json);
       }
 
       self._wi("Creating Wirings");
       for (key in app_json.components) {
+        if (self._created_components[key]) continue;
         self._createWirings(app_json.components[key]);
+        self._created_components[key] = true;
       }
 
     };
