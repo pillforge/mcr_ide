@@ -22,7 +22,7 @@ define(
       return '0.1.2';
     };
 
-    TinyOSPopulate.getDefaultConfig = function() {
+    TinyOSPopulate.prototype.getDefaultConfig = function() {
       return new PluginConfig();
     };
 
