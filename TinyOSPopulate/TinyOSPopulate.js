@@ -39,7 +39,7 @@ define(
           self._wi("Nodes are loaded");
           try {
             var pd = new ParseDump();
-            var nxg = new NesC_XML_Generator('telosb');
+            var nxg = new NesC_XML_Generator('exp430');
             self._objectPath = {};
             nxg.getDirectories(function(error, directories) {
               if (error !== null) {
@@ -66,6 +66,8 @@ define(
                   } else {
                     self._wi(index + " " + components_paths[index] + " prog");
                     self._app_json = pd.parse(components_paths[index], xml);
+                    // self._wij(self._app_json);
+                    // self._wi(xml);
                     self._populate();
                   }
                   x(index+1);
@@ -171,8 +173,15 @@ define(
           return created[wc.component_base];
         }
         if (self._app_json.components[get_name(wc.component_base)].generic) {
-          message("Skipping wiring component: generic type");
-          return createWiringInstance(wc.name);
+          message("Wiring component is generic type");
+          // v3
+          var p = wc.component_base + wc.name + '_s';
+          p = p.replace('.', '', 'g');
+          if (p in created) {
+          } else {
+            created[p] = createWiringInstance(wc.name);
+          }
+          return created[p];
         }
         created[wc.component_base] = self._createWiringComponent(
                                                     component.file_path, wc);
@@ -361,7 +370,7 @@ define(
     TinyOSPopulate.prototype._wij = function(obj) {
       var node_cache_string = util.inspect(obj, {
         showHidden: true,
-        depth: 4
+        depth: 5
       });
       this._wi(node_cache_string);
     };
