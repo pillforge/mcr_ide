@@ -5,10 +5,11 @@ define(
   'path',
   'module',
   'util',
+  '../package.json',
   './ParseDump',
   './NesC_XML_Generator'],
-  function (PluginBase, PluginConfig, fs, path, module, util, ParseDump, 
-    NesC_XML_Generator) {
+  function (PluginBase, PluginConfig, fs, path, module, util, pjson,
+    ParseDump, NesC_XML_Generator) {
     "use strict";
 
     var TinyOSPopulate = function () {
@@ -21,7 +22,7 @@ define(
       return "TinyOS Populator";
     };
     TinyOSPopulate.prototype.getVersion = function () {
-      return '0.1.3';
+      return pjson.version;
     };
 
     TinyOSPopulate.prototype.getDefaultConfig = function() {
@@ -30,8 +31,6 @@ define(
 
     TinyOSPopulate.prototype.main = function (callback) {
       var self = this;
-      self._wi("TinyOS Populate main");
-
       self._loadNodes(self.rootNode, function(err) {
         if (err) {
           self.result.setSuccess(false);
@@ -39,9 +38,9 @@ define(
         } else {
           self._wi("Nodes are loaded");
           try {
-
             var pd = new ParseDump();
             var nxg = new NesC_XML_Generator('telosb');
+            self._objectPath = {};
             nxg.getDirectories(function(error, directories) {
               if (error !== null) {
                 self._wi("Can't get platform directories");
@@ -66,11 +65,8 @@ define(
                       index + components_paths[index]);
                   } else {
                     self._wi(index + " " + components_paths[index] + " prog");
-                    var app_json = pd.parse(components_paths[index], xml);
-                    self._app_json = app_json;
-                    self._wi(xml);
-                    self._wij(app_json);
-                    self._populate(app_json);
+                    self._app_json = pd.parse(components_paths[index], xml);
+                    self._populate();
                   }
                   x(index+1);
                 });
@@ -87,36 +83,34 @@ define(
         }
       });
 
-      self._wi("TinyOSPopulate main end");
     };
     
-    TinyOSPopulate.prototype._populate = function (app_json) {
+    TinyOSPopulate.prototype._populate = function () {
       var self = this;
-      self._objectPath = {};
 
       self._wi("Creating Interfaces");
-      for (var key in app_json.interfacedefs) {
+      for (var key in self._app_json.interfacedefs) {
         if (self._created_components[key]) continue;
-        self._createInterface(app_json.interfacedefs[key]);
+        self._createInterface(self._app_json.interfacedefs[key]);
         self._created_components[key] = true;
       }
 
       self._wi("Creating Components");
-      for (key in app_json.components) {
+      for (key in self._app_json.components) {
         if (self._created_components[key]) continue;
-        self._createComponent(app_json.components[key]);
+        self._createComponent(self._app_json.components[key]);
       }
 
       self._wi("Creating Uses & Provides Interfaces");
-      for (key in app_json.components) {
+      for (key in self._app_json.components) {
         if (self._created_components[key]) continue;
-        self._createUPInterfaces(app_json.components[key], app_json);
+        self._createUPInterfaces(self._app_json.components[key]);
       }
 
       self._wi("Creating Wirings");
-      for (key in app_json.components) {
+      for (key in self._app_json.components) {
         if (self._created_components[key]) continue;
-        self._createWirings(app_json.components[key]);
+        self._createWirings(self._app_json.components[key]);
         self._created_components[key] = true;
       }
 
@@ -220,8 +214,7 @@ define(
       return wiring_component;
     };
 
-    TinyOSPopulate.prototype._createUPInterfaces = function (
-      component, app_json) {
+    TinyOSPopulate.prototype._createUPInterfaces = function (component) {
       var self = this;
       for (var i = component.interface_types.length - 1; i >= 0; i--) {
         var curr_interface = component.interface_types[i];
@@ -241,7 +234,8 @@ define(
                                curr_interface.argument_type);
         }
 
-        var ref_fpath = app_json.interfacedefs[curr_interface.name].file_path;
+        var ref_fpath = self._app_json.interfacedefs[curr_interface.name]
+          .file_path;
         self.core.setPointer(interface_node, 'interface',
                              self._nodeCache[self._objectPath[ref_fpath]]);
         self._cacheNode(interface_node);
@@ -367,7 +361,7 @@ define(
     TinyOSPopulate.prototype._wij = function(obj) {
       var node_cache_string = util.inspect(obj, {
         showHidden: true,
-        depth: 3
+        depth: 4
       });
       this._wi(node_cache_string);
     };

@@ -1,5 +1,5 @@
-define(['fs', 'path', 'child_process'],
-  function (fs, path, child_process) {
+define(['fs', 'path', 'child_process', 'logManager'],
+  function (fs, path, child_process, LogManager) {
     "use strict";
 
     var exec;
@@ -13,6 +13,7 @@ define(['fs', 'path', 'child_process'],
         ' "-fnesc-dump=functions(!global())" "-fnesc-dump=interfaces"' +
         ' "-fnesc-dump=components(wiring)" -fnesc-dump=interfacedefs' +
         ' -fnesc-dump=wiring -fsyntax-only';
+      self.logger = LogManager.create('TinyOSPopulate.NesC_XML_Generator');
     };
 
     NesC_XML_Generator.prototype.getDirectories = function(callback) {
@@ -23,8 +24,8 @@ define(['fs', 'path', 'child_process'],
       var options = { maxBuffer: 100*1024*1024 };
       exec(dump_cmd, options, function (error, stdout, stderr) {
         if (error !== null) {
-          console.log('stderr: ' + stderr);
-          console.log('exec error: ' + error);
+          self._wi('stderr: ' + stderr);
+          self._wi('exec error: ' + error);
           callback(error, null);
         } else {
           var ind = stderr.search('> search starts here:');
@@ -62,13 +63,19 @@ define(['fs', 'path', 'child_process'],
       var options = { maxBuffer: 100*1024*1024 };
       exec(xml_cmd, options, function (error, stdout, stderr) {
         if (error !== null) {
-          console.log('stderr: ' + stderr);
-          console.log('exec error: ' + error + '####\n');
+          self._wi('stderr: ' + stderr);
+          self._wi('exec error: ' + error + '####\n');
           callback(error, stdout);
         } else {
           callback(null, stdout);
         }
       });
+    };
+
+    NesC_XML_Generator.prototype._wi = function(msg) {
+      var self = this;
+      self.logger.warn(msg);
+      self.logger.info(msg);
     };
 
     return NesC_XML_Generator;
