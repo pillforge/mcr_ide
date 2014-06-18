@@ -49,6 +49,94 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
             self.updateSuccess(false,"An App must be selected.");
             callback("An App must be selected.", self.result);
         }else{
+            _process_app2();
+        }
+
+        // Load children asynchronously and generate code
+        function _process_app2() {
+            // The app node is special because it's a configuration but may have more information
+            var components = [app_node];
+            var process = function(cur_comp){
+                console.log("Processing component: " + self._getNodeName(cur_comp));
+                self.core.loadChildren(cur_comp, function(err, children){
+                    if (err) {
+                        console.log("Error load_nodes");
+                        self.result.setSuccess(false);
+                        callback(err, self.result);
+                    } else {
+
+                        var component_refs = [];
+                        var generic_component_refs = [];
+                        var interface_refs = [];
+                        var wirings = [];
+                        var async_ptr = [];
+
+                        console.log("Length: " + children.length);
+                        // We want to differentiate between components that are references to components that already
+                        // exists in the library and components created in WebGME for which we have to generate code.
+                        // For now, the way we do this by checking if the referenced(base) component has an empty path
+                        // attribute. The code would be written to the same directory as the main app.
+
+                        for (var i=0; i<children.length; i++){
+                            if (self._isNescComponent(children[i])){
+                                if (!self._isNescComponentRef(children[i])){
+                                    components.push(children[i]);
+                                }else if (self._isNescGenericComponent(children[i])){
+                                    generic_component_refs.push(children[i]);
+                                }else {
+                                    component_refs.push(children[i]);
+                                }
+                            } else if (self._isNescWiring(children[i])){
+                                async_ptr.push(children[i]);
+                            } else if (self._isNescInterfaceRef(children[i])){
+                                async_ptr.push(children[i]);
+                            }
+
+                        }
+
+
+                        var load_ptr = function(node_with_ptr){
+                            if (node_with_ptr){
+                                if (self._isNescWiring(node_with_ptr)){
+                                    self.core.loadPointer(node_with_ptr, 'src', function(err, src_node){
+                                        self.core.loadPointer(node_with_ptr, 'dst', function(err, dst_node){
+                                            console.log("Src: " + self._getNodeName(src_node.parent) + "." + self._getNodeName(src_node));
+                                            console.log("Dst: " + self._getNodeName(dst_node.parent) + "." + self._getNodeName(dst_node));
+                                            node_with_ptr.src = src_node;
+                                            node_with_ptr.dst = dst_node;
+                                            wirings.push(node_with_ptr);
+                                            load_ptr(async_ptr.pop());
+                                        });
+                                    });
+                                } else if (self._isNescInterfaceRef(node_with_ptr)){
+                                    self.core.loadPointer(node_with_ptr, 'interface', function(err, interface_node){
+                                        node_with_ptr.interface = interface_node;
+                                        interface_refs.push(node_with_ptr);
+                                        load_ptr(async_ptr.pop());
+                                    });
+                                }
+                            }else{
+                                _generate_output(cur_comp, component_refs, generic_component_refs, interface_refs, wirings);
+                                if (components.length === 0){
+                                    self.result.setSuccess(true);
+                                    callback(null, self.result);
+                                }else {
+                                    console.log("Remaining components: " + components.length);
+                                    process(components.pop());
+                                }
+                            }
+                        };
+                        load_ptr(async_ptr.pop());
+                    }
+                });
+            };
+
+            process(components.pop());
+        }
+
+        // Loads all nodes using _loadNodes and then process everything synchronously. This is more error prone when the
+        // project has long pointer chains or pointer cycles (not sure about this).
+        function _process_app (){
             self._loadNodes(app_node,function(err){
                 if (err) {
                     console.log("Error load_nodes");
@@ -80,17 +168,16 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
                             if (self._isNescComponent(children[i])){
                                 if (!self._isNescComponentRef(children[i])){
                                     components.push(children[i]);
-                                }else if (self._isGenericComponent(children[i])){
+                                } else if (self._isNescGenericComponent(children[i])){
                                     generic_component_refs.push(children[i]);
                                 } else {
                                     component_refs.push(children[i]);
-                                }        
+                                }
                             } else if (self._isNescWiring(children[i])){
                                 // create a function to create a closure for cur_child
                                 var cur_child = children[i];
                                 var src_node = self._getNode(self.core.getPointerPath(children[i], 'src'));
                                 var dst_node = self._getNode(self.core.getPointerPath(children[i], 'dst'));
-                                //debugger;
                                 console.log("Src: " + self._getNodeName(src_node.parent) + "." + self._getNodeName(src_node));
                                 console.log("Dst: " + self._getNodeName(dst_node.parent) + "." + self._getNodeName(dst_node));
                                 children[i].src = src_node;
@@ -100,20 +187,21 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
 
                         }
 
-                        debugger;
-                        _generate_output(cur_comp, component_refs, generic_component_refs, wirings);
+                        _generate_output(cur_comp, component_refs, generic_component_refs, interface_refs, wirings);
                     }
                     self.result.setSuccess(true);
                     callback(null, self.result);
                 }
             });
+
         }
 
-        function _generate_output (parent_component, component_refs, generic_component_refs, wirings){
-            debugger;
+        function _generate_output (parent_component, component_refs, generic_component_refs, interface_refs, wirings){
             var tmpl_context = {},
+                output_file = "",
                 parent_comp_name = self._getNodeName(parent_component);
 
+            debugger;
             // If the parent component is an app, generate the Makefile
             if (self.isMetaTypeOf(parent_component, self.META.App)){
                 var makefile_tmpl = fs.readFileSync(path.resolve(self.plugin_dir, "makefile.tmpl"), 'utf8');
@@ -131,7 +219,7 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
             // For modules and anything that has a path, we just copy the file given by the path attribute (for now)
             var nesc_path = self.core.getAttribute(parent_component, "path");
             if (nesc_path !== ""){
-                var output_file = path.resolve(self.output_dir, parent_comp_name + ".nc");
+                output_file = path.resolve(self.output_dir, parent_comp_name + ".nc");
                 var input_file_path = path.resolve(self._getTOSRoot(), nesc_path);
                 fs.createReadStream(input_file_path).pipe(fs.createWriteStream(output_file));
             } else {
@@ -153,32 +241,59 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
                             }
                         );
                     }else if(self.isMetaTypeOf(node,self.META.Equate_Interface)){
-                        equate_wirings_for_tmpl.push(
-                            {
-                                src: self._getNodeName(node.src.parent) + "." + self._getNodeName(node.src),
-                                dst: self._getNodeName(node.dst.parent) + "." + self._getNodeName(node.dst)
-                            }
-                        );
+                        var src = "";
+                        var dst = "";
+                        if(node.src.parent === node.parent)
+                            src = self._getNodeName(node.src);
+                        else
+                            src = self._getNodeName(node.src.parent) + "." + self._getNodeName(node.src);
+
+                        if(node.dst.parent === node.parent)
+                            dst = self._getNodeName(node.dst);
+                        else
+                            dst = self._getNodeName(node.dst.parent) + "." + self._getNodeName(node.dst);
+
+                        equate_wirings_for_tmpl.push( { src: src, dst: dst } );
 
                     }
                 });
 
+                var uses_interface_refs = [],
+                    provides_interface_refs = [];
+
+                interface_refs.forEach(function(node){
+                    if (self.isMetaTypeOf(node, self.META.Uses_Interface)){
+                        uses_interface_refs.push(self._createInterfaceRef(node));
+                    } else {
+                        provides_interface_refs.push(self._createInterfaceRef(node));
+                    }
+                });
+
+                console.log("Interface_refs: " + interface_refs.length);
+                console.log("Provides: " + provides_interface_refs.length);
+                console.log("Uses: " + uses_interface_refs.length);
+                uses_interface_refs.forEach(function(iref){
+                    console.log(iref.base);
+                })
+
                 debugger;
                 tmpl_context = {
-                    component              : self._createComponent(parent_component),
-                    component_refs         : component_refs.map(self._createComponent, self),
-                    generic_component_refs : generic_component_refs.map(self._createComponent, self),
-                    link_wirings           : link_wirings_for_tmpl,
-                    equate_wirings         : equate_wirings_for_tmpl
+                    component               : self._createComponent(parent_component),
+                    component_refs          : component_refs.map(self._createComponent, self),
+                    uses_interface_refs     : uses_interface_refs,
+                    provides_interface_refs : provides_interface_refs,
+                    generic_component_refs  : generic_component_refs.map(self._createComponent, self),
+                    link_wirings            : link_wirings_for_tmpl,
+                    equate_wirings          : equate_wirings_for_tmpl
                 };
                 // Generate App file
                 var output = config_template(tmpl_context);
                 console.log(output);
-                var output_file = path.resolve(self.output_dir, parent_comp_name + ".nc");
+                output_file = path.resolve(self.output_dir, parent_comp_name + ".nc");
                 fs.writeFileSync(output_file, output);
             }
 
-        };
+        }
     };
 
     TinyOSPlugin.prototype._createComponent = function(node) {
@@ -192,10 +307,24 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
         return out;
     };
 
+    TinyOSPlugin.prototype._createInterfaceRef = function(node) {
+        var self = this;
+        var out = {
+            base : self._getNodeName(node.interface),
+            instance_parameters : self.core.getAttribute(node, 'instance_parameters'),
+            type_arguments : self.core.getAttribute(node, 'type_arguments')
+        };
+        var name_as = self._getNodeName(node);
+        if (out.base !== name_as)
+            out.name = name_as;
+
+        return out;
+    };
+
     TinyOSPlugin.prototype._getBaseAttribute = function (node, name) {
         return this.core.getAttribute(this.core.getBase(node), name);
     };
-    
+
 
     // Tamas' implementation
     TinyOSPlugin.prototype._loadNodes = function (start_node, callback) {
@@ -294,7 +423,7 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
     TinyOSPlugin.prototype._isNescModule = function (node) {
         return this.isMetaTypeOf(node, this.META.Module) ||  this.isMetaTypeOf(node, this.META.Generic_Module);
     };
-    
+
     TinyOSPlugin.prototype._isNescConfiguration = function (node) {
         return this.isMetaTypeOf(node, this.META.Configuration) ||  this.isMetaTypeOf(node, this.META.Generic_Configuration);
     };
@@ -311,8 +440,12 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
         return this._isNescComponent(node) && !this.baseIsMeta(node);
     };
 
-    TinyOSPlugin.prototype._isGenericComponent = function (node) {
+    TinyOSPlugin.prototype._isNescGenericComponent = function (node) {
         return this.isMetaTypeOf(node, this.META.Generic_Module) ||  this.isMetaTypeOf(node, this.META.Generic_Configuration);
+    };
+
+    TinyOSPlugin.prototype._isNescInterfaceRef = function (node) {
+        return this.isMetaTypeOf(node, this.META.Interface_Type);
     };
 
     return TinyOSPlugin;

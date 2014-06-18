@@ -1,21 +1,29 @@
 /**
  * Automatically generated file
  *
- * {{=it.app.name}}
+ * {{=it.component.name}}
  * Created on: {{=new Date()}}
  */
 
-configuration {{=it.app.name}} {
+configuration {{=it.component.name}} { {{? it.uses_interface_refs && it.uses_interface_refs.length > 0}}
+    uses { {{~ it.uses_interface_refs :iref}} 
+       interface {{=iref.base }}{{? iref.name }} as {{=iref.name}}{{?}}; {{~}}
+    }{{?}}{{? it.provides_interface_refs && it.provides_interface_refs.length > 0}}
+   provides { {{~ it.provides_interface_refs :iref}} 
+       interface {{=iref.base }}{{? iref.name }} as {{=iref.name}}{{?}}; {{~}}
+   } {{?}}
 }
-
 implementation {
 
     // Component
-   {{~ it.components :cpnt}} components {{=cpnt.base }}{{? cpnt.name }} as {{=cpnt.name}}{{?}};
+   {{~ it.component_refs :cref}} components {{=cref.base }}{{? cref.name }} as {{=cref.name}}{{?}};
    {{~}}
-   {{~ it.generic_components :cpnt}} components new {{=cpnt.base }}(){{? cpnt.name }} as {{=cpnt.name}}{{?}};
+   {{~ it.generic_component_refs :cref}} components new {{=cref.base }}(){{? cref.name }} as {{=cref.name}}{{?}};
    {{~}}
 
-   {{~ it.wirings :wire}} {{=wire.src }} -> {{=wire.dst}};
-   {{~}}
+    // Wiring {{~ it.link_wirings :wire}} 
+    {{=wire.src }} -> {{=wire.dst}}; {{~}}
+
+    // Equate {{~ it.equate_wirings :wire}} 
+    {{=wire.src }} = {{=wire.dst}}; {{~}}
 }
