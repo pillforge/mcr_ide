@@ -1,13 +1,5 @@
-define(['module', 'dot', 'plugin/PluginBase', 'plugin/PluginConfig', 'core/metacore', 'fs', 'path'],
-       function (module, doT, PluginBase, PluginConfig, MetaCore, fs, path) {
+define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module, PluginBase, PluginConfig) {
     "use strict";
-
-    doT.templateSettings.strip = false;
-
-    // module.uri is the path of this file.
-    var plugin_dir = path.dirname(module.uri);
-    console.log("Module: " + module.uri);
-    console.log("plugin_dir: " + plugin_dir);
 
     var TinyOSPlugin = function () {
         PluginBase.call(this);
@@ -21,151 +13,306 @@ define(['module', 'dot', 'plugin/PluginBase', 'plugin/PluginConfig', 'core/metac
     };
 
 
+    TinyOSPlugin.prototype.getVersion = function () {
+        return '0.1.0';
+    };
+
+    TinyOSPlugin.prototype.getDefaultConfig = function() {
+        return new PluginConfig();
+    };
+
     TinyOSPlugin.prototype.main = function (callback) {
+        var self = this;
+        var path  = require('path');
+        var doT = require('dot');
+        doT.templateSettings.strip = false;
+        var fs  = require('fs');
 
+        // module.uri is the path of this file.
+        self.plugin_dir = path.dirname(module.uri);
+        self.output_dir = path.resolve(self.plugin_dir, "output");
 
-        // Wrap in meta core to get the nice META type checking
-        var core = new MetaCore(config.core);
-        var result = {commitHash:config.commitHash};
+            // Create self.output_dir if it doesn't already exist
+        try{
+            fs.mkdirSync(self.output_dir);
+        }catch(e){}
 
-        var getName = function (node){
-            return core.getAttribute(node, 'name');
-        }
+        console.log("Module: " + module.uri);
+        console.log("plugin_dir: " + self.plugin_dir);
+        //self.updateSuccess(false, "Test failure");
+        //callback(false, self.result);
+        //return;
 
-        // populate a new object with enough information necessary for a template
-        var createComponent = function(node){
-            var base = getName(core.getBase(node));
-            var name_as  = getName(node);
-            var out = {'base': base};
-            if (base !== name_as)
-                out['name'] = name_as;
+        // Check if selectedNode or active object is an App
+        var app_node = self.activeNode;
+        if (!self.isMetaTypeOf(app_node, self.META.App)){
+            self.updateSuccess(false,"An App must be selected.");
+            callback("An App must be selected.", self.result);
+        }else{
+            self._loadNodes(app_node,function(err){
+                if (err) {
+                    console.log("Error load_nodes");
+                    self.result.setSuccess(false);
+                    callback(err, self.result);
+                } else {
+                    // The app node is special because it's a configuration but may have more information
+                    var components = [app_node];
+                    while(true){
+                        if (components.length === 0)
+                            break;
 
-            return out;
-        };
+                        var cur_comp = components.pop();
+                        console.log("Processing component: " + self._getNodeName(cur_comp));
 
+                        var component_refs = [];
+                        var generic_component_refs = [];
+                        var interface_refs = [];
+                        var wirings = [];
+                        var children = self._getChildren(cur_comp);
 
-        var generate_output = function(app, components, generic_components, wirings){
-            debugger;
+                        console.log("Length: " + children.length);
+                        // We want to differentiate between components that are references to components that already
+                        // exists in the library and components created in WebGME for which we have to generate code.
+                        // For now, the way we do this by checking if the referenced(base) component has an empty path
+                        // attribute. The code would be written to the same directory as the main app.
 
-            var output_dir = path.resolve(plugin_dir, "output");
-            // Create output_dir if it doesn't already exist
-            try{
-                fs.mkdirSync(output_dir);
-            }catch(e){}
+                        for (var i=0; i<children.length; i++){
+                            if (self._isNescComponent(children[i])){
+                                if (!self._isNescComponentRef(children[i])){
+                                    components.push(children[i]);
+                                }else if (self._isGenericComponent(children[i])){
+                                    generic_component_refs.push(children[i]);
+                                } else {
+                                    component_refs.push(children[i]);
+                                }        
+                            } else if (self._isNescWiring(children[i])){
+                                // create a function to create a closure for cur_child
+                                var cur_child = children[i];
+                                var src_node = self._getNode(self.core.getPointerPath(children[i], 'src'));
+                                var dst_node = self._getNode(self.core.getPointerPath(children[i], 'dst'));
+                                //debugger;
+                                console.log("Src: " + self._getNodeName(src_node.parent) + "." + self._getNodeName(src_node));
+                                console.log("Dst: " + self._getNodeName(dst_node.parent) + "." + self._getNodeName(dst_node));
+                                children[i].src = src_node;
+                                cur_child.dst = dst_node;
+                                wirings.push(cur_child);
+                            }
 
-            // Read template file from plugin directory
-            var app_tmpl = fs.readFileSync(path.resolve(plugin_dir, "app.nc.tmpl"), 'utf8');
-            var makefile_tmpl = fs.readFileSync(path.resolve(plugin_dir, "makefile.tmpl"), 'utf8');
+                        }
 
-            var app_template = doT.template(app_tmpl);
-            var makefile_template = doT.template(makefile_tmpl);
-
-            console.log("Output:");
-            var wirings_for_tmpl = [];
-            wirings.forEach(function(node){
-                wirings_for_tmpl.push(
-                    {
-                        src: getName(node.src.parent) + "." + getName(node.src),
-                        dst: getName(node.dst.parent) + "." + getName(node.dst)
+                        debugger;
+                        _generate_output(cur_comp, component_refs, generic_component_refs, wirings);
                     }
-                );
-            });
-
-            debugger;
-            var tmpl_context = {
-                app: createComponent(app),
-                components:components.map(createComponent),
-                generic_components:generic_components.map(createComponent),
-                wirings: wirings_for_tmpl
-            };
-            // Generate App file
-            var output = app_template(tmpl_context);
-            console.log(output);
-            var output_file = path.resolve(output_dir, tmpl_context.app.name + ".nc");
-            fs.writeFileSync(output_file, output);
-
-
-            // Generate Makefile
-            var output = makefile_template(tmpl_context);
-            console.log(output);
-            var output_file = path.resolve(output_dir, "Makefile");
-            fs.writeFileSync(output_file, output);
-
-            // Populate module files
-            components.concat(generic_components).forEach(function(comp){
-                if(core.isTypeOf(comp, config.META.Module) || core.isTypeOf(comp, config.META.Generic_Module) ){
-                    var output_file = path.resolve(output_dir,getName(comp) +".nc");
-                    var input_file = core.getAttribute(comp, "path")
-                    if(input_file)
-                        fs.createReadStream(input_file).pipe(fs.createWriteStream(output_file));
+                    self.result.setSuccess(true);
+                    callback(null, self.result);
                 }
             });
-
-            result.success = true;
-            callback("Files generated", result);
-
         }
 
+        function _generate_output (parent_component, component_refs, generic_component_refs, wirings){
+            debugger;
+            var tmpl_context = {},
+                parent_comp_name = self._getNodeName(parent_component);
 
-        if(core){
-            // Check if selectedNode or active object is an App
-            var app_node = config.selectedNode;
-            var self = this;
-            if (core.isTypeOf(app_node, config.META.App)){
-                config.core.loadChildren(app_node,function(err, children){
-                    if(!err){
-                        var components = [];
-                        var generic_components = [];
-                        var wirings = []
-                        var wiring_count = 0;
+            // If the parent component is an app, generate the Makefile
+            if (self.isMetaTypeOf(parent_component, self.META.App)){
+                var makefile_tmpl = fs.readFileSync(path.resolve(self.plugin_dir, "makefile.tmpl"), 'utf8');
+                var makefile_template = doT.template(makefile_tmpl);
+                tmpl_context = {
+                    component: self._createComponent(parent_component),
+                };
+                // Generate Makefile
+                output = makefile_template(tmpl_context);
+                console.log(output);
+                output_file = path.resolve(self.output_dir, "Makefile");
+                fs.writeFileSync(output_file, output);
+            }
 
-                        //console.log("Length: " + children.length);
+            // For modules and anything that has a path, we just copy the file given by the path attribute (for now)
+            var nesc_path = self.core.getAttribute(parent_component, "path");
+            if (nesc_path !== ""){
+                var output_file = path.resolve(self.output_dir, parent_comp_name + ".nc");
+                var input_file_path = path.resolve(self._getTOSRoot(), nesc_path);
+                fs.createReadStream(input_file_path).pipe(fs.createWriteStream(output_file));
+            } else {
+                // For apps and other configurations, create a context for our template
 
-                        for(var i=0;i<children.length;i++){
-                            if (core.isTypeOf(children[i], config.META.Generic_Configuration) || 
-                                core.isTypeOf(children[i], config.META.Generic_Module)){
-                                generic_components.push(children[i]);
-                            }else if (core.isTypeOf(children[i], config.META.Configuration) ||
-                                      core.isTypeOf(children[i], config.META.Module)){
-                                components.push(children[i]);
-                            }else if  (core.isTypeOf(children[i], config.META.Wiring)){
-                                (function(){
-                                    // create a function to create a closure for cur_child
-                                    var cur_child = children[i];
-                                    wiring_count++;
-                                    core.loadPointer(children[i], 'src', function(err, src_node){
-                                        //debugger;
-                                        console.log("Src: " + getName(src_node.parent) + "." + getName(src_node));
-                                        cur_child.src = src_node;
-                                        if(cur_child.dst) wirings.push(cur_child);
-                                        if(wiring_count === wirings.length)
-                                            generate_output(app_node, components, generic_components, wirings);
-                                    });
-                                    core.loadPointer(children[i], 'dst', function(err, dst_node){
-                                        //debugger;
-                                        cur_child.dst = dst_node;
-                                        console.log("Dst: " + getName(dst_node.parent) + "." + getName(dst_node));
-                                        if(cur_child.src) wirings.push(cur_child);
-                                        if(wiring_count === wirings.length)
-                                            generate_output(app_node, components, generic_components, wirings);
-                                    });
-                                })();
+                // Read template file from plugin directory
+                var config_tmpl = fs.readFileSync(path.resolve(self.plugin_dir, "config.nc.tmpl"), 'utf8');
+                var config_template = doT.template(config_tmpl);
 
+                console.log("Output:");
+                var link_wirings_for_tmpl = [];
+                var equate_wirings_for_tmpl = [];
+                wirings.forEach(function(node){
+                    if(self.isMetaTypeOf(node,self.META.Link_Interface)){
+                        link_wirings_for_tmpl.push(
+                            {
+                                src: self._getNodeName(node.src.parent) + "." + self._getNodeName(node.src),
+                                dst: self._getNodeName(node.dst.parent) + "." + self._getNodeName(node.dst)
                             }
-                            
-                        }
-                    }else{
-                        result.success = false;
-                        callback(err, result);
+                        );
+                    }else if(self.isMetaTypeOf(node,self.META.Equate_Interface)){
+                        equate_wirings_for_tmpl.push(
+                            {
+                                src: self._getNodeName(node.src.parent) + "." + self._getNodeName(node.src),
+                                dst: self._getNodeName(node.dst.parent) + "." + self._getNodeName(node.dst)
+                            }
+                        );
+
                     }
                 });
 
-            } else {
-                result.success = false;
-                callback( "An App must be selected.", result);
+                debugger;
+                tmpl_context = {
+                    component              : self._createComponent(parent_component),
+                    component_refs         : component_refs.map(self._createComponent, self),
+                    generic_component_refs : generic_component_refs.map(self._createComponent, self),
+                    link_wirings           : link_wirings_for_tmpl,
+                    equate_wirings         : equate_wirings_for_tmpl
+                };
+                // Generate App file
+                var output = config_template(tmpl_context);
+                console.log(output);
+                var output_file = path.resolve(self.output_dir, parent_comp_name + ".nc");
+                fs.writeFileSync(output_file, output);
             }
-        }
 
+        };
+    };
+
+    TinyOSPlugin.prototype._createComponent = function(node) {
+        var self = this;
+        var base = self._getNodeName(self.core.getBase(node));
+        var name_as  = self._getNodeName(node);
+        var out = {'base': base};
+        if (base !== name_as)
+            out.name= name_as;
+
+        return out;
+    };
+
+    TinyOSPlugin.prototype._getBaseAttribute = function (node, name) {
+        return this.core.getAttribute(this.core.getBase(node), name);
+    };
+    
+
+    // Tamas' implementation
+    TinyOSPlugin.prototype._loadNodes = function (start_node, callback) {
+      var self = this;
+      self._nodeCache = {};
+
+      var load = function(node, fn, depth) {
+          console.log("Depth: " + depth);
+          self.core.loadChildren(node, function(err, children) {
+              if (err) {
+                  fn(err);
+              } else {
+                  var recCalls = children.length;
+                  var error = null;
+
+                  if(recCalls === 0){
+                      fn(null);
+                  }
+
+                  for (var i = 0; i < children.length; i++) {
+                      self._nodeCache[self.core.getPath(children[i])] = children[i];
+                      load(children[i], load_err_handler, depth++);
+                  }
+
+              }
+
+              function load_err_handler(err) {
+                  error = error || err;
+                  if(--recCalls === 0) { //callback only on last child
+                      fn(error);
+                  }
+              }
+
+          });
+      };
+
+      load(start_node, callback, 0);
+    };
+
+    TinyOSPlugin.prototype._getNodeName = function (node) {
+      return this.core.getAttribute(node, 'name');
+    };
+
+    TinyOSPlugin.prototype._getNode = function (nodePath){
+      //we check only our node cache
+      return this._nodeCache[nodePath];
+    };
+
+    TinyOSPlugin.prototype._cacheNode = function (node) {
+      this._nodeCache[this.core.getPath(node)] = node;
+    };
+
+    /**
+     * Fetch the child nodes of a given node from the cache
+     */
+    TinyOSPlugin.prototype._getChildren = function (node) {
+      var self = this;
+      var children_paths = self.core.getChildrenPaths(node);
+      var children = [];
+      children_paths.forEach(function(child_path) {
+        var child = self._getNode(child_path);
+        if (child)
+          children.push(child);
+      });
+      return children;
+    };
+
+    /**
+     * Searches through the children of a given node and finds the first node
+     * that has
+     * the specified name. If a node is not found, null is returned.
+     * If the children argument is given, it will be used instead of fetching
+     * it using _getChildren. This is useful when
+     * repeated calls to _findNodeByName need to be made.
+     */
+    TinyOSPlugin.prototype._findNodeByName = function (node, name,
+      children) {
+      var self = this;
+      if (!children)
+        children = this._getChildren(node);
+      var result = null;
+      for (var i = 0; i < children.length; i++) {
+        var child = children[i];
+        if (this._getNodeName(child) === name) {
+          result = children[i];
+          break;
+        }
+      }
+      return result;
+    };
+
+    TinyOSPlugin.prototype._getTOSRoot = function() {
+        return process.env.TOSROOT;
+    };
+
+    TinyOSPlugin.prototype._isNescModule = function (node) {
+        return this.isMetaTypeOf(node, this.META.Module) ||  this.isMetaTypeOf(node, this.META.Generic_Module);
+    };
+    
+    TinyOSPlugin.prototype._isNescConfiguration = function (node) {
+        return this.isMetaTypeOf(node, this.META.Configuration) ||  this.isMetaTypeOf(node, this.META.Generic_Configuration);
+    };
+
+    TinyOSPlugin.prototype._isNescWiring = function (node) {
+        return this.isMetaTypeOf(node, this.META.Wire_Interface) ||  this.isMetaTypeOf(node, this.META.Wire_Function);
+    };
+
+    TinyOSPlugin.prototype._isNescComponent = function (node) {
+        return this.isMetaTypeOf(node, this.META.Component);
+    };
+
+    TinyOSPlugin.prototype._isNescComponentRef = function (node) {
+        return this._isNescComponent(node) && !this.baseIsMeta(node);
+    };
+
+    TinyOSPlugin.prototype._isGenericComponent = function (node) {
+        return this.isMetaTypeOf(node, this.META.Generic_Module) ||  this.isMetaTypeOf(node, this.META.Generic_Configuration);
     };
 
     return TinyOSPlugin;
