@@ -262,6 +262,7 @@ define(
       });
       self.core.setAttribute(component_node, 'name', component.name);
       self.core.setAttribute(component_node, 'safe', component.safe);
+      self.core.setAttribute(component_node, 'path', component.file_path);
       self._cacheNode(component_node);
       self._storeObjectPath(component, component_node);
 
@@ -284,6 +285,7 @@ define(
         parent: parent_node
       });
       self.core.setAttribute(interface_node, 'name', curr_interface.name);
+      self.core.setAttribute(interface_node, 'path', curr_interface.file_path);
       self._cacheNode(interface_node);
       self._storeObjectPath(curr_interface, interface_node);
     };

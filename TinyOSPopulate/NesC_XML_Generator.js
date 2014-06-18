@@ -7,7 +7,7 @@ define(['fs', 'path', 'child_process', 'logManager'],
       var self = this;
       exec = child_process.exec;
       self._target = target || 'telosb';
-      self._tinyos = tinyos || '/home/hakan/tinyos';
+      self._tinyos = tinyos || process.env['TOSROOT'] || '/home/hakan/tinyos';
       self._ncc_cmd = 'ncc' + 
         ' "-fnesc-dump=referenced(interfaces,components,functions)"' + 
         ' "-fnesc-dump=functions(!global())" "-fnesc-dump=interfaces"' +
