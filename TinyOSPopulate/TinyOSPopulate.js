@@ -64,6 +64,7 @@ define(
                     self._wi("Error in generating xml: " +
                       index + components_paths[index]);
                   } else {
+                    // fs.writeFileSync('xml.log/i.xml', xml);
                     self._wi(index + " " + components_paths[index] + " prog");
                     self._app_json = pd.parse(components_paths[index], xml);
                     // self._wij(self._app_json);
@@ -147,6 +148,14 @@ define(
             });
             self.core.setPointer(wiring_node, 'src', fi);
             self.core.setPointer(wiring_node, 'dst', ti);
+            if (wire.from.cst) {
+              self.core.setAttribute(wiring_node, 'src_params',
+                                   'cst:' + wire.from.cst);
+            }
+            if (wire.to.cst) {
+              self.core.setAttribute(wiring_node, 'dst_params',
+                                   'cst:' + wire.to.cst);
+            }
             self._cacheNode(wiring_node);
           }
         }

@@ -144,8 +144,10 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
         var wiring_nodes = comp.find('xmlns:wiring/xmlns:wire', ns);
         for (var i = wiring_nodes.length - 1; i >= 0; i--) {
           var w_node = wiring_nodes[i];
-          var from = w_node.get('xmlns:from/xmlns:interface-ref', ns);
-          var to = w_node.get('xmlns:to/xmlns:interface-ref', ns);
+
+          var from = w_node.get('xmlns:from', ns);
+          var to = w_node.get('xmlns:to', ns);
+
           var w_obj = {
             from: get_c_obj(from),
             to: get_c_obj(to)
@@ -153,14 +155,22 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
           wiring.push(w_obj);
         }
         function get_c_obj(c) {
-          var ref = c.attr('ref').value();
+          var ref = c.get('xmlns:interface-ref', ns).attr('ref').value();
           var interf = refidx[ref];
           var component_base = get_path(interf);
           var name = refidx[ref].get('xmlns:component-ref', ns)
             .attr('qname').value();
+
+          var c_arguments_node = c.get('xmlns:arguments/xmlns:value', ns);
+          var c_arg_value = null;
+          if (c_arguments_node) {
+            c_arg_value = c_arguments_node.attr('cst').value();
+          }
+
           return {
             component_base: component_base,
             interface: interf.attr('name').value(),
+            cst: c_arg_value,
             ref: ref,
             name: name
           };
