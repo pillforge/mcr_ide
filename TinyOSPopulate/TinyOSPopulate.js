@@ -64,9 +64,14 @@ define(
                     self._wi("Error in generating xml: " +
                       index + components_paths[index]);
                   } else {
-                    // fs.writeFileSync('xml.log/i.xml', xml);
                     self._wi(index + " " + components_paths[index] + " prog");
                     self._app_json = pd.parse(components_paths[index], xml);
+                    // fs.writeFileSync('xml.log/' + index + '.xml', xml);
+                    // fs.writeFileSync('xml.log/' + index + '.js',
+                    //                  util.inspect(self._app_json, {
+                    //                   showHidden: true,
+                    //                   depth: 5
+                    //                  }));
                     // self._wij(self._app_json);
                     // self._wi(xml);
                     self._populate();

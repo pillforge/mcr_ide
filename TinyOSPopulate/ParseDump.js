@@ -195,14 +195,24 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
                                                       .attr('qname').value();
             var intf_as = e.attr('name').value();
 
-            // this should be more clever
-            // we shouldn't need to provide full path
-            var argument_type = null;
-            var typedef_path = 'xmlns:instance/xmlns:arguments/' + 
-              'xmlns:type-tag/xmlns:typename/xmlns:typedef-ref';
-            var arguments_node = e.get(typedef_path, ns);
+            var argument_type_list = null;
+            var arguments_node = e.get('xmlns:instance/xmlns:arguments', ns);
             if (arguments_node) {
-              argument_type = arguments_node.attr('name').value();
+              var arg_arr = [];
+              var arguments_children = arguments_node.childNodes();
+              for (var i = arguments_children.length - 1; i >= 0; i--) {
+                if (arguments_children[i].type() == 'text') continue;
+                var argument_type = arguments_children[i].name();
+                var tr_xpath = './xmlns:typedef-ref | */xmlns:typedef-ref' +
+                  ' | */*/xmlns:typedef-ref';
+                var arg_typedef_ref = arguments_children[i].get(tr_xpath, ns);
+                var arg_type_name = arg_typedef_ref.attr('name').value();
+                if (argument_type == 'type-pointer') {
+                  arg_type_name = 'const ' + arg_type_name + '*';
+                }
+                arg_arr.unshift(arg_type_name);
+              }
+              argument_type_list = arg_arr.join(',');
             }
             
             // A javascript representation of an interface_type
@@ -210,7 +220,7 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
               name: intf_name,
               as: intf_as,
               provided: provided,
-              argument_type: argument_type
+              argument_type: argument_type_list
             };
             jsobj.interface_types.push(int_type);
           });
