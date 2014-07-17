@@ -57,7 +57,9 @@ define(['js/Constants',
             "$portsContainerRight": undefined,
             "$portsContainerCenter": undefined,
             "$ptr": undefined,
-            "$imgSVG": undefined};
+            "$imgSVG": undefined,
+            "$source": undefined
+        };
 		
 		this._displayConnectors = false;			
 		if (params && params.connectors) {
@@ -105,6 +107,7 @@ define(['js/Constants',
         this._updateAbstract();
         this._updateSVG();
         this._updateConnectionType();
+        this._updateSource();
     };
 
     ModelDecoratorCore.prototype._updateColors = function () {
@@ -586,6 +589,15 @@ define(['js/Constants',
                 this.hostDesignerItem.canvas.selectNone();
                 this.hostDesignerItem.canvas.select([this.hostDesignerItem.id]);
             }
+        }
+    };
+
+    ModelDecoratorCore.prototype._sourceUIDOMBase = $('<div class="' + 'source' + '"><i class="glyphicon glyphicon-book"></i></div>');
+
+    ModelDecoratorCore.prototype._updateSource = function () {
+        if ( !this.skinParts.$source || this.skinParts.$source.length === 0 ) {
+            this.skinParts.$source = this._sourceUIDOMBase.clone();
+            this.$el.append(this.skinParts.$source);
         }
     };
 
