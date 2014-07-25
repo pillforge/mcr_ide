@@ -592,7 +592,7 @@ define(['js/Constants',
         }
     };
 
-    ModelDecoratorCore.prototype._sourceUIDOMBase = $('<div class="' + 'source' + '"><i class="glyphicon glyphicon-book"></i></div>');
+    ModelDecoratorCore.prototype._sourceUIDOMBase = $('<div class="source inverse-on-hover"><i class="glyphicon glyphicon-book"></i></div>');
 
     ModelDecoratorCore.prototype._updateSource = function () {
         if ( !this.skinParts.$source || this.skinParts.$source.length === 0 ) {

@@ -10,6 +10,7 @@ define(['js/Constants',
     'js/DragDrop/DragConstants',
     'js/DragDrop/DragHelper',
     'js/Controls/ContextMenu',
+    './SourceDetailsDialog',
     'css!./ModelDecorator.DiagramDesignerWidget'], function (CONSTANTS,
                                                           nodePropertyNames,
                                                           DiagramDesignerWidgetDecoratorBase,
@@ -19,7 +20,8 @@ define(['js/Constants',
                                                           ModelDecoratorConstants,
                                                           DragConstants,
                                                           DragHelper,
-                                                          ContextMenu) {
+                                                          ContextMenu,
+                                                          SourceDetailsDialog) {
 
     var ModelDecoratorDiagramDesignerWidget,
         DECORATOR_ID = "ModelDecoratorDiagramDesignerWidget",
@@ -80,6 +82,16 @@ define(['js/Constants',
             event.stopPropagation();
             event.preventDefault();
         });
+
+        // set title editable on double-click
+        this.skinParts.$source.on("dblclick.editOnDblClick", null, function (event) {
+            if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true) {
+                self.__onSourceDblClick();
+            }
+            event.stopPropagation();
+            event.preventDefault();
+        });
+
     };
 
 
@@ -515,6 +527,29 @@ define(['js/Constants',
                 WebGMEGlobal.State.registerActiveSelection([targetID]);
             }
         }
+    };
+
+    ModelDecoratorDiagramDesignerWidget.prototype.__onSourceDblClick = function (event) {
+        var self = this;
+        var client = self._control._client;
+        var nodeObj = client.getNode(self._metaInfo[CONSTANTS.GME_ID]);
+        var source = nodeObj.getAttribute('source');
+
+
+        self.logger.warn('__onSourceDblClick');
+        var dialog = new SourceDetailsDialog();
+        dialog.show(source, function(val) {
+            self._saveSource(val);
+        });
+    };
+
+    ModelDecoratorDiagramDesignerWidget.prototype._saveSource = function(val) {
+        var self = this;
+        var client = self._control._client;
+        var objID = self._metaInfo[CONSTANTS.GME_ID];
+        client.startTransaction();
+        client.setAttributes(objID, 'source', val);
+        client.completeTransaction();
     };
 
 
