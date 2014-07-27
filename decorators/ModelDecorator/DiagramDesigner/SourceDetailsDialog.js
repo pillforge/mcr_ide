@@ -10,8 +10,13 @@ define(['text!./SourceDetailsDialog.html', 'codemirror'],
       var self = this;
       self._init(val, saveCallback);
       self._dialog.modal('show');
-      self._dialog.on('shown.bs.modal', function () {
-          self._codeMirror.refresh();
+      self._dialog.on('shown.bs.modal', function() {
+        self._codeMirror.refresh();
+      });
+      self._dialog.on('hidden.bs.modal', function() {
+        self._dialog.remove();
+        self._dialog.empty();
+        self._dialog = undefined;
       });
     };
 

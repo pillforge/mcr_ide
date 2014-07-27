@@ -84,13 +84,15 @@ define(['js/Constants',
         });
 
         // set title editable on double-click
-        this.skinParts.$source.on("dblclick.editOnDblClick", null, function (event) {
-            if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true) {
-                self.__onSourceDblClick();
-            }
-            event.stopPropagation();
-            event.preventDefault();
-        });
+        if (this.skinParts.$source) {
+            this.skinParts.$source.on("dblclick.editOnDblClick", null, function (event) {
+                if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true) {
+                    self.__onSourceDblClick();
+                }
+                event.stopPropagation();
+                event.preventDefault();
+            });
+        }
 
     };
 

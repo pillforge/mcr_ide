@@ -595,12 +595,20 @@ define(['js/Constants',
     ModelDecoratorCore.prototype._sourceUIDOMBase = $('<div class="source inverse-on-hover"><i class="glyphicon glyphicon-book"></i></div>');
 
     ModelDecoratorCore.prototype._updateSource = function () {
-        if ( !this.skinParts.$source || this.skinParts.$source.length === 0 ) {
-            this.skinParts.$source = this._sourceUIDOMBase.clone();
-            this.$el.append(this.skinParts.$source);
+        var client = this._control._client;
+        var nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
+        var base = nodeObj.getBaseId();
+        var baseObj = client.getNode(base);
+        if (!baseObj) { return; }
+        var name = baseObj.getAttribute('name');
+        var comps = ['Configuration', 'Module', 'Generic_Configuration', 'Generic_Module'];
+        if (_.contains(comps, name)) {
+            if ( !this.skinParts.$source || this.skinParts.$source.length === 0 ) {
+                this.skinParts.$source = this._sourceUIDOMBase.clone();
+                this.$el.append(this.skinParts.$source);
+            }
         }
     };
-
 
     return ModelDecoratorCore;
 });
