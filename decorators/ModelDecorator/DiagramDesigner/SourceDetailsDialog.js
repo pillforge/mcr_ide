@@ -29,7 +29,7 @@ define(['text!./SourceDetailsDialog.html', 'codemirror'],
       self._scriptEditor = self._pScript.find('div.controls').first();
       self._codeMirror = CodeMirror(self._scriptEditor[0], {
         value: val,
-        mode: 'javascript'
+        mode: "text/x-nesc"
       });
       
       self._btnSave = self._dialog.find('.btn-save').first();
