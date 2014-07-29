@@ -6,9 +6,9 @@ define(['text!./SourceDetailsDialog.html', 'codemirror'],
     var SourceDetailsDialog = function() {
     };
 
-    SourceDetailsDialog.prototype.show = function(val, saveCallback) {
+    SourceDetailsDialog.prototype.show = function(name, val, saveCallback) {
       var self = this;
-      self._init(val, saveCallback);
+      self._init(name, val, saveCallback);
       self._dialog.modal('show');
       self._dialog.on('shown.bs.modal', function() {
         self._codeMirror.refresh();
@@ -20,10 +20,10 @@ define(['text!./SourceDetailsDialog.html', 'codemirror'],
       });
     };
 
-    SourceDetailsDialog.prototype._init = function(val, saveCallback) {
+    SourceDetailsDialog.prototype._init = function(name, val, saveCallback) {
       var self = this;
-      
       self._dialog = $(sourceDetailsDialogTemplate);
+      
       self._el = self._dialog.find('.modal-body').first();
       self._pScript = self._el.find('#pScript').first();
       self._scriptEditor = self._pScript.find('div.controls').first();
@@ -31,6 +31,9 @@ define(['text!./SourceDetailsDialog.html', 'codemirror'],
         value: val,
         mode: "text/x-nesc"
       });
+
+      self._header = self._dialog.find('h3').first();
+      self._header.html('Implementation of ' + name);
       
       self._btnSave = self._dialog.find('.btn-save').first();
       self._btnSave.on('click', function (event) {

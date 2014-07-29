@@ -535,12 +535,13 @@ define(['js/Constants',
         var self = this;
         var client = self._control._client;
         var nodeObj = client.getNode(self._metaInfo[CONSTANTS.GME_ID]);
+        var name = nodeObj.getAttribute('name');
         var source = nodeObj.getAttribute('source');
 
 
         self.logger.warn('__onSourceDblClick');
         var dialog = new SourceDetailsDialog();
-        dialog.show(source, function(val) {
+        dialog.show(name, source, function(val) {
             self._saveSource(val);
         });
     };
