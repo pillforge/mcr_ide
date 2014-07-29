@@ -601,7 +601,7 @@ define(['js/Constants',
         var baseObj = client.getNode(base);
         if (!baseObj) { return; }
         var name = baseObj.getAttribute('name');
-        var comps = ['Configuration', 'Module', 'Generic_Configuration', 'Generic_Module'];
+        var comps = ['Configuration', 'Module', 'Generic_Configuration', 'Generic_Module', 'Interface_Definition'];
         if (_.contains(comps, name)) {
             if ( !this.skinParts.$source || this.skinParts.$source.length === 0 ) {
                 this.skinParts.$source = this._sourceUIDOMBase.clone();
