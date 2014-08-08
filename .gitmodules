@@ -1,0 +1,3 @@
+[submodule "decorators/lib/CodeMirror"]
+	path = decorators/lib/CodeMirror
+	url = https://github.com/pillforge/CodeMirror.git
