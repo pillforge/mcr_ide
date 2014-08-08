@@ -4,10 +4,13 @@ define([
   '../../lib/CodeMirror/lib/codemirror',
   'css!../../lib/CodeMirror/lib/codemirror',
   '../../lib/CodeMirror/mode/clike/clike',
+  // '../../lib/CodeMirror/mode/javascript/javascript',
   '../../lib/CodeMirror/addon/hint/show-hint',
   'css!../../lib/CodeMirror/addon/hint/show-hint',
   'css!../../css/show-hint-webgme',
-  '../../lib/CodeMirror/addon/hint/anyword-hint'
+  '../../lib/CodeMirror/addon/hint/nesc-hint'
+  // '../../lib/CodeMirror/addon/hint/anyword-hint'
+  // '../../lib/CodeMirror/addon/hint/javascript-hint'
   ],
   function(sourceDetailsDialogTemplate, CodeMirror) {
 
@@ -39,7 +42,7 @@ define([
       self._scriptEditor = self._pScript.find('div.controls').first();
 
       CodeMirror.commands.autocomplete = function(cm) {
-        cm.showHint({hint: CodeMirror.hint.anyword});
+        cm.showHint({hint: CodeMirror.hint.nesc});
       };
 
       self._codeMirror = CodeMirror(self._scriptEditor[0], {
@@ -47,17 +50,8 @@ define([
         lineNumbers: true,
         extraKeys: {"Ctrl-Space": "autocomplete"},
         mode: "text/x-nesc"
+        // mode: "javascript"
       });
-
-      /*
-      CodeMirror.commands.autocomplete = function(cm) {
-        cm.showHint({hint: CodeMirror.hint.anyword});
-      }
-      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-        lineNumbers: true,
-        extraKeys: {"Ctrl-Space": "autocomplete"}
-      });
-      */
 
       self._header = self._dialog.find('h3').first();
       self._header.html('Implementation of ' + name);
