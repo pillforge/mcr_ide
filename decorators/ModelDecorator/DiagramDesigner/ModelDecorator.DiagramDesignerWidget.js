@@ -538,12 +538,49 @@ define(['js/Constants',
         var name = nodeObj.getAttribute('name');
         var source = nodeObj.getAttribute('source');
 
+        // self._autocompleteHelper();
 
         self.logger.warn('__onSourceDblClick');
         var dialog = new SourceDetailsDialog();
         dialog.show(name, source, function(val) {
             self._saveSource(val);
         });
+    };
+
+    ModelDecoratorDiagramDesignerWidget.prototype._autocompleteHelper = function () {
+        var self = this;
+        var client = self._control._client;
+        var nodeObj = client.getNode(self._metaInfo[CONSTANTS.GME_ID]);
+        console.dir(client);
+        console.dir(nodeObj);
+        console.dir(self.core);
+
+        var childrenIds = nodeObj.getChildrenIds();
+        for (var i = childrenIds.length - 1; i >= 0; i--) {
+            var child = client.getNode(childrenIds[i]);
+            var n = child.getAttribute('name');
+            console.log('q', n, isDescendantOfComponent(child));
+        };
+
+        function isDescendantOfComponent(node) {
+            console.dir(node.getAttribute('name'));
+            var baseId = node.getBaseId();
+            console.dir(baseId);
+            if ( baseId === null ) {
+                console.log('this should be false');
+                return false;
+            }
+            var base = client.getNode(baseId);
+            console.dir(base);
+            var name = base.getAttribute('name');
+            if (name === 'Component') {
+                return true;
+            } else {
+                // return isDescendantOfComponent(base);
+                return false;
+            }
+        }
+
     };
 
     ModelDecoratorDiagramDesignerWidget.prototype._saveSource = function(val) {
