@@ -46,7 +46,15 @@ define([
       self._codeMirror = CodeMirror(self._scriptEditor[0], {
         value: val,
         lineNumbers: true,
-        extraKeys: {"Ctrl-Space": "autocomplete"},
+        tabSize: 2,
+        autofocus: true,
+        extraKeys: {
+          "Ctrl-Space": "autocomplete",
+          "'.'": function(cm) {
+            setTimeout(function(){cm.execCommand("autocomplete");}, 100);
+            return CodeMirror.Pass; // tell CodeMirror we didn't handle the key
+          }
+        },
         mode: "text/x-nesc"
       });
 
@@ -76,6 +84,14 @@ define([
         var curWord = start != end && curLine.slice(start, end);
 
         var list = [], seen = {};
+        if ( curLine.charAt(cur.ch - 1) == '.' ) {
+          var component = curLine.substr(0, cur.ch - 1).split(/\s/).pop();
+          if ( autocompleteData[component] ) {
+            list = autocompleteData[component];
+          }
+          return {list: list, from: CodeMirror.Pos(cur.line, start), to: CodeMirror.Pos(cur.line, end)};
+        }
+
         var re = new RegExp(word.source, "g");
         for (var dir = -1; dir <= 1; dir += 2) {
           var line = cur.line, endLine = Math.min(Math.max(line + dir * range, editor.firstLine()), editor.lastLine()) + dir;
