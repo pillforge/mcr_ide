@@ -1,6 +1,6 @@
 {
   "name": "mcr_ide",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Design Enviroment for Medical Capsule Robots",
   "engines": {
     "node": ">=0.10.0"
