@@ -8,7 +8,8 @@ define([
   // '../../lib/CodeMirror/mode/javascript/javascript',
   '../../lib/CodeMirror/addon/hint/show-hint',
   'css!../../lib/CodeMirror/addon/hint/show-hint',
-  '../../lib/CodeMirror/addon/hint/anyword-hint'
+  '../../lib/CodeMirror/addon/hint/anyword-hint',
+  '../../lib/CodeMirror/keymap/sublime'
   ],
   function(sourceDetailsDialogTemplate, CodeMirror) {
 
@@ -54,6 +55,7 @@ define([
             return CodeMirror.Pass; // tell CodeMirror we didn't handle the key
           }
         },
+        keyMap: "sublime",
         mode: "text/x-nesc"
       });
       self._codeMirror.on('keyup', function (cm, ke) {
@@ -80,6 +82,7 @@ define([
             saveCallback.call(self, val);
           }
       });
+
     };
 
     SourceDetailsDialog.prototype._registerHelper = function (autocompleteData) {
