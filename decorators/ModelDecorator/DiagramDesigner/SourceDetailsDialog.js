@@ -69,6 +69,11 @@ define([
           });
         }, 100);
       });
+      self._codeMirror.on('keydown', function (cm, ke) {
+        if ( ke.ctrlKey && ( ke.keyCode == 37 || ke.keyCode == 39 ) ) {
+          ke.stopPropagation();
+        }
+      });
 
       self._header = self._dialog.find('h3').first();
       self._header.html('Implementation of ' + name);
