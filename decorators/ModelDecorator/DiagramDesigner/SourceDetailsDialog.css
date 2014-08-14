@@ -1,0 +1,38 @@
+.source-details-dialog .modal-dialog {
+  width: 90%;
+  height: 90%;
+}
+
+@media(min-height:550px) {
+    .modal-body {
+        max-height: 300px;
+    }
+}
+@media(min-height:700px) {
+    .modal-body {
+        max-height: 450px;
+    }
+}
+@media(min-height:850px) {
+    .modal-body {
+        max-height: 600px;
+    }
+}
+@media(min-height:1000px) {
+    .modal-body {
+        max-height: 750px;
+    }
+}
+@media(min-height:1200px) {
+    .modal-body {
+        max-height: 900px;
+    }
+}
+
+.CodeMirror {
+  height: 100%;
+}
+
+.CodeMirror-hints {
+  z-index: 1200 !important;
+}

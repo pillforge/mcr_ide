@@ -2,13 +2,12 @@ define([
   'text!./SourceDetailsDialog.html',
   // '../../lib/codemirror.min',
   '../../lib/CodeMirror/lib/codemirror',
-  // 'css!./SourceDetailsDialog',
   'css!../../lib/CodeMirror/lib/codemirror',
+  'css!./SourceDetailsDialog',
   '../../lib/CodeMirror/mode/clike/clike',
   // '../../lib/CodeMirror/mode/javascript/javascript',
   '../../lib/CodeMirror/addon/hint/show-hint',
   'css!../../lib/CodeMirror/addon/hint/show-hint',
-  'css!../../css/show-hint-webgme',
   '../../lib/CodeMirror/addon/hint/anyword-hint'
   ],
   function(sourceDetailsDialogTemplate, CodeMirror) {
@@ -35,10 +34,7 @@ define([
     SourceDetailsDialog.prototype._init = function(name, val, autocompleteData, saveCallback) {
       var self = this;
       self._dialog = $(sourceDetailsDialogTemplate);
-      
-      self._el = self._dialog.find('.modal-body').first();
-      self._pScript = self._el.find('#pScript').first();
-      self._scriptEditor = self._pScript.find('div.controls').first();
+      self._scriptEditor = self._dialog.find('.modal-body').first();
 
       self._registerHelper(autocompleteData);
       CodeMirror.commands.autocomplete = function(cm) {
