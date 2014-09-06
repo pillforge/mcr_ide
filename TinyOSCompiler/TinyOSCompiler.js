@@ -43,11 +43,16 @@ define(
         self.logger.debug('save ' + temp_input);
         nxg.getXML(path.resolve(temp_input), function (error, xml) {
           if (error !== null) {
-            self.logger.error('err in getXML: ' + error);
+            var err_msg = 'err in getXML';
+            self.logger.error(err_msg + ': ' + error);
             self.result.setSuccess(false);
-            callback(error, self.result);
+            self.createMessage(null, err_msg);
+            callback(null, self.result);
           } else {
             fs.writeFileSync(temp_output, xml);
+            self.result.setSuccess(true);
+            self.createMessage(null, 'Output file created');
+            callback(null, self.result);
           }
           fs.unlinkSync(temp_input);
         });

@@ -567,8 +567,12 @@ define(['js/Constants',
       }
     };
 
-    client.runServerPlugin('TinyOSCompiler', context, function (err, result) {
-      console.log(err, result);
+    client.runServerPlugin('TinyOSCompiler', context, function (err, result, msg) {
+      if (result.success) {
+
+      } else {
+        console.dir(result.messages);
+      }
     });
 
   };
