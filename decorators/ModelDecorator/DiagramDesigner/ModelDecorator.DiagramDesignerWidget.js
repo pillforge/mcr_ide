@@ -543,7 +543,32 @@ define(['js/Constants',
       var dialog = new SourceDetailsDialog();
       dialog.show(name, source, autocompleteData, function(val) {
         self._saveSource(val);
+        self._createObjects(val);
       });
+    });
+  };
+
+  ModelDecoratorDiagramDesignerWidget.prototype._createObjects = function (val) {
+    var self = this;
+    var client = self._control._client;
+    var context = {
+      managerConfig: {
+        "project": client.getActiveProjectName(),
+        "token": "",
+        "activeNode": WebGMEGlobal.State.getActiveObject(),
+        "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
+        "commit": client.getActualCommit(),
+        "branchName": client.getActualBranch()
+      },
+      pluginConfigs: {
+        TinyOSCompiler:{
+          "source_code": val
+        }
+      }
+    };
+
+    client.runServerPlugin('TinyOSCompiler', context, function (err, result) {
+      console.log(err, result);
     });
 
   };
