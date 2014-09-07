@@ -3,9 +3,11 @@ define(
   'plugin/PluginConfig',
   'logManager',
   '../package.json',
-  '../TinyOSPopulate/NesC_XML_Generator'
+  '../TinyOSPopulate/NesC_XML_Generator',
+  '../TinyOSPopulate/ParseDump',
+  './Refresher'
   ],
-  function (PluginBase, PluginConfig, LogManager, pjson, NesC_XML_Generator) {
+  function (PluginBase, PluginConfig, LogManager, pjson, NesC_XML_Generator, ParseDump, Refresher) {
     "use strict";
 
     var TinyOSCompiler = function () {
@@ -36,11 +38,11 @@ define(
         LogManager.setLogLevel(LogManager.logLevels.DEBUG);
 
         var source_code = self.getCurrentConfig().source_code;
-
         var temp_input = 'temp.nc';
         var temp_output = 'temp.log';
         fs.writeFileSync(temp_input, source_code);
         self.logger.debug('save ' + temp_input);
+
         nxg.getXML(path.resolve(temp_input), function (error, xml) {
           if (error !== null) {
             var err_msg = 'err in getXML';
@@ -49,10 +51,23 @@ define(
             self.createMessage(null, err_msg);
             callback(null, self.result);
           } else {
-            fs.writeFileSync(temp_output, xml);
-            self.result.setSuccess(true);
-            self.createMessage(null, 'Output file created');
-            callback(null, self.result);
+            var pd = new ParseDump();
+            var app_json = pd.parse(null, xml);
+            fs.writeFileSync(temp_output, JSON.stringify(app_json));
+
+            var r = new Refresher(self.core);
+            r.updateComponent(self.activeNode, app_json.components.temp);
+
+            // self._createComponent(self._app_json.components[key]);
+            // self._createUPInterfaces(self._app_json.components[key]);
+            // self._createWirings(self._app_json.components[key]);
+
+            self.save('Save TinyOSCompiler changes', function () {
+              self.result.setSuccess(true);
+              self.createMessage(null, 'Output file created');
+              callback(null, self.result);
+            });
+
           }
           fs.unlinkSync(temp_input);
         });

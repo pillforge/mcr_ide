@@ -555,7 +555,7 @@ define(['js/Constants',
       managerConfig: {
         "project": client.getActiveProjectName(),
         "token": "",
-        "activeNode": WebGMEGlobal.State.getActiveObject(),
+        "activeNode": self._metaInfo[CONSTANTS.GME_ID], // WebGMEGlobal.State.getActiveObject(),
         "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
         "commit": client.getActualCommit(),
         "branchName": client.getActualBranch()
