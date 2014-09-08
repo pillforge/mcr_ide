@@ -543,7 +543,7 @@ define(['js/Constants',
       var dialog = new SourceDetailsDialog();
       dialog.show(name, source, autocompleteData, function(val) {
         self._saveSource(val);
-        self._createObjects(val);
+        // self._createObjects(val);
       });
     });
   };

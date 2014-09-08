@@ -37,7 +37,8 @@ define(
 
         LogManager.setLogLevel(LogManager.logLevels.DEBUG);
 
-        var source_code = self.getCurrentConfig().source_code;
+        // var source_code = self.getCurrentConfig().source_code;
+        var source_code = self.core.getAttribute(self.activeNode, 'source');
         var temp_input = 'temp.nc';
         var temp_output = 'temp.log';
         fs.writeFileSync(temp_input, source_code);
@@ -53,21 +54,15 @@ define(
           } else {
             var pd = new ParseDump();
             var app_json = pd.parse(null, xml);
-            fs.writeFileSync(temp_output, JSON.stringify(app_json));
-
-            var r = new Refresher(self.core);
-            r.updateComponent(self.activeNode, app_json.components.temp);
-
-            // self._createComponent(self._app_json.components[key]);
-            // self._createUPInterfaces(self._app_json.components[key]);
-            // self._createWirings(self._app_json.components[key]);
-
-            self.save('Save TinyOSCompiler changes', function () {
-              self.result.setSuccess(true);
-              self.createMessage(null, 'Output file created');
-              callback(null, self.result);
+            // fs.writeFileSync(temp_output, JSON.stringify(app_json));
+            var r = new Refresher(self.core, self.META, app_json);
+            r.update(self.activeNode, 'temp', function () {
+              self.save('Save TinyOSCompiler changes', function () {
+                self.result.setSuccess(true);
+                self.createMessage(null, 'Output file created');
+                callback(null, self.result);
+              });
             });
-
           }
           fs.unlinkSync(temp_input);
         });
