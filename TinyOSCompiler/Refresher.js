@@ -8,9 +8,25 @@ define([], function () {
 
   Refresher.prototype.update = function (node, component, callback) {
     var self = this;
-    self.updateComponent(node, component);
-    self.updateUPInterfaces(node, component, callback);
-    // self._createWirings(self._app_json.components[key]);
+    self.deleteChildren(node, function () {
+      self.updateComponent(node, component);
+      self.updateUPInterfaces(node, component, callback);
+      // self._createWirings(self._app_json.components[key]);
+    });
+  };
+
+  Refresher.prototype.deleteChildren = function (node, next) {
+    var self = this;
+    self.core.loadChildren(node, function (err, children) {
+      if (err) {
+        throw new Error(err);
+      } else {
+        for (var i = children.length - 1; i >= 0; i--) {
+          self.core.deleteNode(children[i]);
+        };
+        next();
+      }
+    });
   };
 
   Refresher.prototype.updateComponent = function (node, component) {
