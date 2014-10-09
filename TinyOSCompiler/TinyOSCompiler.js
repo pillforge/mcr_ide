@@ -37,36 +37,39 @@ define(
 
         LogManager.setLogLevel(LogManager.logLevels.DEBUG);
 
+        // nxg.getDirectories(function (err, dirs) {
+        //   console.log(dirs);
+        // });
+
+        var name = self.core.getAttribute(self.activeNode, 'name');
+        var current_obj_file = name + '.nc';
         // var source_code = self.getCurrentConfig().source_code;
-        var source_code = self.core.getAttribute(self.activeNode, 'source');
-        var temp_input = 'temp.nc';
-        var temp_output = 'temp.log';
-        fs.writeFileSync(temp_input, source_code);
-        self.logger.debug('save ' + temp_input);
 
-        nxg.getXML(path.resolve(temp_input), function (error, xml) {
-          if (error !== null) {
-            var err_msg = 'err in getXML';
-            self.logger.error(err_msg + ': ' + error);
-            self.result.setSuccess(false);
-            self.createMessage(null, err_msg);
-            callback(null, self.result);
-          } else {
-            var pd = new ParseDump();
-            var app_json = pd.parse(null, xml);
-            // fs.writeFileSync(temp_output, JSON.stringify(app_json));
-            var r = new Refresher(self.core, self.META, app_json);
-            r.update(self.activeNode, 'temp', function () {
-              self.save('Save TinyOSCompiler changes', function () {
-                self.result.setSuccess(true);
-                self.createMessage(null, 'Output file created');
-                callback(null, self.result);
+        self._saveSiblingsAsFiles(self.activeNode, function () {
+          nxg.getXML(path.resolve(current_obj_file), function (error, xml) {
+            if (error !== null) {
+              var err_msg = 'err in getXML';
+              self.logger.error(err_msg + ': ' + error);
+              self.result.setSuccess(false);
+              self.createMessage(null, err_msg);
+              callback(null, self.result);
+            } else {
+              var pd = new ParseDump();
+              var app_json = pd.parse(null, xml);
+              // fs.writeFileSync(temp_output, JSON.stringify(app_json));
+              var r = new Refresher(self.core, self.META, app_json);
+              r.update(self.activeNode, name, function () {
+                self.save('Save TinyOSCompiler changes', function () {
+                  self.result.setSuccess(true);
+                  self.createMessage(null, 'Output file created');
+                  callback(null, self.result);
+                });
               });
-            });
-          }
-          fs.unlinkSync(temp_input);
+            }
+            // fs.unlinkSync(current_obj_file);
+            self._removeSiblingFiles();
+          });
         });
-
       } catch (e) {
         self.logger.debug('catch: ' + e);
         self.result.setSuccess(false);
@@ -74,6 +77,33 @@ define(
       }
 
     }
+
+    TinyOSCompiler.prototype._saveSiblingsAsFiles = function (node, next) {
+      var self = this;
+      var fs = require('fs');
+      self._toBeRemoved = [];
+      // get siblings
+      var parent = self.core.getParent(node);
+      self.core.loadChildren(parent, function (err, children) {
+        if (err) return;
+        for (var i = children.length - 1; i >= 0; i--) {
+          // check if the child is conf or module then save it.
+          var src = self.core.getAttribute(children[i], 'source');
+          var name = self.core.getAttribute(children[i], 'name');
+          fs.writeFileSync(name + '.nc', src);
+          self._toBeRemoved.push(name + '.nc');
+        }
+        next();
+      });
+    };
+
+    TinyOSCompiler.prototype._removeSiblingFiles = function () {
+      var self = this;
+      var fs = require('fs');
+      for (var i = self._toBeRemoved.length - 1; i >= 0; i--) {
+        fs.unlinkSync(self._toBeRemoved[i]);
+      }
+    };
 
     return TinyOSCompiler;
   }

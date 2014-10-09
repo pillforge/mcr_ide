@@ -253,7 +253,7 @@ define(
         self.core.setAttribute(interface_node, 'name', curr_interface.as);
 
         if (curr_interface.argument_type) {
-        self.core.setAttribute(interface_node, 'type_arguments',
+          self.core.setAttribute(interface_node, 'type_arguments',
                                curr_interface.argument_type);
         }
 
