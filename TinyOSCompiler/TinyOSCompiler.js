@@ -56,7 +56,7 @@ define(
             } else {
               var pd = new ParseDump();
               var app_json = pd.parse(null, xml);
-              // fs.writeFileSync(temp_output, JSON.stringify(app_json));
+              // fs.writeFileSync('app_json.js', JSON.stringify(app_json));
               var r = new Refresher(self.core, self.META, app_json);
               r.update(self.activeNode, name, function () {
                 self.save('Save TinyOSCompiler changes', function () {

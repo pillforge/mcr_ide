@@ -97,7 +97,6 @@ define(['logManager'], function (logManager) {
                   self.logger.info('getPort children loaded');
                   for (var i = children.length - 1; i >= 0; i--) {
                     var n = self.core.getAttribute(children[i], 'name');
-                    console.log(name, n);
                     if (n == name) {
                       cb(children[i]);
                       return;
@@ -112,6 +111,21 @@ define(['logManager'], function (logManager) {
                 if (mc == node) return node;// self._cache[port_information.interface];
                 if (created[port_information.component_base]) {
                   return created[port_information.component_base];
+                }
+                // Check if the component is a generic type
+                if (self.app_json.instance_components[port_information.name]) {
+                  var p = port_information.component_base + port_information.name + '_g';
+                  if (created[p])
+                    return created[p];
+                  var new_port_obj_inst = self.core.createNode({
+                    base: mc,
+                    parent: node
+                  });
+                  var names = port_information.name.split('.');
+                  var n = names[names.length - 1];
+                  self.core.setAttribute(new_port_obj_inst, 'name', n);
+                  created[port_information.component_base + '_g'] = new_port_obj_inst;
+                  return new_port_obj_inst;
                 }
                 var new_port_obj = self.core.createNode({
                   base: mc,
