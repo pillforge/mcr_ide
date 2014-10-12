@@ -76,7 +76,7 @@ define(
         callback(e, self.result);
       }
 
-    }
+    };
 
     TinyOSCompiler.prototype._saveSiblingsAsFiles = function (node, next) {
       var self = this;
