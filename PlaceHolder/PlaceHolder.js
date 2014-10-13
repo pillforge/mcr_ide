@@ -2,9 +2,10 @@ define(
   ['plugin/PluginBase',
   'plugin/PluginConfig',
   'logManager',
-  '../package.json'
+  '../package.json',
+  './WebGMEAnalyzer'
   ],
-  function (PluginBase, PluginConfig, LogManager, pjson) {
+  function (PluginBase, PluginConfig, LogManager, pjson, WebGMEAnalyzer) {
     "use strict";
 
     var PlaceHolder = function () {
@@ -15,7 +16,7 @@ define(
     PlaceHolder.prototype = Object.create(PluginBase.prototype);
     PlaceHolder.prototype.constructor = PlaceHolder;
     PlaceHolder.prototype.getName = function () {
-      return "TinyOS Compiler";
+      return "PlaceHolder";
     };
     PlaceHolder.prototype.getVersion = function () {
       return pjson.version;
@@ -28,8 +29,19 @@ define(
       var self = this;
       self.logger.info('main()');
 
-      // self.result.setSuccess(true);
-      callback(null, self.result);
+      var wa = new WebGMEAnalyzer(self.core, self.META);
+      var comps = wa.getComponents(self.activeNode, function (err, components) {
+        if (err) {
+          self.result.setSuccess(false);
+          callback(null, self.result);
+          return;
+        }
+        // console.log(components);
+
+        self.result.setSuccess(true);
+        callback(null, self.result);
+      });
+
     };
 
     return PlaceHolder;
