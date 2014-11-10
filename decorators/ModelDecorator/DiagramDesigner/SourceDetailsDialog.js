@@ -78,14 +78,24 @@ define([
       self._header = self._dialog.find('h3').first();
       self._header.html('Implementation of ' + name);
       
-      self._btnSave = self._dialog.find('.btn-save').first();
+      var saveButtons = self._dialog.find('.btn-save');
+      self._btnSave = saveButtons.last();
       self._btnSave.on('click', function (event) {
-          var val = self._codeMirror.getValue();
-          event.stopPropagation();
-          event.preventDefault();
-          if (saveCallback) {
-            saveCallback.call(self, val);
-          }
+        var val = self._codeMirror.getValue();
+        event.stopPropagation();
+        event.preventDefault();
+        if (saveCallback) {
+          saveCallback.call(self, val);
+        }
+      });
+      self._btnSaveVisual = saveButtons.first();
+      self._btnSaveVisual.on('click', function (event) {
+        var val = self._codeMirror.getValue();
+        event.stopPropagation();
+        event.preventDefault();
+        if (saveCallback) {
+          saveCallback.call(self, val, true);
+        }
       });
 
     };

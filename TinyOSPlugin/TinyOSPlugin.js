@@ -45,12 +45,12 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
 
         // Check if selectedNode or active object is an App
         var app_node = self.activeNode;
-        if (!self.isMetaTypeOf(app_node, self.META.App)){
-            self.updateSuccess(false,"An App must be selected.");
-            callback("An App must be selected.", self.result);
-        }else{
+        // if (!self.isMetaTypeOf(app_node, self.META.App)){
+        //     self.updateSuccess(false,"An App must be selected.");
+        //     callback("An App must be selected.", self.result);
+        // }else{
             _process_app2();
-        }
+        // }
 
         // Load children asynchronously and generate code
         function _process_app2() {

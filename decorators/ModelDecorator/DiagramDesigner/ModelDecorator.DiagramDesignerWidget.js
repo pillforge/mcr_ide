@@ -541,15 +541,19 @@ define(['js/Constants',
     self.logger.warn('__onSourceDblClick');
     self._autocompleteHelper(function (autocompleteData) {
       var dialog = new SourceDetailsDialog();
-      dialog.show(name, source, autocompleteData, function(val) {
+      dialog.show(name, source, autocompleteData, function(val, createVisuals) {
         self._saveSource(val);
-        // self._createObjects(val);
+        if (createVisuals) {
+          self._createObjects(val);
+        }
       });
     });
   };
 
   ModelDecoratorDiagramDesignerWidget.prototype._createObjects = function (val) {
     var self = this;
+    self.logger.debug('_createObjects()');
+    return;
     var client = self._control._client;
     var context = {
       managerConfig: {
