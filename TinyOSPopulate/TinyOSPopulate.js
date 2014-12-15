@@ -51,33 +51,38 @@ define(
                 self._created_components = {};
                 x(0);
               }
+              var flag = true;
               function x(index) {
-                if ( index >= components_paths.length ) {
+                if ( flag && index >= components_paths.length ) {
+                  // flag = false;
                   self._wi("Completed");
-                  self.save();
-                  self.result.setSuccess(true);
-                  callback(null, self.result);
-                  return;
+                  self.save('save populator finished', function(err) {
+                    self.result.setSuccess(true);
+                    callback(err, self.result);
+                  });
+                } else {
+                  // components_paths[0] = '/home/hakan/Documents/mcr_ide/Icra2015ExptAppC.nc';
+                  nxg.getXML(components_paths[index], function(error, xml) {
+                    if (error !== null) {
+                      self._wi("Error in generating xml: " +
+                        index + components_paths[index]);
+                    } else {
+                      self._wi(index + " " + components_paths[index] + " prog");
+                      self._app_json = pd.parse(components_paths[index], xml);
+                      // fs.writeFileSync('xml.log/' + index + '.xml', xml);
+                      // fs.writeFileSync('xml.log/' + index + '.js',
+                      //                  util.inspect(self._app_json, {
+                      //                   showHidden: true,
+                      //                   depth: 5
+                      //                  }));
+                      // self._wij(self._app_json);
+                      // self._wi(xml);
+                      self._populate();
+                    }
+                    x(index+1);
+                  });
                 }
-                nxg.getXML(components_paths[index], function(error, xml) {
-                  if (error !== null) {
-                    self._wi("Error in generating xml: " +
-                      index + components_paths[index]);
-                  } else {
-                    self._wi(index + " " + components_paths[index] + " prog");
-                    self._app_json = pd.parse(components_paths[index], xml);
-                    // fs.writeFileSync('xml.log/' + index + '.xml', xml);
-                    // fs.writeFileSync('xml.log/' + index + '.js',
-                    //                  util.inspect(self._app_json, {
-                    //                   showHidden: true,
-                    //                   depth: 5
-                    //                  }));
-                    // self._wij(self._app_json);
-                    // self._wi(xml);
-                    self._populate();
-                  }
-                  x(index+1);
-                });
+
               }
             });
 
@@ -344,7 +349,8 @@ define(
     };
 
     TinyOSPopulate.prototype._getSource = function(path) {
-      return fs.readFileSync(process.env.TOSROOT + '/' + path, {
+      var p = require('path');
+      return fs.readFileSync(p.join(process.env.TOSROOT, '/', path), {
         encoding: 'utf8'
       });
     };
