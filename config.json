@@ -1,14 +1,15 @@
 {
-    "debug": false,
+  "debug": false,
 
-    "port": 8000,
+  "port": 8000,
 
-    "mongoip":"127.0.0.1",
-    "mongoport": 27017,
-    "mongodatabase": "multi",
+  "mongoip":"127.0.0.1",
+  "mongoport": 27017,
+  "mongodatabase": "multi",
 
-    "pluginBasePaths": ["./"],
+  "pluginBasePaths": ["./"],
+  "decoratorpaths": ["./decorators"],
 
-    "project":"TinyOS",
-    "autostart":true
+  "project":"TinyOS",
+  "autostart":true
 }
