@@ -6,10 +6,11 @@ define(
   'module',
   'util',
   '../package.json',
+  '../config.json',
   './ParseDump',
   './NesC_XML_Generator'],
   function (PluginBase, PluginConfig, fs, path, module, util, pjson,
-    ParseDump, NesC_XML_Generator) {
+    config_json, ParseDump, NesC_XML_Generator) {
     "use strict";
 
     var TinyOSPopulate = function () {
@@ -39,7 +40,7 @@ define(
           self._wi("Nodes are loaded");
           try {
             var pd = new ParseDump();
-            var nxg = new NesC_XML_Generator('exp430');
+            var nxg = new NesC_XML_Generator(config_json.platform || 'exp430');
             self._objectPath = {};
             nxg.getDirectories(function(error, directories) {
               if (error !== null) {
