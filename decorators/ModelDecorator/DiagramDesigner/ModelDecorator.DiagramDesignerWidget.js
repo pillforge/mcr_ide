@@ -540,8 +540,8 @@ define(['js/Constants',
     
     self.logger.warn('__onSourceDblClick');
     self._autocompleteHelper(function (autocompleteData) {
-      var dialog = new SourceDetailsDialog();
-      dialog.show(name, source, autocompleteData, function(type, data) {
+      self._dialog = new SourceDetailsDialog();
+      self._dialog.show(name, source, autocompleteData, function(type, data) {
         if (type === 'generate') {
           self._generateNescCode();
         } else if (type === 'save') {
@@ -567,9 +567,12 @@ define(['js/Constants',
         "branchName": client.getActualBranch()
       }
     };
+    console.log('NescCodeGenerator plugin');
     client.runServerPlugin('NescCodeGenerator', context, function (err, result, msg) {
+      console.log('NescCodeGenerator plugin finishes');
       if (result.success) {
-        
+        var generatedSourceCode = result.messages[0].message.src;
+        self._dialog.updateEditorText(generatedSourceCode);
       } else {
       }
     });

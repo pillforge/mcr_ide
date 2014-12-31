@@ -108,6 +108,11 @@ define([
 
     };
 
+    SourceDetailsDialog.prototype.updateEditorText = function (value) {
+      var self = this;
+      self._codeMirror.setValue(value);
+    };
+
     SourceDetailsDialog.prototype._registerHelper = function (autocompleteData) {
       CodeMirror.registerHelper("hint", "nesc_keywords", function (editor, options) {
         var word = /[\w$]+/;

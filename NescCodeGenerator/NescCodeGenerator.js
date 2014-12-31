@@ -294,6 +294,7 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
         output_file = path.resolve(self.output_dir, parent_comp_name + ".nc");
         // fs.writeFileSync(output_file, output);
         self.core.setAttribute(self.activeNode, "source", output);
+        self.createMessage(self.activeNode, {src: output});
       }
 
     }
