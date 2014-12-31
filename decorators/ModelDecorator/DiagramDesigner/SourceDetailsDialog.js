@@ -18,9 +18,9 @@ define([
     var SourceDetailsDialog = function() {
     };
 
-    SourceDetailsDialog.prototype.show = function(name, val, autocompleteData, saveCallback) {
+    SourceDetailsDialog.prototype.show = function(name, val, autocompleteData, callback) {
       var self = this;
-      self._init(name, val, autocompleteData,saveCallback);
+      self._init(name, val, autocompleteData, callback);
       self._dialog.modal('show');
       self._dialog.on('shown.bs.modal', function() {
         self._codeMirror.refresh();
@@ -32,7 +32,7 @@ define([
       });
     };
 
-    SourceDetailsDialog.prototype._init = function(name, val, autocompleteData, saveCallback) {
+    SourceDetailsDialog.prototype._init = function(name, val, autocompleteData, callback) {
       var self = this;
       self._dialog = $(sourceDetailsDialogTemplate);
       self._scriptEditor = self._dialog.find('.modal-body').first();
@@ -84,8 +84,8 @@ define([
         var val = self._codeMirror.getValue();
         event.stopPropagation();
         event.preventDefault();
-        if (saveCallback) {
-          saveCallback.call(self, val);
+        if (callback) {
+          callback.call(self, 'save', val);
         }
       });
       self._btnSaveVisual = saveButtons.first();
@@ -93,8 +93,16 @@ define([
         var val = self._codeMirror.getValue();
         event.stopPropagation();
         event.preventDefault();
-        if (saveCallback) {
-          saveCallback.call(self, val, true);
+        if (callback) {
+          callback.call(self, 'save', val);
+        }
+      });
+
+      // Generate nesC Code
+      self._btnGen = self._dialog.find('.gen-nesc').first();
+      self._btnGen.on('click', function (event) {
+        if (callback) {
+          callback.call(self, 'generate');
         }
       });
 

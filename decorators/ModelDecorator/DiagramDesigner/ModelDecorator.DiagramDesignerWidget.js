@@ -541,12 +541,41 @@ define(['js/Constants',
     self.logger.warn('__onSourceDblClick');
     self._autocompleteHelper(function (autocompleteData) {
       var dialog = new SourceDetailsDialog();
-      dialog.show(name, source, autocompleteData, function(val, createVisuals) {
-        self._saveSource(val);
-        if (createVisuals) {
-          self._createObjects(val);
+      dialog.show(name, source, autocompleteData, function(type, data) {
+        if (type === 'generate') {
+          self._generateNescCode();
+        } else if (type === 'save') {
+          self._saveSource(data);
+        } else if (type === 'create_objects') {
+          self._createObjects(data);
         }
       });
+    });
+  };
+
+  ModelDecoratorDiagramDesignerWidget.prototype._generateNescCode = function () {
+    var self = this;
+    self.logger.debug('_generateNescCode()');
+    var client = self._control._client;
+    var context = {
+      managerConfig: {
+        "project": client.getActiveProjectName(),
+        "token": "",
+        "activeNode": self._metaInfo[CONSTANTS.GME_ID], // WebGMEGlobal.State.getActiveObject(),
+        "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
+        "commit": client.getActualCommit(),
+        "branchName": client.getActualBranch()
+      }
+    };
+    console.log('about to be called');
+    console.dir(client);
+    console.dir(context);
+    client.runServerPlugin('NescCodeGenerator', context, function (err, result, msg) {
+      if (result.success) {
+        console.dir(result.messages);
+      } else {
+        console.dir(result.messages);
+      }
     });
   };
 
