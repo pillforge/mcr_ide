@@ -33,9 +33,9 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
     self.output_dir = path.resolve(self.plugin_dir, "output");
 
       // Create self.output_dir if it doesn't already exist
-    try{
-      fs.mkdirSync(self.output_dir);
-    }catch(e){}
+    // try{
+    //   fs.mkdirSync(self.output_dir);
+    // }catch(e){}
 
     console.log("Module: " + module.uri);
     console.log("plugin_dir: " + self.plugin_dir);
@@ -118,8 +118,10 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
               }else{
                 _generate_output(cur_comp, component_refs, generic_component_refs, interface_refs, wirings);
                 if (components.length === 0){
-                  self.result.setSuccess(true);
-                  callback(null, self.result);
+                  self.save('saving nesc code', function (err) {
+                    self.result.setSuccess(true);
+                    callback(null, self.result);
+                  });
                 }else {
                   console.log("Remaining components: " + components.length);
                   process(components.pop());
@@ -290,7 +292,8 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
         var output = config_template(tmpl_context);
         console.log(output);
         output_file = path.resolve(self.output_dir, parent_comp_name + ".nc");
-        fs.writeFileSync(output_file, output);
+        // fs.writeFileSync(output_file, output);
+        self.core.setAttribute(self.activeNode, "source", output);
       }
 
     }

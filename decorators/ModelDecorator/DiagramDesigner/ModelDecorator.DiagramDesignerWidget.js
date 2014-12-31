@@ -567,14 +567,10 @@ define(['js/Constants',
         "branchName": client.getActualBranch()
       }
     };
-    console.log('about to be called');
-    console.dir(client);
-    console.dir(context);
     client.runServerPlugin('NescCodeGenerator', context, function (err, result, msg) {
       if (result.success) {
-        console.dir(result.messages);
+        
       } else {
-        console.dir(result.messages);
       }
     });
   };
