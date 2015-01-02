@@ -3,17 +3,15 @@ define(
   'plugin/PluginConfig',
   'logManager',
   '../package.json',
-  '../TinyOSPopulate/NesC_XML_Generator',
-  '../TinyOSPopulate/ParseDump',
-  '../ModelGenerator/Refresher'
+  '../config.json'
   ],
-  function (PluginBase, PluginConfig, LogManager, pjson, NesC_XML_Generator, ParseDump, Refresher) {
+  function (PluginBase, PluginConfig, LogManager, pjson, config_json) {
     "use strict";
 
     var TinyOSCompiler = function () {
       PluginBase.call(this);
       this.logger = LogManager.create('TinyOSCompiler');
-      this.platform = 'exp430';
+      this.platform = config_json.platform || 'exp430';
     };
 
     TinyOSCompiler.prototype = Object.create(PluginBase.prototype);
@@ -31,62 +29,16 @@ define(
     TinyOSCompiler.prototype.main = function (callback) {
       try {
         var self = this;
-        var exec = require('child_process').exec;
-        var fs = require('fs');
-        var path = require('path');
-        var nxg = new NesC_XML_Generator(self.platform);
-
         LogManager.setLogLevel(LogManager.logLevels.DEBUG);
 
-        var type = "compilation";
-        // self.logger.info('type ' + self.getCurrentConfig().type);
-
-        if (type == "compilation") {
-          self._compileTheApp(function(err) {
-            if (err) {
-              self.result.setSuccess(false);
-            } else {
-              self.result.setSuccess(true);
-            }
-            callback(err, self.result);
-            return;
-          });
-        } else if (type == "create_visuals") {
-          // nxg.getDirectories(function (err, dirs) {
-          //   console.log(dirs);
-          // });
-
-          var name = self.core.getAttribute(self.activeNode, 'name');
-          var current_obj_file = name + '.nc';
-          // var source_code = self.getCurrentConfig().source_code;
-
-          self._saveSiblingsAsFiles(self.activeNode, function () {
-            nxg.getXML(path.resolve(current_obj_file), function (error, xml) {
-              if (error !== null) {
-                var err_msg = 'err in getXML';
-                self.logger.error(err_msg + ': ' + error);
-                self.result.setSuccess(false);
-                self.createMessage(null, err_msg);
-                callback(null, self.result);
-              } else {
-                var pd = new ParseDump();
-                var app_json = pd.parse(null, xml);
-                // fs.writeFileSync('app_json.js', JSON.stringify(app_json));
-                var r = new Refresher(self.core, self.META, app_json);
-                r.update(self.activeNode, name, function () {
-                  self.save('Save TinyOSCompiler changes', function () {
-                    self.result.setSuccess(true);
-                    self.createMessage(null, 'Output file created');
-                    callback(null, self.result);
-                  });
-                });
-              }
-              // fs.unlinkSync(current_obj_file);
-              self._removeSiblingFiles();
-            });
-          });
-
-        }
+        self._compileTheApp(function(err) {
+          if (err) {
+            self.result.setSuccess(false);
+          } else {
+            self.result.setSuccess(true);
+          }
+          callback(err, self.result);
+        });
 
       } catch (e) {
         self.logger.debug('catch: ' + e);
@@ -99,34 +51,56 @@ define(
     TinyOSCompiler.prototype._compileTheApp = function (next) {
       var self = this;
       var fs = require('fs');
+
       self._saveSiblingsAsFiles(self.activeNode, function () {
+
         self.logger.info('_compileTheApp()');
+        try {
+          // create makefile
+          var name = self.core.getAttribute(self.activeNode, 'name');
+          var rules = "COMPONENT=" + name + "\n";
+          rules += "include $(MAKERULES)\n";
+          self._writeFileSync('Makefile', rules);
 
-        // create makefile
-        var name = self.core.getAttribute(self.activeNode, 'name');
-        var rules = "COMPONENT=" + name + "\n";
-        rules += "include $(MAKERULES)\n";
-        fs.writeFileSync('Makefile', rules);
+          // run make
+          var make_cmd = "make " + self.platform;
+          var options = {};
+          var exec = require('child_process').exec;
+          exec(make_cmd, options, function (error, stdout, stderr) {
+            self.logger.info('exec()');
+            if (error !== null) {
+              self.logger.error('exec make_cmd');
+              self._cleanUp();
+              next(error);
+            } else {
+              // return the app.c as downloadable
+              self.logger.info('return binary');
+              self._cleanUp();
+              next(null);
+            }
+          });
 
-        // run make
-        var make_cmd = "make " + self.platform;
-        var options = {};
-        var exec = require('child_process').exec;
-        exec(make_cmd, options, function (error, stdout, stderr) {
-          if (error !== null) {
-            self.logger.error('exec make_cmd');
-            next(error);
-          } else {
-            // return the app.c as downloadable
-            self.logger.info('return binary');
-            next(null);
-          }
-        });
+        } catch (e) {
+          self.logger.error('_compileTheApp');
+          self.logger.error(e);
+          self._cleanUp();
+        }
+
 
       });
     };
 
-    TinyOSCompiler.prototype._createVisuals = function (next) {
+    TinyOSCompiler.prototype._writeFileSync = function(filename, content) {
+      var self = this;
+      var fs = require('fs');
+      fs.writeFileSync(filename, content);
+      self._toBeRemoved.push(filename);
+    };
+
+    TinyOSCompiler.prototype._cleanUp = function () {
+      var fs = require('fs');
+      this._removeSiblingFiles();
+      // fs.rmdirSync('build');
     };
 
     TinyOSCompiler.prototype._saveSiblingsAsFiles = function (node, next) {
@@ -151,8 +125,9 @@ define(
     TinyOSCompiler.prototype._removeSiblingFiles = function () {
       var self = this;
       var fs = require('fs');
-      for (var i = self._toBeRemoved.length - 1; i >= 0; i--) {
-        fs.unlinkSync(self._toBeRemoved[i]);
+      while (self._toBeRemoved.length > 0 ) {
+        var rem = self._toBeRemoved.pop();
+        fs.unlinkSync(rem);
       }
     };
 
