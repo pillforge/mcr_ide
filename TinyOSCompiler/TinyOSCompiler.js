@@ -5,7 +5,7 @@ define(
   '../package.json',
   '../TinyOSPopulate/NesC_XML_Generator',
   '../TinyOSPopulate/ParseDump',
-  './Refresher'
+  '../ModelGenerator/Refresher'
   ],
   function (PluginBase, PluginConfig, LogManager, pjson, NesC_XML_Generator, ParseDump, Refresher) {
     "use strict";
