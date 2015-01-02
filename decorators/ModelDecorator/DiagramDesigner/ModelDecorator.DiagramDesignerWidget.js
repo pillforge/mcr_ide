@@ -542,12 +542,13 @@ define(['js/Constants',
     self._autocompleteHelper(function (autocompleteData) {
       self._dialog = new SourceDetailsDialog();
       self._dialog.show(name, source, autocompleteData, function(type, data) {
-        if (type === 'generate') {
+        if (type === 'gen-code') {
           self._generateNescCode();
         } else if (type === 'save') {
           self._saveSource(data);
-        } else if (type === 'create_objects') {
-          self._createObjects(data);
+        } else if (type === 'gen-vis') {
+          self._saveSource(data);
+          self._createObjects();
         }
       });
     });
@@ -581,7 +582,6 @@ define(['js/Constants',
   ModelDecoratorDiagramDesignerWidget.prototype._createObjects = function (val) {
     var self = this;
     self.logger.debug('_createObjects()');
-    return;
     var client = self._control._client;
     var context = {
       managerConfig: {
@@ -591,17 +591,17 @@ define(['js/Constants',
         "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
         "commit": client.getActualCommit(),
         "branchName": client.getActualBranch()
-      },
-      pluginConfigs: {
-        TinyOSCompiler:{
-          "source_code": val
-        }
       }
+      // ,pluginConfigs: {
+      //   TinyOSCompiler:{
+      //     "source_code": val
+      //   }
+      // }
     };
 
-    client.runServerPlugin('TinyOSCompiler', context, function (err, result, msg) {
+    client.runServerPlugin('ModelGenerator', context, function (err, result, msg) {
       if (result.success) {
-
+        console.log('Model created');
       } else {
         console.dir(result.messages);
       }

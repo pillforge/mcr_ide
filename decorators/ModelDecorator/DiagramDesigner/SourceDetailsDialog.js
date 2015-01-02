@@ -78,8 +78,7 @@ define([
       self._header = self._dialog.find('h3').first();
       self._header.html('Implementation of ' + name);
       
-      var saveButtons = self._dialog.find('.btn-save');
-      self._btnSave = saveButtons.last();
+      self._btnSave = self._dialog.find('.btn-save').first();
       self._btnSave.on('click', function (event) {
         var val = self._codeMirror.getValue();
         event.stopPropagation();
@@ -88,13 +87,15 @@ define([
           callback.call(self, 'save', val);
         }
       });
-      self._btnSaveVisual = saveButtons.first();
+
+      // Save and generate visuals
+      self._btnSaveVisual = self._dialog.find('.gen-vis').first();
       self._btnSaveVisual.on('click', function (event) {
         var val = self._codeMirror.getValue();
         event.stopPropagation();
         event.preventDefault();
         if (callback) {
-          callback.call(self, 'save', val);
+          callback.call(self, 'gen-vis', val);
         }
       });
 
@@ -102,7 +103,7 @@ define([
       self._btnGen = self._dialog.find('.gen-nesc').first();
       self._btnGen.on('click', function (event) {
         if (callback) {
-          callback.call(self, 'generate');
+          callback.call(self, 'gen-code');
         }
       });
 
