@@ -125,7 +125,6 @@ define([
     SourceDetailsDialog.prototype.createDownloadButton = function (url) {
       var self = this;
       var download_button = self._dialog.find('.download');//.first();
-      console.log(download_button);
       if (download_button.length > 0) {
         window.URL.revokeObjectURL(download_button.attr('href'));
         var vers = Number(download_button.attr('v'));

@@ -679,6 +679,7 @@ define(['js/Constants',
         return false;
       }
       var base = client.getNode(baseId);
+      if (base === null) return false;
       var name = base.getAttribute('name');
       if (name === 'Component') {
         return true;
