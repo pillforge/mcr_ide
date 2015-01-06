@@ -102,11 +102,40 @@ define([
       // Generate nesC Code
       self._btnGen = self._dialog.find('.gen-nesc').first();
       self._btnGen.on('click', function (event) {
+        event.stopPropagation();
+        event.preventDefault();
         if (callback) {
           callback.call(self, 'gen-code');
         }
       });
 
+      // Compile & Download the App
+      self._btnCompile = self._dialog.find('.compile').first();
+      self._btnCompile.on('click', function (event) {
+        var val = self._codeMirror.getValue();
+        event.stopPropagation();
+        event.preventDefault();
+        if (callback) {
+          callback.call(self, 'compile', val);
+        }
+      });
+
+    };
+
+    SourceDetailsDialog.prototype.createDownloadButton = function (url) {
+      var self = this;
+      var download_button = self._dialog.find('.download');//.first();
+      console.log(download_button);
+      if (download_button.length > 0) {
+        window.URL.revokeObjectURL(download_button.attr('href'));
+        var vers = Number(download_button.attr('v'));
+        download_button.attr('href', url)
+                      .attr('v', vers + 1)
+                      .html('Download the App v' + (vers + 1));
+      } else {
+        var compile_button = self._dialog.find('.compile').first();
+        compile_button.after('<a href="' + url + '" class="btn btn-danger download" download="app.c" v="0">Download the App</a>');
+      }
     };
 
     SourceDetailsDialog.prototype.updateEditorText = function (value) {

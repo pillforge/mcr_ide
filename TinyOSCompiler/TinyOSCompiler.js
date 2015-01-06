@@ -11,7 +11,7 @@ define(
     var TinyOSCompiler = function () {
       PluginBase.call(this);
       this.logger = LogManager.create('TinyOSCompiler');
-      this.platform = config_json.platform || 'exp430';
+      this.platform = config_json && config_json.platform || 'exp430';
     };
 
     TinyOSCompiler.prototype = Object.create(PluginBase.prototype);
@@ -31,13 +31,40 @@ define(
         var self = this;
         LogManager.setLogLevel(LogManager.logLevels.DEBUG);
 
-        self._compileTheApp(function(err) {
+        self._compileTheApp(function(err, data) {
           if (err) {
             self.result.setSuccess(false);
+            callback(err, self.result);
           } else {
+            self.createMessage(self.activeNode, {appc: data});
             self.result.setSuccess(true);
+            // callback(null, self.result);
+            var artifact = self.blobClient.createArtifact(self.projectName + "_src");
+            artifact.addFile('app.c', data, function (e) {
+              if (e) {
+                console.log('err in artifact, fix for a quit code');
+                self.result.setSuccess(false);
+                callback(err, self.result);
+              } else {
+                self.blobClient.saveAllArtifacts(function (ee, hashes) {
+                  if (ee) {
+                    console.log('err in artifact saving, fix');
+                    self.result.setSuccess(false);
+                    callback(err, self.result);
+                  } else {
+                    self.logger.info('Artifacts are saved here:');
+                    self.logger.info(hashes);
+                    // result add hashes
+                    for (var j = 0; j < hashes.length; j += 1) {
+                      self.result.addArtifact(hashes[j]);
+                    }
+                    self.result.setSuccess(true);
+                    callback(err, self.result);
+                  }
+                });
+              }
+            });
           }
-          callback(err, self.result);
         });
 
       } catch (e) {
@@ -51,6 +78,7 @@ define(
     TinyOSCompiler.prototype._compileTheApp = function (next) {
       var self = this;
       var fs = require('fs');
+      var path = require('path');
 
       self._saveSiblingsAsFiles(self.activeNode, function () {
 
@@ -75,8 +103,10 @@ define(
             } else {
               // return the app.c as downloadable
               self.logger.info('return binary');
+              var appc_location = path.resolve('build', self.platform, 'app.c');
+              var appc_content = fs.readFileSync(appc_location, 'utf8');
               self._cleanUp();
-              next(null);
+              next(null, appc_content);
             }
           });
 

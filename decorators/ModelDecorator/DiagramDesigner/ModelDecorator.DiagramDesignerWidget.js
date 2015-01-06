@@ -549,8 +549,40 @@ define(['js/Constants',
         } else if (type === 'gen-vis') {
           self._saveSource(data);
           self._createObjects();
+        } else if (type === 'compile') {
+          self._saveSource(data);
+          self._compileTheApp();
         }
       });
+    });
+  };
+
+  ModelDecoratorDiagramDesignerWidget.prototype._compileTheApp = function () {
+    var self = this;
+    self.logger.debug('ModelDecoratorDiagramDesignerWidget _compileTheApp()');
+    var client = self._control._client;
+    var context = {
+      managerConfig: {
+        "project": client.getActiveProjectName(),
+        "token": "",
+        "activeNode": self._metaInfo[CONSTANTS.GME_ID], // WebGMEGlobal.State.getActiveObject(),
+        "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
+        "commit": client.getActualCommit(),
+        "branchName": client.getActualBranch()
+      }
+    };
+
+    client.runServerPlugin('TinyOSCompiler', context, function (err, result, msg) {
+      if (result.success) {
+        console.log('The app is compiled');
+        var src_code = result.messages[0].message.appc;
+        var bl = new Blob([src_code], {type: 'text/plain'});
+        var url = window.URL.createObjectURL(bl);
+        self._dialog.createDownloadButton(url);
+      } else {
+        console.log('The app cannot be compiled');
+        console.dir(result.messages);
+      }
     });
   };
 
