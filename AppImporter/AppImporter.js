@@ -38,14 +38,15 @@ define(
 
       var nxg = new NesC_XML_Generator(self.platform);
 
-      var filePath = '/home/hakan/Documents/tinyos-apps/Icra2015Expt/Base/Icra2015ExptBaseAppC.nc';
-      var dirPath = path.dirname(filePath);
-      var file = fs.readFileSync(filePath, 'utf8');
+      var app_name = 'Icra2015ExptBaseAppC';
+      var file_path = '/home/hakan/Documents/tinyos-apps/Icra2015Expt/Base/Icra2015ExptBaseAppC.nc';
+      var dir_path = path.dirname(file_path);
+      var file = fs.readFileSync(file_path, 'utf8');
 
-      var opts = '-I ' + dirPath;
+      var opts = '-I ' + dir_path;
       opts += ' -I /home/hakan/Documents/tinyos-apps/Icra2015Expt/include/';
 
-      nxg.getXML(path.resolve(filePath), opts, function (error, xml) {
+      nxg.getXML(path.resolve(file_path), opts, function (error, xml) {
         if (error !== null) {
           var err_msg = 'err in getXML';
           self.logger.error(err_msg + ': ' + error);
@@ -56,19 +57,64 @@ define(
           var pd = new ParseDump();
           var app_json = pd.parse(null, xml);
           var r = new Refresher(self.core, self.META, app_json);
-          console.log(app_json);
-          // r.update(self.activeNode, name, function () {
-          //   self.save('Save Model Generator changes', function () {
-          //     self.result.setSuccess(true);
-          //     self.createMessage(null, '');
-          //     callback(null, self.result);
-          //   });
-          // });
+          // console.log(app_json);
+          self._createAppNode(app_json.components[app_name], file, function (app_node) {
+            r.update(app_node, app_name, function () {
+              self.save('Save AppImporter changes', function () {
+                self.result.setSuccess(true);
+                self.createMessage(app_node, '');
+                callback(null, self.result);
+              });
+            });
+          });
         }
       });
 
-      self.result.setSuccess(true);
-      callback(null, self.result);
+    };
+
+    AppImporter.prototype._createAppNode = function (app_info, file, next) {
+      var self = this;
+      getAppsFolder(function (apps_node) {
+        var app_node = self.core.createNode({
+          base: getBase(app_info),
+          parent: apps_node
+        });
+        self.core.setAttribute(app_node, 'name', app_info.name);
+        self.core.setAttribute(app_node, 'safe', app_info.safe);
+        self.core.setAttribute(app_node, 'path', app_info.file_path);
+        self.core.setAttribute(app_node, 'source', file);
+        next(app_node);
+      });
+
+      function getBase (component) {
+        if (component.comp_type == 'Module') {
+          return component.generic ?
+            self.META.Generic_Module : self.META.Module;
+        }
+        return component.generic ?
+          self.META.Generic_Configuration : self.META.Configuration;
+      }
+
+      function getAppsFolder (next) {
+        self.core.loadChildren(self.rootNode, function(err, children) {
+          if (err) {
+            next(null);
+          } else {
+            for (var i = children.length - 1; i >= 0; i--) {
+              var name = self.core.getAttribute(children[i], 'name');
+              if (name == 'apps') {
+                return next(children[i]);
+              }
+            }
+            var apps_node = self.core.createNode({
+              base: self.META.Folder,
+              parent: self.rootNode
+            });
+            self.core.setAttribute(apps_node, 'name', 'apps');
+            return next(apps_node);
+          }
+        });
+      }
     };
 
     return AppImporter;
