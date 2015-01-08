@@ -55,10 +55,10 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
       var interfaces = xml_doc.find('//xmlns:interfaces/xmlns:interface', ns);
       var functions = xml_doc.find('//xmlns:functions/xmlns:function', ns);
 
-      self._wi("Found " + components.length + " components");
-      self._wi("Found " + interfacedefs.length + " interfacedefs");
-      self._wi("Found " + interfaces.length + " interfaces");
-      self._wi("Found " + functions.length + " functions");
+      self.logger.info("Found " + components.length + " components");
+      self.logger.info("Found " + interfacedefs.length + " interfacedefs");
+      self.logger.info("Found " + interfaces.length + " interfaces");
+      self.logger.info("Found " + functions.length + " functions");
 
       var refidx = {};
       var qnameidx = {};
@@ -269,12 +269,6 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
       }
 
       return app_json;
-    };
-
-    ParseDump.prototype._wi = function(msg) {
-      var self = this;
-      self.logger.warn(msg);
-      self.logger.info(msg);
     };
 
     return ParseDump;

@@ -24,8 +24,8 @@ define(['fs', 'path', 'child_process', 'logManager'],
       var options = { maxBuffer: 100*1024*1024 };
       exec(dump_cmd, options, function (error, stdout, stderr) {
         if (error !== null) {
-          self._wi('stderr: ' + stderr);
-          self._wi('exec error: ' + error);
+          self.logger.error('stderr: ' + stderr);
+          self.logger.error('exec error: ' + error);
           callback(error, null);
         } else {
           var ind = stderr.search('> search starts here:');
@@ -61,22 +61,15 @@ define(['fs', 'path', 'child_process', 'logManager'],
       var xml_cmd = self._ncc_cmd + ' -target=' + self._target +
         ' ' + component_path + ' ' + ncc_options;
       var options = { maxBuffer: 100*1024*1024 };
-      console.log('xmlcmd', xml_cmd);
       exec(xml_cmd, options, function (error, stdout, stderr) {
         if (error !== null) {
-          self._wi('stderr: ' + stderr);
-          self._wi('exec error: ' + error + '####\n');
+          self.logger.error('stderr: ' + stderr);
+          self.logger.error('exec error: ' + error + '####\n');
           callback(error, stdout);
         } else {
           callback(null, stdout);
         }
       });
-    };
-
-    NesC_XML_Generator.prototype._wi = function(msg) {
-      var self = this;
-      self.logger.warn(msg);
-      self.logger.info(msg);
     };
 
     return NesC_XML_Generator;

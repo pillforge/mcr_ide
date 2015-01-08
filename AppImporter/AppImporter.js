@@ -6,9 +6,10 @@ define(
   '../config.json',
   '../TinyOSPopulate/NesC_XML_Generator',
   '../TinyOSPopulate/ParseDump',
-  '../ModelGenerator/Refresher'
+  '../ModelGenerator/Refresher',
+  '../common/utils'
   ],
-  function (PluginBase, PluginConfig, LogManager, pjson, config_json, NesC_XML_Generator, ParseDump, Refresher) {
+  function (PluginBase, PluginConfig, LogManager, pjson, config_json, NesC_XML_Generator, ParseDump, Refresher, utils) {
     "use strict";
 
     var AppImporter = function () {
@@ -57,14 +58,20 @@ define(
           var pd = new ParseDump();
           var app_json = pd.parse(null, xml);
           var r = new Refresher(self.core, self.META, app_json);
-          // console.log(app_json);
-          self._createAppNode(app_json.components[app_name], file, function (app_node) {
-            r.update(app_node, app_name, function () {
-              self.save('Save AppImporter changes', function () {
-                self.result.setSuccess(true);
-                self.createMessage(app_node, '');
-                callback(null, self.result);
-              });
+          // self._createAppNode(app_json.components[app_name], file, function (app_node) {
+          //   r.update(app_node, app_name, function () {
+          //     self.save('Save AppImporter changes', function () {
+          //       self.result.setSuccess(true);
+          //       self.createMessage(app_node, '');
+          //       callback(null, self.result);
+          //     });
+          //   });
+          // });
+          var u = new utils(self.core, self.META);
+          u.md(self.rootNode, app_json.components[app_name].file_path, function () {
+            self.save('Save AppImporter changes', function () {
+              self.result.setSuccess(true);
+              callback(null, self.result);
             });
           });
         }
