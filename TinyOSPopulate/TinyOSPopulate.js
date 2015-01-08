@@ -63,7 +63,7 @@ define(
                   });
                 } else {
                   // components_paths[0] = '/home/hakan/Documents/mcr_ide/Icra2015ExptAppC.nc';
-                  nxg.getXML(components_paths[index], function(error, xml) {
+                  nxg.getXML(components_paths[index], null, function(error, xml) {
                     if (error !== null) {
                       self._wi("Error in generating xml: " +
                         index + components_paths[index]);

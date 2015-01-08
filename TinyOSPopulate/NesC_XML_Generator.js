@@ -56,11 +56,12 @@ define(['fs', 'path', 'child_process', 'logManager'],
       return components;
     };
 
-    NesC_XML_Generator.prototype.getXML = function(component_path, callback) {
+    NesC_XML_Generator.prototype.getXML = function(component_path, ncc_options, callback) {
       var self = this;
       var xml_cmd = self._ncc_cmd + ' -target=' + self._target +
-        ' ' + component_path;
+        ' ' + component_path + ' ' + ncc_options;
       var options = { maxBuffer: 100*1024*1024 };
+      console.log('xmlcmd', xml_cmd);
       exec(xml_cmd, options, function (error, stdout, stderr) {
         if (error !== null) {
           self._wi('stderr: ' + stderr);
