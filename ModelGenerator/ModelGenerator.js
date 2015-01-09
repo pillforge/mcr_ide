@@ -38,7 +38,7 @@ define(
       var current_obj_file = name + '.nc';
 
       self._saveSiblingsAsFiles(self.activeNode, function () {
-        nxg.getXML(path.resolve(current_obj_file), null, function (error, xml) {
+        nxg.getXML(path.resolve(current_obj_file), '', function (error, xml) {
           if (error !== null) {
             var err_msg = 'err in getXML';
             self.logger.error(err_msg + ': ' + error);
