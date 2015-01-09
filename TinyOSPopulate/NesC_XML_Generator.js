@@ -8,11 +8,14 @@ define(['fs', 'path', 'child_process', 'logManager'],
       exec = child_process.exec;
       self._target = target || 'telosb';
       self._tinyos = tinyos || process.env.TOSROOT;
-      self._ncc_cmd = 'ncc' + 
+      var ncc_cmd_common = 'ncc' +
         ' "-fnesc-dump=referenced(interfaces,components,functions)"' + 
         ' "-fnesc-dump=functions(!global())" "-fnesc-dump=interfaces"' +
-        ' "-fnesc-dump=components(wiring)" -fnesc-dump=interfacedefs' +
-        ' -fnesc-dump=wiring -fsyntax-only';
+        ' "-fnesc-dump=components(wiring)" -fnesc-dump=interfacedefs';
+      var dump_wiring = '-fnesc-dump=wiring';
+      var fsyntax = '-fsyntax-only';
+      self._ncc_cmd = ncc_cmd_common + ' ' + dump_wiring + ' ' + fsyntax;
+      self._ncc_cmd2 = ncc_cmd_common + ' ' + fsyntax;
       self.logger = LogManager.create('TinyOSPopulate.NesC_XML_Generator');
     };
 
@@ -58,18 +61,29 @@ define(['fs', 'path', 'child_process', 'logManager'],
 
     NesC_XML_Generator.prototype.getXML = function(component_path, ncc_options, callback) {
       var self = this;
-      var xml_cmd = self._ncc_cmd + ' -target=' + self._target +
-        ' ' + component_path + ' ' + ncc_options;
+      var xml_cmd = get_xml_cmd(self._ncc_cmd)
       var options = { maxBuffer: 100*1024*1024 };
       exec(xml_cmd, options, function (error, stdout, stderr) {
         if (error !== null) {
           self.logger.error('stderr: ' + stderr);
-          self.logger.error('exec error: ' + error + '####\n');
-          callback(error, stdout);
+          self.logger.error('exec error: ' + error);
+          self.logger.info('trying without fnesc-dump wiring');
+          xml_cmd = get_xml_cmd(self._ncc_cmd2);
+          exec(xml_cmd, options, function (error, stdout, stderr) {
+            if (error !== null) {
+              self.logger.error('stderr: ' + stderr);
+              callback(error, stdout);
+            } else {
+              callback(null, stdout);
+            }
+          });
         } else {
           callback(null, stdout);
         }
       });
+      function get_xml_cmd(ncc_cmd) {
+        return ncc_cmd + ' -target=' + self._target + ' ' + component_path + ' ' + ncc_options;
+      }
     };
 
     return NesC_XML_Generator;
