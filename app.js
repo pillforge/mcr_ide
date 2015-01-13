@@ -5,7 +5,7 @@
 var config = require('./config.json'),
     webgme = require('webgme');
 
-webGMEGlobal.setConfig(config);
+WebGMEGlobal.setConfig(config);
 
 
 var myServer = new webgme.standaloneServer();
