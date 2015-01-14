@@ -6,10 +6,9 @@ define(
   '../config.json',
   '../TinyOSPopulate/NesC_XML_Generator',
   '../TinyOSPopulate/ParseDump',
-  '../ModelGenerator/Refresher',
   '../common/utils'
   ],
-  function (PluginBase, PluginConfig, LogManager, pjson, config_json, NesC_XML_Generator, ParseDump, Refresher, utils) {
+  function (PluginBase, PluginConfig, LogManager, pjson, config_json, NesC_XML_Generator, ParseDump, utils) {
     "use strict";
 
     var AppImporter = function () {
@@ -33,50 +32,84 @@ define(
     AppImporter.prototype.main = function (callback) {
       var self = this;
       self.logger.info('main()');
+      this.utils = new utils(this.core, this.META);
 
-      var fs = require('fs');
-      var path = require('path');
-
-      var nxg = new NesC_XML_Generator(self.platform);
-
-      var app_name = 'Icra2015ExptBaseAppC';
       var file_path = '/home/hakan/Documents/tinyos-apps/Icra2015Expt/Base/Icra2015ExptBaseAppC.nc';
-      var dir_path = path.dirname(file_path);
-      var file = fs.readFileSync(file_path, 'utf8');
-
-      var opts = '-I ' + dir_path;
-      opts += ' -I /home/hakan/Documents/tinyos-apps/Icra2015Expt/include/';
-
-      nxg.getXML(path.resolve(file_path), opts, function (error, xml) {
+      self.createApp(file_path, function (error) {
         if (error !== null) {
-          var err_msg = 'err in getXML';
-          self.logger.error(err_msg + ': ' + error);
           self.result.setSuccess(false);
           self.createMessage(null, err_msg);
           callback(error, self.result);
         } else {
-          var pd = new ParseDump();
-          var app_json = pd.parse(null, xml);
-          var r = new Refresher(self.core, self.META, app_json);
-          // self._createAppNode(app_json.components[app_name], file, function (app_node) {
-          //   r.update(app_node, app_name, function () {
-          //     self.save('Save AppImporter changes', function () {
-          //       self.result.setSuccess(true);
-          //       self.createMessage(app_node, '');
-          //       callback(null, self.result);
-          //     });
-          //   });
-          // });
-          var u = new utils(self.core, self.META);
-          u.md(self.rootNode, app_json.components[app_name].file_path, function () {
-            self.save('Save AppImporter changes', function () {
-              self.result.setSuccess(true);
-              callback(null, self.result);
-            });
+          self.save('Save AppImporter changes', function () {
+            self.result.setSuccess(true);
+            callback(null, self.result);
           });
         }
       });
 
+    };
+
+    AppImporter.prototype.createApp = function (file_path, next) {
+      var self = this;
+      self.logger.info('createApp()');
+      var nxg = new NesC_XML_Generator(self.platform);
+      var fs = require('fs');
+      var path = require('path');
+      var dir_path = path.dirname(file_path);
+      var opts = '-I ' + dir_path;
+      opts += ' -I /home/hakan/Documents/tinyos-apps/Icra2015Expt/include/';
+      var app_name = 'Icra2015ExptBaseAppC';
+      var file = fs.readFileSync(file_path, 'utf8');
+      nxg.getXML(path.resolve(file_path), opts, function (error, xml) {
+        if (error !== null) {
+          var err_msg = 'err in getXML';
+          self.logger.error(err_msg + ': ' + error);
+          next(error);
+        } else {
+          var pd = new ParseDump();
+          var app_json = pd.parse(null, xml);
+          self.createInterfaces(app_json.interfacedefs, function () {
+            next(null);
+          });
+        }
+      });
+    };
+
+    AppImporter.prototype.createInterfaces = function (interfacedefs, next) {
+      var self = this;
+      self.logger.info('createInterfaces()');
+      var counter = 0, idefs_length = Object.keys(interfacedefs).length;
+      for (var key in interfacedefs) {
+        self.createInterface(interfacedefs[key], function () {
+          counter++;
+          if (counter >= idefs_length) {
+            next();
+          }
+        });
+      }
+    };
+
+    AppImporter.prototype.createInterface = function (interfacedef, next) {
+      var self = this;
+      self.logger.info('createInterface()');
+      self.utils.exists(self.rootNode, interfacedef.file_path, function (exists) {
+        if (!exists) {
+          self.logger.info('creating interface: ' + interfacedef.name);
+          self.utils.md(self.rootNode, interfacedef.file_path, function (end_node) {
+            var interface_node = self.core.createNode({
+              base: self.META.Interface_Definition,
+              parent: end_node
+            });
+            self.core.setAttribute(interface_node, 'name', interfacedef.name);
+            self.core.setAttribute(interface_node, 'path', interfacedef.file_path);
+            next();
+          });
+        } else {
+          self.logger.info('skipping creating interface: ' + interfacedef.name);
+          next();
+        }
+      });
     };
 
     AppImporter.prototype._createAppNode = function (app_info, file, next) {

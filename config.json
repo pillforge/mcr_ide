@@ -10,6 +10,8 @@
   "pluginBasePaths": ["./"],
   "decoratorpaths": ["./decorators"],
 
-  "project":"TinyOS",
-  "autostart":true
+  "project": "TinyOS",
+  "autostart": true,
+
+  "platform": "exp430"
 }
