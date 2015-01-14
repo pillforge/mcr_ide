@@ -8,6 +8,20 @@ define(['logManager'], function (logManager) {
     this.logger = logManager.create('utils');
   };
 
+  utils.prototype.for_each_then_call_next = function (object, apply, next) {
+    var self = this;
+    self.logger.info('for_each_then_call_next()');
+    var counter = 0, objects_length = Object.keys(object).length;
+    for (var key in object) {
+      apply(object[key], function () {
+        counter++;
+        if (counter >= objects_length) {
+          next();
+        }
+      });
+    }
+  };
+
   utils.prototype.exists = function (initial_node, component_path, next) {
     var self = this;
     self.logger.info('exists()');
