@@ -70,24 +70,34 @@ define(
           var pd = new ParseDump();
           var app_json = pd.parse(null, xml);
           self.createInterfaces(app_json.interfacedefs, function () {
-            next(null);
+            self.createComponents(app_json.components, function () {
+              next(null);
+            });
           });
         }
       });
     };
 
+    AppImporter.prototype.createComponents = function (components, next) {
+      var self = this;
+      self.logger.info('createComponents()');
+      self.utils.for_each_then_call_next(components, function (component, fn_next) {
+        self.createComponent(component, fn_next);
+      }, next);
+    };
+
+    AppImporter.prototype.createComponent = function (component, next) {
+      var self = this;
+      self.logger.info('createComponent()');
+      next();
+    };
+
     AppImporter.prototype.createInterfaces = function (interfacedefs, next) {
       var self = this;
       self.logger.info('createInterfaces()');
-      var counter = 0, idefs_length = Object.keys(interfacedefs).length;
-      for (var key in interfacedefs) {
-        self.createInterface(interfacedefs[key], function () {
-          counter++;
-          if (counter >= idefs_length) {
-            next();
-          }
-        });
-      }
+      self.utils.for_each_then_call_next(interfacedefs, function (interfacedef, fn_next) {
+        self.createInterface(interfacedef, fn_next);
+      }, next);
     };
 
     AppImporter.prototype.createInterface = function (interfacedef, next) {
