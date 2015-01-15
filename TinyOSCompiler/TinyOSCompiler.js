@@ -97,7 +97,7 @@ define(
           exec(make_cmd, options, function (error, stdout, stderr) {
             self.logger.info('exec()');
             if (error !== null) {
-              self.logger.error('exec make_cmd');
+              self.logger.error('exec make: ' + error);
               self._cleanUp();
               next(error);
             } else {
@@ -145,8 +145,12 @@ define(
           // check if the child is conf or module then save it.
           var src = self.core.getAttribute(children[i], 'source');
           var name = self.core.getAttribute(children[i], 'name');
-          fs.writeFileSync(name + '.nc', src);
-          self._toBeRemoved.push(name + '.nc');
+          var base_obj = self.core.getBase(children[i]);
+          var base_name = self.core.getAttribute(base_obj, 'name');
+          var extension = '.nc';
+          if (base_name === 'Header_File') extension = '.h';
+          fs.writeFileSync(name + extension, src);
+          self._toBeRemoved.push(name + extension);
         }
         next();
       });
