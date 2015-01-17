@@ -88,8 +88,25 @@ define(
 
     AppImporter.prototype.createComponent = function (component, next) {
       var self = this;
-      self.logger.info('createComponent()');
-      next();
+      self.logger.info('createComponent(): ' + component.name);
+      self.utils.exists(self.rootNode, component.file_path, function (exists) {
+        if (!exists) {
+          self.logger.info('creating the component: ' + component.name);
+          self.utils.md(self.rootNode, component.file_path, function (end_node) {
+            var component_node = self.core.createNode({
+              base: self.utils.get_base_of_component(component),
+              parent: end_node
+            });
+            self.core.setAttribute(component_node, 'name', component.name);
+            self.core.setAttribute(component_node, 'safe', component.safe);
+            self.core.setAttribute(component_node, 'path', component.file_path);
+            next();
+          });
+        } else {
+          self.logger.info('skipping the component: ' + component.name)
+          next();
+        }
+      });
     };
 
     AppImporter.prototype.createInterfaces = function (interfacedefs, next) {
