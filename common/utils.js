@@ -8,25 +8,38 @@ define(['logManager'], function (logManager) {
     this.logger = logManager.create('utils');
   };
 
+  utils.prototype.get_base_of_component = function (component) {
+    var self = this;
+    if (component.comp_type == 'Module') {
+      return component.generic ?
+        self.META.Generic_Module : self.META.Module;
+    }
+    return component.generic ?
+      self.META.Generic_Configuration : self.META.Configuration;
+  };
+
   utils.prototype.for_each_then_call_next = function (object, apply, next) {
     var self = this;
     self.logger.info('for_each_then_call_next()');
-    var counter = 0, objects_length = Object.keys(object).length;
-    for (var key in object) {
-      apply(object[key], function () {
-        counter++;
-        if (counter >= objects_length) {
-          next();
-        }
-      });
+    var counter = 0, objects_keys = Object.keys(object);
+    call_apply(0);
+
+    function call_apply (index) {
+      if (index >= objects_keys.length) {
+        next();
+      } else {
+        apply(object[objects_keys[index]], function () {
+          call_apply(index+1);
+        });
+      }
     }
+
   };
 
   utils.prototype.exists = function (initial_node, component_path, next) {
     var self = this;
     self.logger.info('exists()');
-
-    var dirs = self.get_dirs(component_path);
+    var dirs = self.get_dirs_with_file(component_path);
     var curr_node = initial_node;
     check_component(0);
 
@@ -92,6 +105,14 @@ define(['logManager'], function (logManager) {
       }
     }
 
+  };
+
+  utils.prototype.get_dirs_with_file = function (component_path) {
+    var path = require('path');
+    return path.join(
+      path.dirname(component_path),
+      path.basename(component_path, path.extname(component_path))
+      ).split('/');
   };
 
   utils.prototype.get_dirs = function (component_path) {
