@@ -69,13 +69,51 @@ define(
         } else {
           var pd = new ParseDump();
           var app_json = pd.parse(null, xml);
+          self.app_json = app_json;
           self.createInterfaces(app_json.interfacedefs, function () {
             self.createComponents(app_json.components, function () {
-              next(null);
+              self.createUPInterfaces(app_json.components, function () {
+                next(null);
+              });
             });
           });
         }
       });
+    };
+
+    AppImporter.prototype.createUPInterfaces = function (components, next) {
+      var self = this;
+      self.logger.info('createUPInterfaces()');
+      self.utils.for_each_then_call_next(components, function (component, fn_next) {
+        self.createUPInterface(component, fn_next);
+      }, next);
+    };
+
+    AppImporter.prototype.createUPInterface = function (component, next) {
+      var self = this;
+      self.logger.info('createUPInterface(): ' + component.name);
+      if (component.interface_types.length === 0) next();
+      var counter = 0;
+      for (var i = component.interface_types.length - 1; i >= 0; i--) {
+        var curr_intf = component.interface_types[i];
+        self.logger.info('creating u/p interface: ' + curr_intf.as);
+        self.utils.exists(self.rootNode, component.file_path, function (end_node) {
+          var intf_node = self.core.createNode({
+            base: self.utils.get_type_of_interface(curr_intf),
+            parent: end_node
+          });
+          self.core.setAttribute(intf_node, 'name', curr_intf.as);
+          if (curr_intf.argument_type) {
+            self.core.setAttribute(intf_node, 'type_arguments', curr_intf.argument_type);
+          }
+          self.utils.exists(self.rootNode, self.app_json.interfacedefs[curr_intf.name].file_path, function (exists) {
+            if (exists) {
+              self.core.setPointer(intf_node, 'interface', exists);
+            }
+            if (++counter >= component.interface_types.length) next();
+          });
+        });
+      }
     };
 
     AppImporter.prototype.createComponents = function (components, next) {
