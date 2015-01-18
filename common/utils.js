@@ -8,6 +8,12 @@ define(['logManager'], function (logManager) {
     this.logger = logManager.create('utils');
   };
 
+  utils.prototype.get_type_of_interface = function (interface_desc) {
+    if (interface_desc.provided === 1)
+      return this.META.Provides_Interface;
+    return this.META.Uses_Interface;
+  };
+
   utils.prototype.get_base_of_component = function (component) {
     var self = this;
     if (component.comp_type == 'Module') {
@@ -45,7 +51,7 @@ define(['logManager'], function (logManager) {
 
     function check_component (index) {
       if (index >= dirs.length) {
-        next(true);
+        next(curr_node);
       } else {
         self.core.loadChildren(curr_node, function (err, children) {
           if (err) {
