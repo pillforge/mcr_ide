@@ -32,7 +32,7 @@ define(['logManager'], function (logManager) {
     if (wires.length < 1) next();
     wires.forEach(function (w) {
       self.findObject(node, component, w.from.component_base, function (fc) {
-        self.logger.info('wiring from: ' + w.from.component_base + ' ' + (fc ? 'found' : fc));
+        self.logger.info('wiring from: ' + w.from.component_base + ' ' + (fc ? 'found' : fc) + ' ' + w.from.interface);
         if (!fc) {
           counter++;
           if (counter == wires.length) {
@@ -40,7 +40,7 @@ define(['logManager'], function (logManager) {
           }
         } else {
           self.findObject(node, component, w.to.component_base, function (tc) {
-            self.logger.info('wiring to: ' + w.to.component_base + ' ' + (tc ? 'found' : tc));
+            self.logger.info('wiring to: ' + w.to.component_base + ' ' + (tc ? 'found' : tc) + ' ' + w.to.interface);
             if (!tc) {
               counter++;
               if (counter == wires.length) {
@@ -73,6 +73,12 @@ define(['logManager'], function (logManager) {
                     });
                     self.core.setPointer(wiring_node, 'src', from_port);
                     self.core.setPointer(wiring_node, 'dst', to_port);
+                    if (w.from.cst !== null) {
+                      self.core.setAttribute(wiring_node, 'src_params', w.from.cst);
+                    }
+                    if (w.to.cst !== null) {
+                      self.core.setAttribute(wiring_node, 'dst_params', w.to.cst);
+                    }
 
                     counter++;
                     if (counter == wires.length) {
@@ -124,7 +130,7 @@ define(['logManager'], function (logManager) {
                   var names = port_information.name.split('.');
                   var n = names[names.length - 1];
                   self.core.setAttribute(new_port_obj_inst, 'name', n);
-                  created[port_information.component_base + '_g'] = new_port_obj_inst;
+                  created[p] = new_port_obj_inst;
                   return new_port_obj_inst;
                 }
                 var new_port_obj = self.core.createNode({
