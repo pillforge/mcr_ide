@@ -1,0 +1,7 @@
+# Environment setup for TinyOS
+
+export TOSROOT="/root/tinyos"
+export TOSDIR="$TOSROOT/tos"
+export CLASSPATH=$CLASSPATH:$TOSROOT/support/sdk/java/tinyos.jar:.
+export MAKERULES="$TOSROOT/support/make/Makerules"
+export PYTHONPATH=$PYTHONPATH:$TOSROOT/support/sdk/python
