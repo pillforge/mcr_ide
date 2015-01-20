@@ -6,9 +6,10 @@ define(
   '../config.json',
   '../TinyOSPopulate/NesC_XML_Generator',
   '../TinyOSPopulate/ParseDump',
-  './Refresher'
+  './Refresher',
+  '../common/utils'
   ],
-  function (PluginBase, PluginConfig, LogManager, pjson, config_json, NesC_XML_Generator, ParseDump, Refresher) {
+  function (PluginBase, PluginConfig, LogManager, pjson, config_json, NesC_XML_Generator, ParseDump, Refresher, utils) {
     "use strict";
 
     var ModelGenerator = function () {
@@ -31,13 +32,14 @@ define(
     ModelGenerator.prototype.main = function (callback) {
       var self = this;
       self.logger.info('main()');
+      this.utils = new utils(this.core, this.META);
 
       var path = require('path');
       var nxg = new NesC_XML_Generator(config_json.platform || 'exp430');
       var name = self.core.getAttribute(self.activeNode, 'name');
       var current_obj_file = name + '.nc';
 
-      self._saveSiblingsAsFiles(self.activeNode, function () {
+      self.utils.save_linked_components(self.activeNode, function(created_files) {
         nxg.getXML(path.resolve(current_obj_file), '', function (error, xml) {
           if (error !== null) {
             var err_msg = 'err in getXML';
@@ -46,8 +48,11 @@ define(
             self.createMessage(null, err_msg);
             callback(null, self.result);
           } else {
+            var fs = require('fs');
+            fs.writeFileSync('app_xml.xml.log', xml);
             var pd = new ParseDump();
             var app_json = pd.parse(null, xml);
+            fs.writeFileSync('app_json.js.log', JSON.stringify(app_json, null, '  '));
             var r = new Refresher(self.core, self.META, app_json);
             r.update(self.activeNode, name, function () {
               self.save('Save Model Generator changes', function () {
@@ -57,37 +62,9 @@ define(
               });
             });
           }
-          self._removeSiblingFiles();
+          self.utils.remove_files(created_files);
         });
       });
-
-    };
-
-    ModelGenerator.prototype._saveSiblingsAsFiles = function (node, next) {
-      var self = this;
-      var fs = require('fs');
-      self._toBeRemoved = [];
-      // get siblings
-      var parent = self.core.getParent(node);
-      self.core.loadChildren(parent, function (err, children) {
-        if (err) return;
-        for (var i = children.length - 1; i >= 0; i--) {
-          // check if the child is conf or module then save it.
-          var src = self.core.getAttribute(children[i], 'source');
-          var name = self.core.getAttribute(children[i], 'name');
-          fs.writeFileSync(name + '.nc', src);
-          self._toBeRemoved.push(name + '.nc');
-        }
-        next();
-      });
-    };
-
-    ModelGenerator.prototype._removeSiblingFiles = function () {
-      var self = this;
-      var fs = require('fs');
-      for (var i = self._toBeRemoved.length - 1; i >= 0; i--) {
-        fs.unlinkSync(self._toBeRemoved[i]);
-      }
     };
 
     return ModelGenerator;

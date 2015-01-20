@@ -8,6 +8,88 @@ define(['logManager'], function (logManager) {
     this.logger = logManager.create('utils');
   };
 
+  utils.prototype.remove_files = function (files) {
+    this.logger.info('remove_files()');
+    var fs = require('fs');
+    for (var i = files.length - 1; i >= 0; i--) {
+      fs.unlinkSync(files[i]);
+    }
+  };
+
+  utils.prototype.save_children_as_files = function (node, next) {
+    var self = this;
+    self.logger.info('save_children_as_files()');
+    var fs = require('fs');
+    var created = [];
+    self.core.loadChildren(node, function (err, children) {
+      if (err) {
+        self.logger.error(err);
+        next(created);
+      } else {
+        for (var i = children.length - 1; i >= 0; i--) {
+          var src = self.core.getAttribute(children[i], 'source');
+          var name = self.core.getAttribute(children[i], 'name');
+          var base_obj = self.core.getBase(children[i]);
+          var base_name = self.core.getAttribute(base_obj, 'name');
+          var extension = '.nc';
+          if (base_name === 'Header_File') extension = '.h';
+          fs.writeFileSync(name + extension, src);
+          created.push(name + extension);
+        }
+        next(created);
+      }
+    });
+  };
+
+  utils.prototype.save_linked_components = function (component_node, next) {
+    var self = this;
+    self.logger.info('save_linked_components()');
+    var fs = require('fs');
+
+    var parent = self.core.getParent(component_node);
+    var linked_projects = self.core.getAttribute(parent, 'linked_projects').split(' ');
+    linked_projects.push('../' + self.core.getAttribute(parent, 'name'));
+
+    var created = [];
+    var counter = 0;
+    if (linked_projects.length === 0) next(created);
+    self.for_each_then_call_next(linked_projects, function (linked_project, fn_next) {
+      var dirs = linked_project.split('/');
+      var curr_node = parent;
+      self.for_each_then_call_next(dirs, function (dir, fnn_next) {
+        if (dir === '..') {
+          curr_node = self.core.getParent(curr_node);
+          fnn_next();
+        } else {
+          self.core.loadChildren(curr_node, function (err, children) {
+            var found = false;
+            for (var i = children.length - 1; i >= 0; i--) {
+              var name = self.core.getAttribute(children[i], 'name');
+              if (name === dir) {
+                found = true;
+                curr_node = children[i];
+                break;
+              }
+            }
+            if (found) {
+              fnn_next();
+            } else {
+              self.logger.error('save_linked_components()');
+              fnn_next();
+            }
+          });
+        }
+      }, function () {
+        self.save_children_as_files(curr_node, function (created_files) {
+          created = created.concat(created_files);
+          fn_next();
+        });
+      });
+    }, function () {
+      next(created);
+    });
+  };
+
   utils.prototype.get_type_of_interface = function (interface_desc) {
     if (interface_desc.provided === 1)
       return this.META.Provides_Interface;
