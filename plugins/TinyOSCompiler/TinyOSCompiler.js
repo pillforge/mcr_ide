@@ -2,8 +2,8 @@ define(
   ['plugin/PluginBase',
   'plugin/PluginConfig',
   'logManager',
-  '../package.json',
-  '../config.json'
+  '../../package.json',
+  '../../config.json'
   ],
   function (PluginBase, PluginConfig, LogManager, pjson, config_json) {
     "use strict";

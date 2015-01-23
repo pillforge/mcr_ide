@@ -2,8 +2,8 @@ define(
   ['plugin/PluginBase',
   'plugin/PluginConfig',
   'logManager',
-  '../package.json',
-  '../config.json',
+  '../../package.json',
+  '../../config.json',
   '../TinyOSPopulate/NesC_XML_Generator',
   '../TinyOSPopulate/ParseDump',
   '../common/utils'

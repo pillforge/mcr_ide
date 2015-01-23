@@ -7,7 +7,7 @@
   "mongodatabase": "multi",
 
   "storageKeyType": "rand160Bits",
-  "pluginBasePaths": ["./"],
+  "pluginBasePaths": ["./plugins"],
   "decoratorpaths": ["./decorators"],
 
   "platform": "exp430"

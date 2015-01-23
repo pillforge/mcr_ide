@@ -2,7 +2,7 @@ define(
   ['plugin/PluginBase',
   'plugin/PluginConfig',
   'logManager',
-  '../package.json',
+  '../../package.json',
   './WebGMEAnalyzer'
   ],
   function (PluginBase, PluginConfig, LogManager, pjson, WebGMEAnalyzer) {
