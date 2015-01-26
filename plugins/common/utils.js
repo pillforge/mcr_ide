@@ -114,7 +114,7 @@ define(['logManager'], function (logManager) {
 
     function call_apply (index) {
       if (index >= objects_keys.length) {
-        next();
+        setTimeout(next, 0);
       } else {
         apply(object[objects_keys[index]], function () {
           call_apply(index+1);
@@ -133,12 +133,14 @@ define(['logManager'], function (logManager) {
 
     function check_component (index) {
       if (index >= dirs.length) {
-        next(curr_node);
+        // next(curr_node);
+        setTimeout(next, 0, curr_node);
       } else {
         self.core.loadChildren(curr_node, function (err, children) {
           if (err) {
             self.logger.error(err);
-            next(false);
+            // next(false);
+            setTimeout(next, 0, false);
           } else {
             var dir_node = null;
             for (var j = children.length - 1; j >= 0; j--) {
@@ -148,7 +150,8 @@ define(['logManager'], function (logManager) {
               }
             }
             if (dir_node == null) {
-              return next(false);
+              // return next(false);
+              return setTimeout(next, 0, false);
             }
             curr_node = dir_node;
             check_component(index+1);
@@ -195,12 +198,17 @@ define(['logManager'], function (logManager) {
 
   };
 
-  utils.prototype.get_dirs_with_file = function (component_path) {
+  utils.prototype.get_path_without_ext = function (component_path) {
     var path = require('path');
     return path.join(
       path.dirname(component_path),
       path.basename(component_path, path.extname(component_path))
-      ).split('/');
+      );
+  };
+
+  utils.prototype.get_dirs_with_file = function (component_path) {
+    var path = require('path');
+    return this.get_path_without_ext(component_path).split('/');
   };
 
   utils.prototype.get_dirs = function (component_path) {

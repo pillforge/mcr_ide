@@ -38,7 +38,7 @@ define(
       self.createApp(file_path, function (error) {
         if (error !== null) {
           self.result.setSuccess(false);
-          self.createMessage(null, err_msg);
+          self.createMessage(null, error);
           callback(error, self.result);
         } else {
           self.save('Save AppImporter changes', function () {
@@ -70,10 +70,13 @@ define(
           var pd = new ParseDump();
           var app_json = pd.parse(null, xml);
           self.app_json = app_json;
+          fs.writeFileSync('app_json.js.log', JSON.stringify(app_json, null, '  '));
           self.createInterfaces(app_json.interfacedefs, function () {
             self.createComponents(app_json.components, function () {
-              self.createUPInterfaces(app_json.components, function () {
-                next(null);
+              self.createUPInterfacesAll(app_json.components, function () {
+                self.createWiringsAll(app_json.components, function () {
+                  next(null);
+                });
               });
             });
           });
@@ -81,39 +84,126 @@ define(
       });
     };
 
-    AppImporter.prototype.createUPInterfaces = function (components, next) {
+    AppImporter.prototype.createWiringsAll = function (components, next) {
       var self = this;
-      self.logger.info('createUPInterfaces()');
+      self.logger.info('createWiringsAll()');
       self.utils.for_each_then_call_next(components, function (component, fn_next) {
-        self.createUPInterface(component, fn_next);
+        self.createWiringsComponent(component, fn_next);
       }, next);
     };
 
-    AppImporter.prototype.createUPInterface = function (component, next) {
+    AppImporter.prototype.createWiringsComponent = function (component, next) {
       var self = this;
-      self.logger.info('createUPInterface(): ' + component.name);
-      if (component.interface_types.length === 0) next();
-      var counter = 0;
-      for (var i = component.interface_types.length - 1; i >= 0; i--) {
-        var curr_intf = component.interface_types[i];
-        self.logger.info('creating u/p interface: ' + curr_intf.as);
-        self.utils.exists(self.rootNode, component.file_path, function (end_node) {
-          var intf_node = self.core.createNode({
-            base: self.utils.get_type_of_interface(curr_intf),
-            parent: end_node
-          });
-          self.core.setAttribute(intf_node, 'name', curr_intf.as);
-          if (curr_intf.argument_type) {
-            self.core.setAttribute(intf_node, 'type_arguments', curr_intf.argument_type);
-          }
-          self.utils.exists(self.rootNode, self.app_json.interfacedefs[curr_intf.name].file_path, function (exists) {
-            if (exists) {
-              self.core.setPointer(intf_node, 'interface', exists);
+      self.logger.info('createWiringsComponent()');
+      self.utils.for_each_then_call_next(component.wiring, function (wiring, fn_next) {
+        self.createWiring(component, wiring, fn_next);
+      }, next);
+    };
+
+    AppImporter.prototype.createWiring = function (component, wiring, next) {
+      var self = this;
+      self.logger.info('createWiring()');
+      self.getWiringComponent(component, wiring.from, function (from_component, equate_f) {
+        self.getWiringComponent(component, wiring.to, function (to_component, equate_t) {
+          if (from_component && to_component) {
+            var base = self.META.Link_Interface;
+            if (equate_f === 'equate' || equate_t === 'equate') {
+              base = self.META.Equate_Interface;
             }
-            if (++counter >= component.interface_types.length) next();
-          });
+            self.utils.exists(self.rootNode, component.file_path, function (parent) {
+              var wiring_node = self.core.createNode({
+                base: base,
+                parent: parent
+              });
+              self.core.setPointer(wiring_node, 'src', from_component);
+              self.core.setPointer(wiring_node, 'dst', to_component);
+              if (wiring.from.cst) {
+                self.core.setAttribute(wiring_node, 'src_params', 'cst:' + wiring.from.cst);
+              }
+              if (wiring.to.cst) {
+                self.core.setAttribute(wiring_node, 'dst_params', 'cst:' + wiring.to.cst);
+              }
+              next();
+            });
+          } else {
+            next();
+          }
+        });
+      });
+    };
+
+    AppImporter.prototype.getWiringComponent = function (component, wiring_part, next) {
+      var self = this;
+      self.logger.info('getWiringComponent()');
+      if (component.file_path === wiring_part.component_base) {
+        self.utils.exists(self.rootNode, self.utils.get_path_without_ext(wiring_part.component_base) + '/' + wiring_part.interface, function (node) {
+          next(node, 'equate');
+        });
+      } else {
+        self.utils.exists(self.rootNode, self.utils.get_path_without_ext(component.file_path) + '/' + wiring_part.name, function (node) {
+          if (node) {
+            next(node);
+          } else {
+            self.utils.exists(self.rootNode, wiring_part.component_base, function (base) {
+              self.utils.exists(self.rootNode, component.file_path, function (parent) {
+                var wiring_component = self.core.createNode({
+                  base: base,
+                  parent: parent
+                });
+                next(wiring_component);
+              });
+            });
+          }
         });
       }
+    };
+
+    AppImporter.prototype.createUPInterfacesAll = function (components, next) {
+      var self = this;
+      self.logger.info('createUPInterfacesAll()');
+      self.utils.for_each_then_call_next(components, function (component, fn_next) {
+        self.createUPInterfaceComponent(component, fn_next);
+      }, next);
+    };
+
+    AppImporter.prototype.createUPInterfaceComponent = function (component, next) {
+      var self = this;
+      self.logger.info('createUPInterfaceComponent(): ' + component.name);
+      if (component.interface_types.length === 0) {
+        next();
+      } else {
+        self.utils.for_each_then_call_next(component.interface_types, function (curr_intf, fn_next) {
+          self.createUPInterface(component, curr_intf, fn_next);
+        }, next);
+      }
+
+    };
+
+    AppImporter.prototype.createUPInterface = function(component, curr_intf, next) {
+      var self = this;
+      self.logger.info('creating u/p interface: ' + curr_intf.as);
+      self.utils.exists(self.rootNode, self.utils.get_path_without_ext(component.file_path) + '/' + curr_intf.as, function (node) {
+        if (!node) {
+          self.utils.exists(self.rootNode, component.file_path, function (end_node) {
+            var intf_node = self.core.createNode({
+              base: self.utils.get_type_of_interface(curr_intf),
+              parent: end_node
+            });
+            self.core.setAttribute(intf_node, 'name', curr_intf.as);
+            if (curr_intf.argument_type) {
+              self.core.setAttribute(intf_node, 'type_arguments', curr_intf.argument_type);
+            }
+            self.utils.exists(self.rootNode, self.app_json.interfacedefs[curr_intf.name].file_path, function (exists) {
+              if (exists) {
+                self.core.setPointer(intf_node, 'interface', exists);
+              }
+              next();
+            });
+          });
+        } else {
+          next();
+        }
+      });
     };
 
     AppImporter.prototype.createComponents = function (components, next) {
@@ -141,7 +231,7 @@ define(
             next();
           });
         } else {
-          self.logger.info('skipping the component: ' + component.name)
+          self.logger.info('skipping the component: ' + component.name);
           next();
         }
       });
