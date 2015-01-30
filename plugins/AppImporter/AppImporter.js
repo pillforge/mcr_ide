@@ -23,15 +23,15 @@ define(
       var self = this;
       var project_path = '/home/hakan/Documents/tinyos-apps/Icra2015Expt/Base/';
       var platform = config_json.platform || 'exp430';
-      var aiw = new AppImporterWorker(self.core, self.META);
+      var aiw = new AppImporterWorker(self.core, self.META, self.rootNode);
       aiw.createApp(project_path, platform, function (err) {
         if (err) {
           return callback(err, self.result);
         }
-        self.save('saving', function () {
+        // self.save('saving', function () {
           self.result.setSuccess(true);
           callback(null, self.result);
-        });
+        // });
       });
     };
 

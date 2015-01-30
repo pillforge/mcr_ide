@@ -1,9 +1,10 @@
 define(['../common/Util'], function (Util) {
   "use strict";
 
-  var AppImporterWorker = function (core, META) {
+  var AppImporterWorker = function (core, META, rootNode) {
     this.core = core;
     this.META = META;
+    this.rootNode = rootNode;
     this.util = new Util(this.core, this.META);
   };
 
@@ -19,8 +20,13 @@ define(['../common/Util'], function (Util) {
 
     async.parallel([
       function (callback) {
-        self.util.loadNodes();
-        callback(null, 'loadNodes');
+        self.util.loadNodes(self.rootNode, function (err, nodes) {
+          if (err) {
+            callback(err);
+          } else {
+            callback(null, 'loadNodes');
+          }
+        });
       },
       function (callback) {
         self.util.getAppJson(project_path, platform, function (err, app_json) {
