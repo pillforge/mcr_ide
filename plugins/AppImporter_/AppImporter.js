@@ -4,7 +4,7 @@ define(
   'logManager',
   '../../package.json',
   '../../config.json',
-  '../TinyOSPopulate/NesC_XML_Generator',
+  '../common/NesC_XML_Generator',
   '../TinyOSPopulate/ParseDump',
   '../common/utils'
   ],

@@ -6,7 +6,7 @@ define(['fs', 'path', 'child_process', 'logManager'],
     var NesC_XML_Generator = function(target, tinyos) {
       var self = this;
       exec = child_process.exec;
-      self._target = target || 'telosb';
+      self._target = target || 'exp430';
       self._tinyos = tinyos || process.env.TOSROOT;
       var ncc_cmd_common = 'ncc' +
         ' "-fnesc-dump=referenced(interfaces,components,functions)"' + 

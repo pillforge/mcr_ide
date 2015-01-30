@@ -1,9 +1,10 @@
 define(
   ['plugin/PluginBase',
   'plugin/PluginConfig',
-  './Refresher'
+  './AppImporterWorker',
+  '../../config.json'
   ],
-  function (PluginBase, PluginConfig, Refresher) {
+  function (PluginBase, PluginConfig, AppImporterWorker, config_json) {
     "use strict";
 
     var AppImporter = function () {
@@ -20,8 +21,13 @@ define(
 
     AppImporter.prototype.main = function (callback) {
       var self = this;
-      var r = new Refresher(self.core, self.META);
-      r.createApp(function () {
+      var project_path = '/home/hakan/Documents/tinyos-apps/Icra2015Expt/Base/';
+      var platform = config_json.platform || 'exp430';
+      var aiw = new AppImporterWorker(self.core, self.META);
+      aiw.createApp(project_path, platform, function (err) {
+        if (err) {
+          return callback(err, self.result);
+        }
         self.save('saving', function () {
           self.result.setSuccess(true);
           callback(null, self.result);

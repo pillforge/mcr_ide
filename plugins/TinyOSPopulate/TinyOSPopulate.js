@@ -7,8 +7,8 @@ define(
   'util',
   '../../package.json',
   '../../config.json',
-  './ParseDump',
-  './NesC_XML_Generator'],
+  '../common/ParseDump',
+  '../common/NesC_XML_Generator'],
   function (PluginBase, PluginConfig, fs, path, module, util, pjson,
     config_json, ParseDump, NesC_XML_Generator) {
     "use strict";
