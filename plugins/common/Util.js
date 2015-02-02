@@ -11,7 +11,7 @@ define(
   var Util = function (core, META) {
     this.core = core;
     this.META = META;
-    this.debug = true;
+    this.debug = false;
   };
 
   Util.prototype.getAppJson = function (full_path, platform, next) {
@@ -51,13 +51,13 @@ define(
       include_paths = include_paths.map(function(include_path) {
         return '-I' + path.normalize(path.join(full_path, include_path.substr(2)));
       });
-      var include = include_paths.join(' ');
+      include = include_paths.join(' ');
     }
 
     var component = null;
     var component_search = /COMPONENT=(\S+)/.exec(file);
     if (component_search !== null) {
-      var component = component_search[1];
+      component = component_search[1];
     }
 
     return {
@@ -79,29 +79,37 @@ define(
     });
 
     function load(node, path_log, next_next) {
+      if (self.debug) console.log('load', path_log);
       self.core.loadChildren(node, function (err, children) {
         if (err) {
           if (self.debug) console.log('Cannot load nodes at', path_log);
           next_next('Cannot load nodes');
         } else {
+          if (self.debug) console.log(path_log, 'have', children.length, 'children');
+          var error_occured = false;
           async.eachSeries(children, function (child, callback) {
             var curr_path_log = path_log + ' > ' + self.core.getAttribute(child, 'name');
             if (self.debug) console.log(curr_path_log);
             load(child, curr_path_log, function (errr) {
               if (errr) {
-                callback(errr);
+                if (self.debug) console.log('Error occured', curr_path_log, errr);
+                if (!error_occured) {
+                  error_occured = true;
+                  callback(errr);
+                }
               } else {
+                if (self.debug) console.log('Completed', curr_path_log);
                 callback();
               }
             });
           }, function (err) {
+            if (self.debug) console.log('Children finished', path_log, 'err', err);
             if (err) {
               if (self.debug) console.log('async err at', path_log, err);
               next_next(err);
             } else {
               next_next();
             }
-            // next_next();
           });
         }
       });
