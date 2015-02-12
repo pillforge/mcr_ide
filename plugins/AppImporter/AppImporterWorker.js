@@ -33,6 +33,7 @@ define(['../common/Util'], function (Util) {
           if (err) {
             callback(err);
           } else {
+            app_json = self.util.normalizeProjectPath(app_json, project_path, 'imported-apps');
             callback(null, app_json);
           }
         });
@@ -42,6 +43,12 @@ define(['../common/Util'], function (Util) {
       if (err) {
         return next(err);
       }
+      self.nodes = results[0];
+      self.app_json = results[1];
+      console.log('results', results);
+
+      fs.writeFileSync('app_json.js.log', JSON.stringify(results[1], null, '  '));
+
       next(null);
     });
 

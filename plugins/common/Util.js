@@ -14,6 +14,15 @@ define(
     this.debug = false;
   };
 
+  Util.prototype.normalizeProjectPath = function(app_json, project_path, prefix) {
+    var tos_path = process.env.TOSROOT;
+    var project_prefix_dir = path.dirname(project_path);
+    if (project_path.search(tos_path) === 0)
+      project_prefix_dir = path.dirname(project_path.substr(tos_path.length+1));
+    var re = new RegExp(project_prefix_dir, 'g');
+    return JSON.parse(JSON.stringify(app_json).replace(re, prefix));
+  };
+
   Util.prototype.getAppJson = function (full_path, platform, next) {
     var self = this;
     var nxg = new NesC_XML_Generator(platform);
@@ -31,6 +40,7 @@ define(
       if (err) {
         return next('Cannot get XML');
       } else {
+        if (self.debug) fs.writeFileSync('app_xml.xml.log', xml);
         var pd = new ParseDump();
         var app_json = pd.parse(null, xml);
         return next(null, app_json);
