@@ -79,12 +79,13 @@ define(
   Util.prototype.loadNodes = function (start_node, next) {
     var self = this;
 
+    var cached_nodes = {};
     var name = self.core.getAttribute(start_node, 'name');
-    load(start_node, name, function (err) {
+    load(start_node, '', function (err) {
       if (err) {
         next(err);
       } else {
-        next();
+        next(null, cached_nodes);
       }
     });
 
@@ -98,7 +99,8 @@ define(
           if (self.debug) console.log(path_log, 'have', children.length, 'children');
           var error_occured = false;
           async.eachSeries(children, function (child, callback) {
-            var curr_path_log = path_log + ' > ' + self.core.getAttribute(child, 'name');
+            var curr_path_log = path_log + '/' + self.core.getAttribute(child, 'name');
+            cached_nodes[curr_path_log] = child;
             if (self.debug) console.log(curr_path_log);
             load(child, curr_path_log, function (errr) {
               if (errr) {
