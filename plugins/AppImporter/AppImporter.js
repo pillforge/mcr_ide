@@ -29,10 +29,10 @@ define(
         if (err) {
           return callback(err, self.result);
         }
-        // self.save('saving', function () {
+        self.save('saving', function () {
           self.result.setSuccess(true);
           callback(null, self.result);
-        // });
+        });
       });
     };
 

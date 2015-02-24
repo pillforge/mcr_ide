@@ -14,6 +14,23 @@ define(
     this.debug = false;
   };
 
+  // /home/user/.../MainC.nc returns /home/user/.../MainC
+  Util.prototype.getPathWithoutExt = function (component_path) {
+    return path.join(
+      path.dirname(component_path),
+      path.basename(component_path, path.extname(component_path))
+      );
+  };
+
+  // 'imported-apps/modular/Message.nc' returns [ 'imported-apps', 'modular' ]
+  Util.prototype.getDirs = function (component_path) {
+    var ext = path.extname(component_path);
+    var dirs = '';
+    if (ext === '') dirs = component_path;
+    if (ext === '.nc') dirs = path.dirname(component_path);
+    return dirs.split('/');
+  };
+
   Util.prototype.normalizeProjectPath = function(app_json, project_path, prefix) {
     var tos_path = process.env.TOSROOT;
     var project_prefix_dir = path.dirname(project_path);
@@ -81,7 +98,7 @@ define(
 
     var cached_nodes = {};
     var name = self.core.getAttribute(start_node, 'name');
-    load(start_node, '', function (err) {
+    load(start_node, name, function (err) {
       if (err) {
         next(err);
       } else {
