@@ -6,7 +6,6 @@
   "mongoport": 27017,
   "mongodatabase": "multi",
 
-  // "storageKeyType": "rand160Bits",
   "storageKeyType": "plainSHA1",
   "pluginBasePaths": ["./plugins"],
   "decoratorpaths": ["./decorators"],

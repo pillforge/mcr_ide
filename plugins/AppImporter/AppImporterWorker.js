@@ -22,6 +22,7 @@ define(['../common/Util'], function (Util) {
 
     async.parallel([
       function (callback) {
+        console.log('do i work');
         self.util.loadNodes(self.rootNode, function (err, nodes) {
           if (err) {
             callback(err);
@@ -49,7 +50,7 @@ define(['../common/Util'], function (Util) {
       self.nodes = results[0];
       self.app_json = results[1];
 
-      // console.log('results', results);
+      // console.log('results', results[1]);
 
       fs.writeFileSync('app_json.js.log', JSON.stringify(results[1], null, '  '));
 

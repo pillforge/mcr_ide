@@ -11,7 +11,7 @@ define(
   var Util = function (core, META) {
     this.core = core;
     this.META = META;
-    this.debug = false;
+    this.debug = true;
   };
 
   // /home/user/.../MainC.nc returns /home/user/.../MainC
