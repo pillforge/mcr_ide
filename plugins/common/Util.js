@@ -8,10 +8,11 @@ define(
   function (fs, path, async, NesC_XML_Generator, ParseDump) {
   "use strict";
 
-  var Util = function (core, META) {
+  var Util = function (core, META, rootNode) {
     this.core = core;
     this.META = META;
-    this.debug = true;
+    this.rootNode = rootNode;
+    this.debug = false;
   };
 
   // /home/user/.../MainC.nc returns /home/user/.../MainC
@@ -93,6 +94,23 @@ define(
     };
   };
 
+  Util.prototype.loadNodesId = function (node_id, callback) {
+    var self = this;
+    self.core.loadByPath(self.rootNode, node_id, function (err, node) {
+      if (err) {
+        callback(err);
+      } else {
+        self.loadNodes(node, function (err, nodes) {
+          if (err) {
+            callback(err);
+          } else {
+            callback(null, nodes, node);
+          }
+        });
+      }
+    });
+  };
+
   Util.prototype.loadNodes = function (start_node, next) {
     var self = this;
 
@@ -118,6 +136,7 @@ define(
           async.eachSeries(children, function (child, callback) {
             var curr_path_log = path_log + '/' + self.core.getAttribute(child, 'name');
             cached_nodes[curr_path_log] = child;
+            cached_nodes[self.core.getPath(child)] = child;
             if (self.debug) console.log(curr_path_log);
             load(child, curr_path_log, function (errr) {
               if (errr) {

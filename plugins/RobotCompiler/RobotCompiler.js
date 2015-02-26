@@ -64,7 +64,7 @@ define(['plugin/PluginConfig', 'plugin/PluginBase', 'plugin/RobotCompiler/RobotC
     var self = this;
     self.updateMETA(self.metaTypes);
 
-    console.log(self);
+    // console.log(self);
 
     var rcw = new RobotCompilerWorker(self.core, self.META, self.rootNode);
     var robot_id = '/187823436/1419722536'; // set this when this plugin is called
