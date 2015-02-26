@@ -11,7 +11,24 @@ define(
   var Util = function (core, META) {
     this.core = core;
     this.META = META;
-    this.debug = false;
+    this.debug = true;
+  };
+
+  // /home/user/.../MainC.nc returns /home/user/.../MainC
+  Util.prototype.getPathWithoutExt = function (component_path) {
+    return path.join(
+      path.dirname(component_path),
+      path.basename(component_path, path.extname(component_path))
+      );
+  };
+
+  // 'imported-apps/modular/Message.nc' returns [ 'imported-apps', 'modular' ]
+  Util.prototype.getDirs = function (component_path) {
+    var ext = path.extname(component_path);
+    var dirs = '';
+    if (ext === '') dirs = component_path;
+    if (ext === '.nc') dirs = path.dirname(component_path);
+    return dirs.split('/');
   };
 
   Util.prototype.normalizeProjectPath = function(app_json, project_path, prefix) {
@@ -79,12 +96,13 @@ define(
   Util.prototype.loadNodes = function (start_node, next) {
     var self = this;
 
+    var cached_nodes = {};
     var name = self.core.getAttribute(start_node, 'name');
     load(start_node, name, function (err) {
       if (err) {
         next(err);
       } else {
-        next();
+        next(null, cached_nodes);
       }
     });
 
@@ -98,7 +116,8 @@ define(
           if (self.debug) console.log(path_log, 'have', children.length, 'children');
           var error_occured = false;
           async.eachSeries(children, function (child, callback) {
-            var curr_path_log = path_log + ' > ' + self.core.getAttribute(child, 'name');
+            var curr_path_log = path_log + '/' + self.core.getAttribute(child, 'name');
+            cached_nodes[curr_path_log] = child;
             if (self.debug) console.log(curr_path_log);
             load(child, curr_path_log, function (errr) {
               if (errr) {

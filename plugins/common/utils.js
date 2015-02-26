@@ -198,6 +198,7 @@ define(['logManager'], function (logManager) {
 
   };
 
+  // Use at Util, remove later.
   utils.prototype.get_path_without_ext = function (component_path) {
     var path = require('path');
     return path.join(
