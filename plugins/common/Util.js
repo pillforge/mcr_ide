@@ -1,5 +1,5 @@
 define(
-  ['fs',
+  ['fs-extra',
   'path',
   'async',
   './NesC_XML_Generator',
@@ -30,15 +30,6 @@ define(
     if (ext === '') dirs = component_path;
     if (ext === '.nc') dirs = path.dirname(component_path);
     return dirs.split('/');
-  };
-
-  Util.prototype.normalizeProjectPath = function(app_json, project_path, prefix) {
-    var tos_path = process.env.TOSROOT;
-    var project_prefix_dir = path.dirname(project_path);
-    if (project_path.search(tos_path) === 0)
-      project_prefix_dir = path.dirname(project_path.substr(tos_path.length+1));
-    var re = new RegExp(project_prefix_dir, 'g');
-    return JSON.parse(JSON.stringify(app_json).replace(re, prefix));
   };
 
   Util.prototype.getAppJson = function (full_path, platform, next) {
@@ -162,7 +153,31 @@ define(
         }
       });
     }
+  };
 
+  Util.prototype.normalizeProjectPath = function(app_json, project_path, prefix) {
+    var tos_path = process.env.TOSROOT;
+    var project_prefix_dir = path.dirname(project_path);
+    if (project_path.search(tos_path) === 0)
+      project_prefix_dir = path.dirname(project_path.substr(tos_path.length+1));
+    var re = new RegExp(project_prefix_dir, 'g');
+    return JSON.parse(JSON.stringify(app_json).replace(re, prefix));
+  };
+
+  Util.prototype.saveChildrenAsFiles = function (node_id, nodes, folder) {
+    var self = this;
+    fs.removeSync(folder);
+    fs.mkdirpSync(folder);
+    var children = self.core.getChildrenPaths(nodes[node_id]);
+    for (var i = children.length - 1; i >= 0; i--) {
+      var child_node = nodes[children[i]];
+      var src = self.core.getAttribute(child_node, 'source');
+      var name = self.core.getAttribute(child_node, 'name');
+      var extension = '.nc';
+      if (self.core.isTypeOf(child_node, self.META.Header_File))
+          extension = '.h';
+      fs.writeFileSync(path.join(folder, name) + extension, src);
+    }
   };
 
   return Util;

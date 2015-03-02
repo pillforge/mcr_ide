@@ -27,7 +27,7 @@ define(['logManager', '../common/Util'], function (LogManager, Util) {
         var src_node = nodes[src];
         var dst_node = nodes[dst];
         if (self.core.isTypeOf(dst_node, self.META.Port)) {
-          self.logger.warn(src + ' ' + dst);
+          // self.logger.warn(src + ' ' + dst);
           var parent_of_dst = get_parent_path(dst);
           if (!units[parent_of_dst].parameters)
             units[parent_of_dst].parameters = {};
@@ -35,7 +35,8 @@ define(['logManager', '../common/Util'], function (LogManager, Util) {
         }
       }
 
-      self.handleUnit(units['/187823436/1419722536/1652068488'], nodes);
+      // self.handleUnit('/187823436/1419722536/1652068488', units['/187823436/1419722536/1652068488'], nodes);
+      self.handleUnit('/187823436/1419722536/807555894', units['/187823436/1419722536/807555894'], nodes);
 
       callback();
 
@@ -58,8 +59,34 @@ define(['logManager', '../common/Util'], function (LogManager, Util) {
     });
   };
 
-  RobotCompilerWorker.prototype.handleUnit = function(unit, nodes) {
+  RobotCompilerWorker.prototype.handleUnit = function(unit_id, unit, nodes) {
+    var self = this;
+    var path = require('path');
+    var fs = require('fs');
+    var folder = 'build/temp-rcw-hu';
     console.log(unit);
+    self.logger.warn(unit_id);
+    self.util.saveChildrenAsFiles(unit_id, nodes, folder);
+
+    var port_connections = self.core.getAttribute(nodes[unit_id], 'port_connections');
+    if (!port_connections) return false;
+
+    for (var parameter in unit.parameters) {
+      var src_id = parameter;
+      var dst_id = unit.parameters[parameter];
+      var value = self.core.getAttribute(nodes[src_id], 'value');
+      var name = self.core.getAttribute(nodes[dst_id], 'name');
+      updateTheLine('#define ' + name, '#define ' + name + ' ' + value, path.join(folder, port_connections));
+    }
+
+    function updateTheLine(where, to, path) {
+      var file = fs.readFileSync(path, 'utf8');
+      var re = new RegExp(where + ".*");
+      file = file.replace(re, to);
+      fs.writeFileSync(path, file);
+    }
+
+
   };
 
   return RobotCompilerWorker;
