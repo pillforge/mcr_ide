@@ -68,9 +68,15 @@ define(['plugin/PluginConfig', 'plugin/PluginBase', 'plugin/RobotCompiler/RobotC
 
     var rcw = new RobotCompilerWorker(self.core, self.META, self.rootNode);
     var robot_id = '/187823436/1419722536'; // set this when this plugin is called
-    rcw.compileRobot(robot_id, function () {
-      self.result.setSuccess(true);
-      callback(null, self.result);
+    rcw.compileRobot(robot_id, function (err, msg) {
+      if (err) {
+        self.result.setSuccess(false);
+        callback(err, self.result);
+      } else {
+        self.logger.warn(msg);
+        self.result.setSuccess(true);
+        callback(null, self.result);
+      }
     });
 
   };

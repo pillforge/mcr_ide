@@ -35,6 +35,7 @@ define(['logManager', '../common/Util', 'path'], function (LogManager, Util, pat
         }
       }
 
+      var implementation_message_connections = [];
       for (var msg_flow in msg_flows) {
         var msg_flow_node = nodes[msg_flow];
         var src = self.core.getPointerPath(msg_flow_node, 'src');
@@ -46,6 +47,9 @@ define(['logManager', '../common/Util', 'path'], function (LogManager, Util, pat
         if (!units[parent_of_dst].messages)
           units[parent_of_dst].messages = {};
         units[parent_of_dst].messages[src] = dst;
+        var src_app_data = self.core.getAttribute(nodes[parent_of_src], 'app').split(' ')[1];
+        var dst_app_data = self.core.getAttribute(nodes[parent_of_dst], 'app').split(' ')[1];
+        implementation_message_connections.push(dst_app_data + '.Message -> ' + src_app_data + ';');
       }
 
       var fs = require('fs-extra');
@@ -57,9 +61,80 @@ define(['logManager', '../common/Util', 'path'], function (LogManager, Util, pat
         self.handleUnit(unit_id, units[unit_id], nodes, folder);
       }
 
-      
+      // generate robot app configuration
+      var robot_name = self.core.getAttribute(robot_node, 'name');
+      var headers = '';
+      var implementation = '';
+      for (var unit_id in units) {
+        var app_data = self.core.getAttribute(nodes[unit_id], 'app').split(' ');
+        var app_name = app_data[0];
+        var file = fs.readFileSync(path.join(folder, app_name) + '.nc', 'utf8');
+        var parsed = parse_file(file);
 
-      callback();
+        //fix the orders
+        headers = parsed.headers + headers;
+        implementation += parsed.implementation;
+
+      }
+
+      implementation += implementation_message_connections.join('\n');
+
+      var configuration = 'configuration ' + robot_name + ' {\n}';
+      var robot_app_file = headers + configuration + '\nimplementation {\n'
+        + implementation + '\n}';
+
+      var makefile = 'COMPONENT=' + robot_name + '\n';
+      makefile += 'include $(MAKERULES)';
+
+      fs.writeFileSync(path.join(folder, robot_name) + '.nc', robot_app_file);
+      fs.writeFileSync(path.join(folder, 'Makefile'), makefile);
+
+      var make_cmd = "make " + 'exp430';
+      var options = {};
+      var exec = require('child_process').exec;
+      var process = require('process');
+      process.chdir(folder);
+      exec(make_cmd, options, function (error, stdout, stderr) {
+        self.logger.info('exec()');
+        if (error !== null) {
+          self.logger.error('exec make: ' + error);
+          // self._cleanUp();
+          process.chdir('../..');
+          callback(error);
+        } else {
+          // return the app.c as downloadable
+          self.logger.info('return binary');
+          process.chdir('../..');
+          // var appc_location = path.resolve('build', self.platform, 'app.c');
+          // var appc_content = fs.readFileSync(appc_location, 'utf8');
+          // self._cleanUp();
+          callback(null, 'compiled in the folder: ' + folder + '/build/exp430');
+        }
+      });
+
+      function parse_file (file) {
+        var lines = file.split('\n');
+        var rsl_arr = ['', '', ''];
+        var curr = 0;
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (line.search('configuration') >= 0) {
+            curr = 1;
+            continue;
+          }
+          if (line.search('implementation') >= 0) {
+            curr = 2;
+            continue;
+          }
+          rsl_arr[curr] += line + '\n';
+        }
+        var last_occurence = rsl_arr[2].lastIndexOf('}');
+        rsl_arr[2] = rsl_arr[2].substr(0, last_occurence);
+        return {
+          headers: rsl_arr[0],
+          implementation: rsl_arr[2]
+        };
+      }
 
       function populate (children, type) {
         var obj = {};
