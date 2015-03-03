@@ -1,4 +1,4 @@
-define(['logManager', '../common/Util'], function (LogManager, Util) {
+define(['logManager', '../common/Util', 'path'], function (LogManager, Util, path) {
   "use strict";
 
   var RobotCompilerWorker = function (core, META, rootNode) {
@@ -35,8 +35,29 @@ define(['logManager', '../common/Util'], function (LogManager, Util) {
         }
       }
 
-      // self.handleUnit('/187823436/1419722536/1652068488', units['/187823436/1419722536/1652068488'], nodes);
-      self.handleUnit('/187823436/1419722536/807555894', units['/187823436/1419722536/807555894'], nodes);
+      for (var msg_flow in msg_flows) {
+        var msg_flow_node = nodes[msg_flow];
+        var src = self.core.getPointerPath(msg_flow_node, 'src');
+        var dst = self.core.getPointerPath(msg_flow_node, 'dst');
+        var src_node = nodes[src];
+        var dst_node = nodes[dst];
+        var parent_of_src = get_parent_path(src);
+        var parent_of_dst = get_parent_path(dst);
+        if (!units[parent_of_dst].messages)
+          units[parent_of_dst].messages = {};
+        units[parent_of_dst].messages[src] = dst;
+      }
+
+      var fs = require('fs-extra');
+      var folder = 'build/temp-rcw-hu';
+      fs.removeSync(folder);
+      fs.mkdirpSync(folder);
+
+      for (var unit_id in units) {
+        self.handleUnit(unit_id, units[unit_id], nodes, folder);
+      }
+
+      
 
       callback();
 
@@ -59,13 +80,9 @@ define(['logManager', '../common/Util'], function (LogManager, Util) {
     });
   };
 
-  RobotCompilerWorker.prototype.handleUnit = function(unit_id, unit, nodes) {
+  RobotCompilerWorker.prototype.handleUnit = function(unit_id, unit, nodes, folder) {
     var self = this;
-    var path = require('path');
-    var fs = require('fs');
-    var folder = 'build/temp-rcw-hu';
-    console.log(unit);
-    self.logger.warn(unit_id);
+
     self.util.saveChildrenAsFiles(unit_id, nodes, folder);
 
     var port_connections = self.core.getAttribute(nodes[unit_id], 'port_connections');
@@ -79,13 +96,23 @@ define(['logManager', '../common/Util'], function (LogManager, Util) {
       updateTheLine('#define ' + name, '#define ' + name + ' ' + value, path.join(folder, port_connections));
     }
 
+    for (var message in unit.messages) {
+      var src_id = message;
+      var dst_id = unit.messages[message];
+      console.log('here', src_id, dst_id);
+      var type_parameters = self.core.getAttribute(nodes[dst_id], 'type_parameters');
+      var value = self.core.getAttribute(nodes[src_id], 'type_parameters');
+      console.log(type_parameters);
+      updateTheLine('#define ' + type_parameters, '#define ' + type_parameters + ' ' + value, path.join(folder, port_connections));
+    }
+
     function updateTheLine(where, to, path) {
+      var fs = require('fs');
       var file = fs.readFileSync(path, 'utf8');
       var re = new RegExp(where + ".*");
       file = file.replace(re, to);
       fs.writeFileSync(path, file);
     }
-
 
   };
 

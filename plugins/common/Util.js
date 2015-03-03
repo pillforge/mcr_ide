@@ -166,8 +166,6 @@ define(
 
   Util.prototype.saveChildrenAsFiles = function (node_id, nodes, folder) {
     var self = this;
-    fs.removeSync(folder);
-    fs.mkdirpSync(folder);
     var children = self.core.getChildrenPaths(nodes[node_id]);
     for (var i = children.length - 1; i >= 0; i--) {
       var child_node = nodes[children[i]];
