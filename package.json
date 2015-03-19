@@ -15,9 +15,11 @@
   },
   "license": "MIT",
   "dependencies": {
-    "webgme": "webgme/webgme",
+    "async": "^0.9.0",
     "dot": ">=1.0.2",
-    "libxmljs": ">=0.9"
+    "libxmljs": ">=0.9",
+    "webgme": "webgme/webgme",
+    "fs-extra": "~0.16.3"
   },
   "devDependencies": {},
   "main": "app.js"

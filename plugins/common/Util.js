@@ -1,5 +1,5 @@
 define(
-  ['fs',
+  ['fs-extra',
   'path',
   'async',
   './NesC_XML_Generator',
@@ -8,19 +8,28 @@ define(
   function (fs, path, async, NesC_XML_Generator, ParseDump) {
   "use strict";
 
-  var Util = function (core, META) {
+  var Util = function (core, META, rootNode) {
     this.core = core;
     this.META = META;
+    this.rootNode = rootNode;
     this.debug = false;
   };
 
-  Util.prototype.normalizeProjectPath = function(app_json, project_path, prefix) {
-    var tos_path = process.env.TOSROOT;
-    var project_prefix_dir = path.dirname(project_path);
-    if (project_path.search(tos_path) === 0)
-      project_prefix_dir = path.dirname(project_path.substr(tos_path.length+1));
-    var re = new RegExp(project_prefix_dir, 'g');
-    return JSON.parse(JSON.stringify(app_json).replace(re, prefix));
+  // /home/user/.../MainC.nc returns /home/user/.../MainC
+  Util.prototype.getPathWithoutExt = function (component_path) {
+    return path.join(
+      path.dirname(component_path),
+      path.basename(component_path, path.extname(component_path))
+      );
+  };
+
+  // 'imported-apps/modular/Message.nc' returns [ 'imported-apps', 'modular' ]
+  Util.prototype.getDirs = function (component_path) {
+    var ext = path.extname(component_path);
+    var dirs = '';
+    if (ext === '') dirs = component_path;
+    if (ext === '.nc') dirs = path.dirname(component_path);
+    return dirs.split('/');
   };
 
   Util.prototype.getAppJson = function (full_path, platform, next) {
@@ -76,12 +85,29 @@ define(
     };
   };
 
+  Util.prototype.loadNodesId = function (node_id, callback) {
+    var self = this;
+    self.core.loadByPath(self.rootNode, node_id, function (err, node) {
+      if (err) {
+        callback(err);
+      } else {
+        self.loadNodes(node, function (err, nodes) {
+          if (err) {
+            callback(err);
+          } else {
+            callback(null, nodes, node);
+          }
+        });
+      }
+    });
+  };
+
   Util.prototype.loadNodes = function (start_node, next) {
     var self = this;
 
     var cached_nodes = {};
     var name = self.core.getAttribute(start_node, 'name');
-    load(start_node, '', function (err) {
+    load(start_node, name, function (err) {
       if (err) {
         next(err);
       } else {
@@ -101,6 +127,7 @@ define(
           async.eachSeries(children, function (child, callback) {
             var curr_path_log = path_log + '/' + self.core.getAttribute(child, 'name');
             cached_nodes[curr_path_log] = child;
+            cached_nodes[self.core.getPath(child)] = child;
             if (self.debug) console.log(curr_path_log);
             load(child, curr_path_log, function (errr) {
               if (errr) {
@@ -126,7 +153,29 @@ define(
         }
       });
     }
+  };
 
+  Util.prototype.normalizeProjectPath = function(app_json, project_path, prefix) {
+    var tos_path = process.env.TOSROOT;
+    var project_prefix_dir = path.dirname(project_path);
+    if (project_path.search(tos_path) === 0)
+      project_prefix_dir = path.dirname(project_path.substr(tos_path.length+1));
+    var re = new RegExp(project_prefix_dir, 'g');
+    return JSON.parse(JSON.stringify(app_json).replace(re, prefix));
+  };
+
+  Util.prototype.saveChildrenAsFiles = function (node_id, nodes, folder) {
+    var self = this;
+    var children = self.core.getChildrenPaths(nodes[node_id]);
+    for (var i = children.length - 1; i >= 0; i--) {
+      var child_node = nodes[children[i]];
+      var src = self.core.getAttribute(child_node, 'source');
+      var name = self.core.getAttribute(child_node, 'name');
+      var extension = '.nc';
+      if (self.core.isTypeOf(child_node, self.META.Header_File))
+          extension = '.h';
+      fs.writeFileSync(path.join(folder, name) + extension, src);
+    }
   };
 
   return Util;
