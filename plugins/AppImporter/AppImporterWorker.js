@@ -1,4 +1,4 @@
-define(['../common/Util'], function (Util) {
+define(['../common/Util', '../common/utils'], function (Util, utils) {
   "use strict";
 
   var AppImporterWorker = function (core, META, rootNode) {
@@ -24,7 +24,7 @@ define(['../common/Util'], function (Util) {
           if (err) {
             callback(err);
           } else {
-            callback(null, 'loadNodes');
+            callback(null, nodes);
           }
         });
       },
@@ -45,13 +45,71 @@ define(['../common/Util'], function (Util) {
       }
       self.nodes = results[0];
       self.app_json = results[1];
+
       console.log('results', results);
 
       fs.writeFileSync('app_json.js.log', JSON.stringify(results[1], null, '  '));
 
-      next(null);
+      self.createTosObjects(self.nodes, self.app_json, function () {
+        next(null);
+      });
+
     });
 
+  };
+
+  AppImporterWorker.prototype.createTosObjects = function (nodes, app_json, next) {
+    var self = this;
+    var async = require('async');
+    this.utils = new utils(this.core, this.META);
+    async.series([
+      function (callback) {
+        var interfacedefs = app_json.interfacedefs;
+        var vals = Object.keys(interfacedefs).map(function (key) {
+          return interfacedefs[key];
+        });
+        async.each(vals, function (interfacedef, callback) {
+          var exist = nodes['/' + self.utils.get_path_without_ext(interfacedef.file_path)];
+          console.log(self.utils.get_path_without_ext(interfacedef.file_path));
+          if (!exist) {
+            console.log('need to create', interfacedef);
+          }
+          callback();
+        }, function (err) {
+          if (err) {
+            console.log('err in createInterfaces');
+            next('Err in AppImporterWorker.createInterfaces');
+          } else {
+            next();
+          }
+        });
+      },
+      function (callback) {
+
+      }
+    ],
+    function (err, results) {
+      next();
+    });
+  };
+
+  AppImporterWorker.prototype.createInterfaces = function(interfacedefs, next) {
+    var self = this;
+    var async = require('async');
+    var vals = Object.keys(interfacedefs).map(function (key) {
+      return interfacedefs[key];
+    });
+    async.each(vals, function (interfacedef, callback) {
+
+      callback();
+    }, function (err) {
+      if (err) {
+        console.log('err in createInterfaces');
+        next('Err in AppImporterWorker.createInterfaces');
+      } else {
+        next();
+      }
+    });
   };
 
   return AppImporterWorker;

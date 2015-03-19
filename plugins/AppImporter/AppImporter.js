@@ -21,7 +21,8 @@ define(
 
     AppImporter.prototype.main = function (callback) {
       var self = this;
-      var project_path = '/home/hakan/Documents/tinyos-apps/Icra2015Expt/Base/';
+      // var project_path = '/home/hakan/Documents/tinyos-apps/Icra2015Expt/Base/';
+      var project_path = '/home/hakan/Documents/tinyos-apps/SenseAndSend/modular/';
       var platform = config_json.platform || 'exp430';
       var aiw = new AppImporterWorker(self.core, self.META, self.rootNode);
       aiw.createApp(project_path, platform, function (err) {
