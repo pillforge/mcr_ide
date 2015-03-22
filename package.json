@@ -21,6 +21,10 @@
     "webgme": "webgme/webgme",
     "fs-extra": "~0.16.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.11.1",
+    "grunt-contrib-watch": "^0.6.1"
+  },
   "main": "app.js"
 }
