@@ -48,7 +48,7 @@ define(['fs', 'path', 'child_process', 'logManager'],
         if (fs.existsSync(dir)) {
           var files = fs.readdirSync(dir);
           for (var j = 0; j < files.length; j++) {
-            if (path.extname(files[j]) == '.nc' && 
+            if (path.extname(files[j]) === '.nc' && 
                 !components_dict[files[j]]) {
               components.push(dir + files[j]);
               components_dict[files[j]] = dir;
@@ -61,7 +61,7 @@ define(['fs', 'path', 'child_process', 'logManager'],
 
     NesC_XML_Generator.prototype.getXML = function(component_path, ncc_options, callback) {
       var self = this;
-      var xml_cmd = get_xml_cmd(self._ncc_cmd)
+      var xml_cmd = get_xml_cmd(self._ncc_cmd);
       var options = { maxBuffer: 100*1024*1024 };
       exec(xml_cmd, options, function (error, stdout, stderr) {
         if (error !== null) {

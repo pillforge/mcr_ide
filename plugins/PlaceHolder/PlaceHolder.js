@@ -3,9 +3,9 @@ define(
   'plugin/PluginConfig',
   'logManager',
   '../../package.json',
-  './WebGMEAnalyzer'
+  '../common/NesC_XML_Generator'
   ],
-  function (PluginBase, PluginConfig, LogManager, pjson, WebGMEAnalyzer) {
+  function (PluginBase, PluginConfig, LogManager, pjson, NesC_XML_Generator) {
     "use strict";
 
     var PlaceHolder = function () {
@@ -29,19 +29,27 @@ define(
       var self = this;
       self.logger.info('main()');
 
-      var wa = new WebGMEAnalyzer(self.core, self.META);
-      var comps = wa.getComponents(self.activeNode, function (err, components) {
-        if (err) {
-          self.result.setSuccess(false);
-          callback(null, self.result);
-          return;
-        }
-        // console.log(components);
-
+      self.getDirectories(function () {
         self.result.setSuccess(true);
         callback(null, self.result);
       });
 
+    };
+
+    PlaceHolder.prototype.getDirectories = function (next) {
+      var nxg = new NesC_XML_Generator('exp430');
+      nxg.getDirectories(function(error, directories) {
+        if (error !== null) {
+          self._wi("Can't get platform directories");
+        } else {
+          var components_paths = nxg.getComponents(directories);
+          console.log('directories');
+          console.log(directories);
+          console.log('components_paths');
+          console.log(components_paths);
+        }
+        next();
+      });
     };
 
     return PlaceHolder;
