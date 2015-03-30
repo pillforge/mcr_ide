@@ -9,7 +9,7 @@
 define(['js/Constants',
     'js/NodePropertyNames',
     'js/RegistryKeys',
-    'loaderProgressBar',
+    'js/Loader/LoaderProgressBar',
     './Port',
     './ModelDecorator.Constants',
     'js/Decorators/DecoratorWithPorts.Base',
