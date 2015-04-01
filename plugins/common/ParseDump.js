@@ -17,8 +17,8 @@
 // - Add components and their wiring withing a component
 // - Process interface defs
 
-define(['libxmljs', 'fs', 'path', 'logManager'],
-  function (libxmljs, fs, path, LogManager) {
+define(['libxmljs', 'fs', 'path'],
+  function (libxmljs, fs, path) {
     "use strict";
 
     // This is based on archive.py found in the tools/tinyos/ncc/nesdoc-py
@@ -28,7 +28,6 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
         this.topdir = topdir;
       else
         this.topdir = process.env.TOSROOT;
-      this.logger = LogManager.create('TinyOSPopulate.ParseDump');
     };
 
     ParseDump.prototype.parse = function(file_path, xml) {
@@ -55,10 +54,10 @@ define(['libxmljs', 'fs', 'path', 'logManager'],
       var interfaces = xml_doc.find('//xmlns:interfaces/xmlns:interface', ns);
       var functions = xml_doc.find('//xmlns:functions/xmlns:function', ns);
 
-      self.logger.info("Found " + components.length + " components");
-      self.logger.info("Found " + interfacedefs.length + " interfacedefs");
-      self.logger.info("Found " + interfaces.length + " interfaces");
-      self.logger.info("Found " + functions.length + " functions");
+      // self.logger.info("Found " + components.length + " components");
+      // self.logger.info("Found " + interfacedefs.length + " interfacedefs");
+      // self.logger.info("Found " + interfaces.length + " interfaces");
+      // self.logger.info("Found " + functions.length + " functions");
 
       var refidx = {};
       var qnameidx = {};

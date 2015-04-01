@@ -1,5 +1,5 @@
-define(['fs', 'path', 'child_process', 'logManager'],
-  function (fs, path, child_process, LogManager) {
+define(['fs', 'path', 'child_process'],
+  function (fs, path, child_process) {
     "use strict";
 
     var exec;
@@ -16,7 +16,6 @@ define(['fs', 'path', 'child_process', 'logManager'],
       var fsyntax = '-fsyntax-only';
       self._ncc_cmd = ncc_cmd_common + ' ' + dump_wiring + ' ' + fsyntax;
       self._ncc_cmd2 = ncc_cmd_common + ' ' + fsyntax;
-      self.logger = LogManager.create('TinyOSPopulate.NesC_XML_Generator');
     };
 
     NesC_XML_Generator.prototype.getDirectories = function(callback) {
@@ -27,8 +26,8 @@ define(['fs', 'path', 'child_process', 'logManager'],
       var options = { maxBuffer: 100*1024*1024 };
       exec(dump_cmd, options, function (error, stdout, stderr) {
         if (error !== null) {
-          self.logger.error('stderr: ' + stderr);
-          self.logger.error('exec error: ' + error);
+          // self.logger.error('stderr: ' + stderr);
+          // self.logger.error('exec error: ' + error);
           callback(error, null);
         } else {
           var ind = stderr.search('> search starts here:');
@@ -65,13 +64,13 @@ define(['fs', 'path', 'child_process', 'logManager'],
       var options = { maxBuffer: 100*1024*1024 };
       exec(xml_cmd, options, function (error, stdout, stderr) {
         if (error !== null) {
-          self.logger.error('stderr: ' + stderr);
-          self.logger.error('exec error: ' + error);
-          self.logger.info('trying without fnesc-dump wiring');
+          // self.logger.error('stderr: ' + stderr);
+          // self.logger.error('exec error: ' + error);
+          // self.logger.info('trying without fnesc-dump wiring');
           xml_cmd = get_xml_cmd(self._ncc_cmd2);
           exec(xml_cmd, options, function (error, stdout, stderr) {
             if (error !== null) {
-              self.logger.error('stderr: ' + stderr);
+              // self.logger.error('stderr: ' + stderr);
               callback(error, stdout);
             } else {
               callback(null, stdout);

@@ -1,10 +1,9 @@
 define(
   ['plugin/PluginBase',
   'plugin/PluginConfig',
-  './AppImporterWorker',
-  '../../config.json'
+  './AppImporterWorker'
   ],
-  function (PluginBase, PluginConfig, AppImporterWorker, config_json) {
+  function (PluginBase, PluginConfig, AppImporterWorker) {
     "use strict";
 
     var AppImporter = function () {
@@ -22,8 +21,9 @@ define(
     AppImporter.prototype.main = function (callback) {
       var self = this;
       // var project_path = '/home/hakan/Documents/tinyos-apps/Icra2015Expt/Base/';
-      var project_path = '/home/hakan/Documents/tinyos-apps/SenseAndSend/modular/';
-      var platform = config_json.platform || 'exp430';
+      // var project_path = '/home/hakan/Documents/tinyos-apps/SenseAndSend/modular/';
+      var project_path = '/home/hakan/Documents/tinyos/tos/platforms/exp430/ActiveMessageC.nc';
+      var platform = 'exp430';
       var aiw = new AppImporterWorker(self.core, self.META, self.rootNode);
       aiw.createApp(project_path, platform, function (err) {
         if (err) {
