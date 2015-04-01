@@ -3,10 +3,11 @@ define(['../common/Util'], function (Util) {
 
   var ROOT_PATH = 'ROOT/';
 
-  var AppImporterWorker = function (core, META, rootNode) {
+  var AppImporterWorker = function (core, META, rootNode, logger) {
     this.core = core;
     this.META = META;
     this.rootNode = rootNode;
+    this.logger = logger;
     this.util = new Util(this.core, this.META);
   };
 
