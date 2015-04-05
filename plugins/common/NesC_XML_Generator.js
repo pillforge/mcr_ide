@@ -18,6 +18,17 @@ define(['fs', 'path', 'child_process'],
       self._ncc_cmd2 = ncc_cmd_common + ' ' + fsyntax;
     };
 
+    NesC_XML_Generator.prototype.getComponentsPaths = function(next) {
+      var self = this;
+      self.getDirectories(function (error, directories) {
+        if (error !== null) {
+          next(error, null);
+        } else {
+          next(null, self.getComponents(directories));
+        }
+      });
+    };
+
     NesC_XML_Generator.prototype.getDirectories = function(callback) {
       var self = this;
       var component_path = self._tinyos + '/tos/system/MainC.nc';
