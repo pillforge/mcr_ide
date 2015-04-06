@@ -58,76 +58,6 @@ function (PluginConfig, PluginBase, MetaTypes, TinyOSPopulaterWorker) {
   };
 
   /**
-  * Gets the configuration structure for the TinyOSPopulater.
-  * The ConfigurationStructure defines the configuration for the plugin
-  * and will be used to populate the GUI when invoking the plugin from webGME.
-  * @returns {object} The version of the plugin.
-  * @public
-  */
-  TinyOSPopulater.prototype.getConfigStructure = function () {
-    return [
-      {
-        'name': 'species',
-        'displayName': 'Animal Species',
-        'regex': '^[a-zA-Z]+$',
-        'regexMessage': 'Name can only contain English characters!',
-        'description': 'Which species does the animal belong to.',
-        'value': 'Horse',
-        'valueType': 'string',
-        'readOnly': false
-      },
-      {
-        'name': 'age',
-        'displayName': 'Age',
-        'description': 'How old is the animal.',
-        'value': 3,
-        'valueType': 'number',
-        'minValue': 0,
-        'maxValue': 10000,
-        'readOnly': false
-      },
-      {
-        'name': 'carnivor',
-        'displayName': 'Carnivor',
-        'description': 'Does the animal eat other animals?',
-        'value': false,
-        'valueType': 'boolean',
-        'readOnly': false
-      },
-      {
-        'name': 'classification',
-        'displayName': 'Classification',
-        'description': '',
-        'value': 'Vertebrates',
-        'valueType': 'string',
-        'valueItems': [
-          'Vertebrates',
-          'Invertebrates',
-          'Unknown'
-        ]
-      },
-      {
-        'name': 'color',
-        'displayName': 'Color',
-        'description': 'The hex color code for the animal.',
-        'readOnly': false,
-        'value': '#FF0000',
-        'regex': '^#([A-Fa-f0-9]{6})$',
-        'valueType': 'string'
-      },
-      {
-        'name': 'anAsset',
-        'displayName': 'Document',
-        'description': '',
-        'value': '',
-        'valueType': 'asset',
-        'readOnly': false
-      }
-    ];
-  };
-
-
-  /**
   * Main function for the plugin to execute. This will perform the execution.
   * Notes:
   * - Always log with the provided logger.[error,warning,info,debug].
@@ -141,26 +71,18 @@ function (PluginConfig, PluginBase, MetaTypes, TinyOSPopulaterWorker) {
     // These are all instantiated at this point.
     var self = this;
     self.updateMETA(self.metaTypes);
-    // Using the logger.
-    // self.logger.debug('This is a debug message.');
-    // self.logger.info('This is an info message.');
-    // self.logger.warn('This is a warning message.');
-    // self.logger.error('This is an error message.');
-
-    // Obtain the current user configuration.
-    // var currentConfig = self.getCurrentConfig();
-    // self.logger.info('Current configuration ' + JSON.stringify(currentConfig, null, 4));
 
     var tpw = new TinyOSPopulaterWorker(self.core, self.META, self.rootNode, self.logger);
     tpw.main(function (err) {
       if (err !== null) {
+        self.logger.error(err);
         self.result.setSuccess(false);
       } else {
         self.result.setSuccess(true);
       }
-      // self.save('added obj', function (err) {
+      self.save('added obj', function (err) {
         callback(null, self.result);
-      // });
+      });
     });
 
   };
