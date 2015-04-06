@@ -75,12 +75,14 @@ define(['fs', 'path', 'child_process'],
       var options = { maxBuffer: 100*1024*1024 };
       exec(xml_cmd, options, function (error, stdout, stderr) {
         if (error !== null) {
+          // console.log(stderr);
           // self.logger.error('stderr: ' + stderr);
           // self.logger.error('exec error: ' + error);
           // self.logger.info('trying without fnesc-dump wiring');
           xml_cmd = get_xml_cmd(self._ncc_cmd2);
           exec(xml_cmd, options, function (error, stdout, stderr) {
             if (error !== null) {
+              // console.log(stderr);
               // self.logger.error('stderr: ' + stderr);
               callback(error, stdout);
             } else {

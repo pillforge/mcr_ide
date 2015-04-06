@@ -1,4 +1,7 @@
-define(['../common/NesC_XML_Generator'], function (NesC_XML_Generator) {
+define([ '../common/NesC_XML_Generator'
+       , '../common/ParseDump'
+       ],
+function (NesC_XML_Generator, ParseDump) {
   'use strict';
 
   var TinyOSPopulaterWorker = function (core, META, rootNode, logger) {
@@ -12,13 +15,85 @@ define(['../common/NesC_XML_Generator'], function (NesC_XML_Generator) {
   TinyOSPopulaterWorker.prototype.main = function(next) {
     var self = this;
     self.obj_cache = {};
-    var nxg = new NesC_XML_Generator();
-    nxg.getComponentsPaths(function (error, components_paths) {
+    self.nxg = new NesC_XML_Generator();
+    self.pd = new ParseDump();
+    self.nxg.getComponentsPaths(function (error, components_paths) {
       if (error !== null) {
         next(error);
       } else {
-        self.createFolders(components_paths);
+        self._populateTos(components_paths, function (error) {
+          self.logger.info(self.component_cache);
+          if (error) next(error);
+          else {
+            next(null);
+          }
+        });
+      }
+    });
+  };
+
+  TinyOSPopulaterWorker.prototype._populateTos = function(components_paths, next) {
+    var self = this;
+    var async = require('async');
+    self.component_cache = {};
+    self.createFolders(components_paths);
+    // self.component_cache['ActiveMessageC'] = true;
+    async.eachSeries(components_paths, function (component_path, callback) {
+      if (!self.component_cache[self.getComponentName(component_path)]) {
+        self.populateComponent(component_path, function (error) {
+          if (error) callback(error);
+          else callback();
+        });
+      } else {
+        self.logger.info('Component exists:', component_path);
+        callback();
+      }
+    }, function (err) {
+      if (err) {
+        next(err);
+      } else {
         next(null);
+      }
+    });
+  };
+
+  TinyOSPopulaterWorker.prototype.populateComponent = function(component_path, next) {
+    var self = this;
+    self.logger.info('Populating component:', component_path);
+    self.getAppJson(component_path, function (error, app_json) {
+      if (error !== null) {
+        self.logger.error(error);
+        self.logger.info('Component is skipped due to an error');
+        next();
+      }
+      else {
+        self.populateInterfaceDefinitions(app_json.interfacedefs);
+        next(null);
+      }
+    });
+  };
+
+  TinyOSPopulaterWorker.prototype.populateInterfaceDefinitions = function(interfacedefs) {
+    var self = this;
+    for (var key in interfacedefs) {
+      var interface_def = interfacedefs[key];
+      var interface_node = self.core.createNode({
+        base: self.META.Interface_Definition,
+        parent: self.obj_cache['/' + self.getDirectory(interface_def.file_path)]
+      });
+      self.core.setAttribute(interface_node, 'name', interface_def.name);
+      self.component_cache[interface_def.name] = true;
+    }
+  };
+
+  TinyOSPopulaterWorker.prototype.getAppJson = function(component_path, next) {
+    var self = this;
+    self.nxg.getXML(component_path, '', function(error, xml) {
+      if (error !== null) {
+        next(error);
+      } else {
+        var app_json = self.pd.parse(component_path, xml);
+        next(null, app_json);
       }
     });
   };
@@ -51,6 +126,17 @@ define(['../common/NesC_XML_Generator'], function (NesC_XML_Generator) {
 
 
   // The methods below can be used as utils. TODO: To be exported.
+  // '/home/hakan/Documents/tinyos/tos/system/TinySchedulerC.nc' returns 'TinySchedulerC'
+  TinyOSPopulaterWorker.prototype.getComponentName = function (file_path) {
+    var path = require('path');
+    return path.basename(file_path, '.nc');
+  };
+
+  // 'tos/interfaces/ResourceRequested.nc' returns 'tos/interfaces'
+  TinyOSPopulaterWorker.prototype.getDirectory = function (file_path) {
+    var path = require('path');
+    return path.dirname(file_path);
+  };
 
   // /home/user/Documents/tinyos/tos/system/MainC.nc returns tos/system/MainC
   TinyOSPopulaterWorker.prototype.normalizeFilePath = function(file_path) {
