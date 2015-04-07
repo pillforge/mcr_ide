@@ -12,6 +12,6 @@ config.server.port = 9091;
 
 config.mongo.uri = 'mongodb://127.0.0.1:27017/multi';
 config.plugin.basePaths.push("./plugins");
-config.visualization.decoratorPaths.unshift("./decorators");
+// config.visualization.decoratorPaths.unshift("./decorators");
 
 module.exports = config;

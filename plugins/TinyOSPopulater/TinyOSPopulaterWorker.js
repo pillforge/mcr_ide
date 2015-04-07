@@ -15,6 +15,13 @@ function (NesC_XML_Generator, ParseDump) {
   TinyOSPopulaterWorker.prototype.main = function(next) {
     var self = this;
     self.obj_cache = {};
+    self.counter = {
+      populate: 0,
+      error: 0,
+      exist: 0,
+      interface_def: 0,
+      component: 0
+    };
     self.nxg = new NesC_XML_Generator();
     self.pd = new ParseDump();
     self.nxg.getComponentsPaths(function (error, components_paths) {
@@ -22,7 +29,8 @@ function (NesC_XML_Generator, ParseDump) {
         next(error);
       } else {
         self._populateTos(components_paths, function (error) {
-          self.logger.info(self.component_cache);
+          self.logger.info('', self.component_cache);
+          self.logger.info('', self.counter);
           if (error) next(error);
           else {
             next(null);
@@ -37,7 +45,7 @@ function (NesC_XML_Generator, ParseDump) {
     var async = require('async');
     self.component_cache = {};
     self.createFolders(components_paths);
-    // self.component_cache['ActiveMessageC'] = true;
+    // components_paths.length = 1;
     async.eachSeries(components_paths, function (component_path, callback) {
       if (!self.component_cache[self.getComponentName(component_path)]) {
         self.populateComponent(component_path, function (error) {
@@ -46,6 +54,7 @@ function (NesC_XML_Generator, ParseDump) {
         });
       } else {
         self.logger.info('Component exists:', component_path);
+        self.counter.exist++;
         callback();
       }
     }, function (err) {
@@ -64,25 +73,45 @@ function (NesC_XML_Generator, ParseDump) {
       if (error !== null) {
         self.logger.error(error);
         self.logger.info('Component is skipped due to an error');
+        self.counter.error++;
         next();
       }
       else {
         self.populateInterfaceDefinitions(app_json.interfacedefs);
+        self.populateComponents(app_json.components);
+        self.counter.populate++;
         next(null);
       }
     });
+  };
+
+  TinyOSPopulaterWorker.prototype.populateComponents = function (components) {
+    var self = this;
+    for (var key in components) {
+      var component = components[key];
+      if (self.component_cache[component.name]) continue;
+      var component_node = self.core.createNode({
+        base: self.META[component.comp_type],
+        parent: self.obj_cache['/' + self.getDirectory(component.file_path)]
+      });
+      self.core.setAttribute(component_node, 'name', component.name);
+      self.component_cache[component.name] = true;
+      self.counter.component++;
+    }
   };
 
   TinyOSPopulaterWorker.prototype.populateInterfaceDefinitions = function(interfacedefs) {
     var self = this;
     for (var key in interfacedefs) {
       var interface_def = interfacedefs[key];
+      if (self.component_cache[interface_def.name]) continue;
       var interface_node = self.core.createNode({
-        base: self.META.Interface_Definition,
+        base: self.META.Interface,
         parent: self.obj_cache['/' + self.getDirectory(interface_def.file_path)]
       });
       self.core.setAttribute(interface_node, 'name', interface_def.name);
       self.component_cache[interface_def.name] = true;
+      self.counter.interface_def++;
     }
   };
 
