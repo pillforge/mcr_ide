@@ -12,9 +12,25 @@ function (NesC_XML_Generator, ParseDump) {
     this.logger.info('TinyOSPopulaterWorker constructor');
   };
 
+  /**
+  * There are two caches.
+  *   1. obj_cache: Assumed to reference all Folder, Interface,
+  *      Configuration and Module WebGME objects by their path in the project.
+  *      obj_cache = {
+  *        '/tos/system/MainC': object,
+  *        ...
+  *      }
+  *   2. component_cache: Reference to WebGME paths of TinyOS components
+  *      and interfaces.
+  *      component_cache = {
+  *        'MainC': '/1302555751/137789942/1892742494',
+  *        ...
+  *      }
+  */
   TinyOSPopulaterWorker.prototype.main = function(next) {
     var self = this;
     self.obj_cache = {};
+    self.component_cache = {};
     self.counter = {
       populate: 0,
       error: 0,
@@ -43,12 +59,11 @@ function (NesC_XML_Generator, ParseDump) {
   TinyOSPopulaterWorker.prototype._populateTos = function(components_paths, next) {
     var self = this;
     var async = require('async');
-    self.component_cache = {};
-    self.createFolders(components_paths);
-    // components_paths.length = 1;
+    self._createFolders(components_paths);
+    components_paths.length = 1;
     async.eachSeries(components_paths, function (component_path, callback) {
       if (!self.component_cache[self.getComponentName(component_path)]) {
-        self.populateComponent(component_path, function (error) {
+        self._populateComponent(component_path, function (error) {
           if (error) callback(error);
           else callback();
         });
@@ -66,7 +81,7 @@ function (NesC_XML_Generator, ParseDump) {
     });
   };
 
-  TinyOSPopulaterWorker.prototype.populateComponent = function(component_path, next) {
+  TinyOSPopulaterWorker.prototype._populateComponent = function(component_path, next) {
     var self = this;
     self.logger.info('Populating component:', component_path);
     self.getAppJson(component_path, function (error, app_json) {
@@ -77,42 +92,48 @@ function (NesC_XML_Generator, ParseDump) {
         next();
       }
       else {
-        self.populateInterfaceDefinitions(app_json.interfacedefs);
-        self.populateComponents(app_json.components);
+        self._populateInterfaceDefinitions(app_json.interfacedefs);
+        self._populateComponents(app_json.components);
         self.counter.populate++;
         next(null);
       }
     });
   };
 
-  TinyOSPopulaterWorker.prototype.populateComponents = function (components) {
+  TinyOSPopulaterWorker.prototype._populateComponents = function (components) {
     var self = this;
     for (var key in components) {
       var component = components[key];
       if (self.component_cache[component.name]) continue;
       var component_node = self.core.createNode({
         base: self.META[component.comp_type],
-        parent: self.obj_cache['/' + self.getDirectory(component.file_path)]
+        parent: self._getFolderWebGMEObject(component.file_path)
       });
       self.core.setAttribute(component_node, 'name', component.name);
-      self.component_cache[component.name] = true;
+      self.component_cache[component.name] = self.core.getPath(component_node);
       self.counter.component++;
     }
   };
 
-  TinyOSPopulaterWorker.prototype.populateInterfaceDefinitions = function(interfacedefs) {
+  TinyOSPopulaterWorker.prototype._populateInterfaceDefinitions = function(interfacedefs) {
     var self = this;
     for (var key in interfacedefs) {
       var interface_def = interfacedefs[key];
       if (self.component_cache[interface_def.name]) continue;
       var interface_node = self.core.createNode({
         base: self.META.Interface,
-        parent: self.obj_cache['/' + self.getDirectory(interface_def.file_path)]
+        parent: self._getFolderWebGMEObject(interface_def.file_path)
       });
       self.core.setAttribute(interface_node, 'name', interface_def.name);
-      self.component_cache[interface_def.name] = true;
+      self.component_cache[interface_def.name] = self.core.getPath(interface_node);
       self.counter.interface_def++;
     }
+  };
+
+  // return the WebGME folder object for the current file_path
+  // for '/tos/system/ArbitratedReadStreamC.nc' returns '/tos/system/' Folder object.
+  TinyOSPopulaterWorker.prototype._getFolderWebGMEObject = function(file_path) {
+    return this.obj_cache['/' + this.getDirectory(file_path)];
   };
 
   TinyOSPopulaterWorker.prototype.getAppJson = function(component_path, next) {
@@ -127,7 +148,7 @@ function (NesC_XML_Generator, ParseDump) {
     });
   };
 
-  TinyOSPopulaterWorker.prototype.createFolders = function(components_paths) {
+  TinyOSPopulaterWorker.prototype._createFolders = function(components_paths) {
     var self = this;
     var directories = components_paths
       .map(self.normalizeFilePath)

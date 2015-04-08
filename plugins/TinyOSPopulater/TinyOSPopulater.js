@@ -62,7 +62,10 @@ function (PluginConfig, PluginBase, TinyOSPopulaterWorker) {
     // These are all instantiated at this point.
     var self = this;
 
-    var tpw = new TinyOSPopulaterWorker(self.core, self.META, self.rootNode, self.logger);
+    var tpw = new TinyOSPopulaterWorker(
+      self.core, self.META, self.rootNode,
+      self.logger.fork('TinyOSPopulaterWorker')
+    );
     tpw.main(function (err) {
       if (err !== null) {
         self.logger.error(err);
