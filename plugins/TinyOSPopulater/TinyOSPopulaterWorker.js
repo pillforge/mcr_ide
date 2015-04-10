@@ -13,6 +13,9 @@ function (NesC_XML_Generator, ParseDump) {
   };
 
   /**
+  * Entry point for the TinyOSPopulaterWorker
+  *   to create WebGME representation of TinyOS from scratch.
+  * main is assumed to be called for only empty projects with the meta.
   * There are two caches.
   *   1. obj_cache: Assumed to reference all Folder, Interface,
   *      Configuration and Module WebGME objects by their path in the project.
@@ -28,6 +31,9 @@ function (NesC_XML_Generator, ParseDump) {
   *      }
   */
   TinyOSPopulaterWorker.prototype.main = function(next) {
+    this.necessary_meta = ['folder', 'interface-definition', 'configuration'];
+    if (!this._isMetaValid())
+      return next('Meta is not valid');
     var self = this;
     self.obj_cache = {};
     self.component_cache = {};
@@ -56,6 +62,10 @@ function (NesC_XML_Generator, ParseDump) {
     });
   };
 
+  /**
+  * Creates the folder structure.
+  * Populates each component if they're not already created.
+  */
   TinyOSPopulaterWorker.prototype._populateTos = function(components_paths, next) {
     var self = this;
     var async = require('async');
@@ -81,6 +91,7 @@ function (NesC_XML_Generator, ParseDump) {
     });
   };
 
+  // Populates the component and its dependent components
   TinyOSPopulaterWorker.prototype._populateComponent = function(component_path, next) {
     var self = this;
     self.logger.info('Populating component:', component_path);
@@ -106,7 +117,7 @@ function (NesC_XML_Generator, ParseDump) {
       var component = components[key];
       if (self.component_cache[component.name]) continue;
       var component_node = self.core.createNode({
-        base: self.META[component.comp_type],
+        base: self._getComponentType(component.comp_type),
         parent: self._getFolderWebGMEObject(component.file_path)
       });
       self.core.setAttribute(component_node, 'name', component.name);
@@ -115,13 +126,19 @@ function (NesC_XML_Generator, ParseDump) {
     }
   };
 
+  TinyOSPopulaterWorker.prototype._getComponentType = function (type) {
+    if (type === 'Configuration') return this.META.configuration;
+    if (type === 'Module') return this.META.module;
+    throw new Error('Unknown type');
+  };
+
   TinyOSPopulaterWorker.prototype._populateInterfaceDefinitions = function(interfacedefs) {
     var self = this;
     for (var key in interfacedefs) {
       var interface_def = interfacedefs[key];
       if (self.component_cache[interface_def.name]) continue;
       var interface_node = self.core.createNode({
-        base: self.META.Interface,
+        base: self.META['interface-definition'],
         parent: self._getFolderWebGMEObject(interface_def.file_path)
       });
       self.core.setAttribute(interface_node, 'name', interface_def.name);
@@ -150,6 +167,7 @@ function (NesC_XML_Generator, ParseDump) {
 
   TinyOSPopulaterWorker.prototype._createFolders = function(components_paths) {
     var self = this;
+    var meta_folder = this.META.folder;
     var directories = components_paths
       .map(self.normalizeFilePath)
       .filter(function (item, index, arr) {
@@ -163,7 +181,7 @@ function (NesC_XML_Generator, ParseDump) {
         obj_cache_path += '/' + dir;
         if (!self.obj_cache[obj_cache_path]) {
           var dir_node = self.core.createNode({
-            base: self.META.Folder,
+            base: meta_folder,
             parent: curr_node
           });
           self.core.setAttribute(dir_node, 'name', dir);
@@ -174,6 +192,12 @@ function (NesC_XML_Generator, ParseDump) {
     });
   };
 
+  TinyOSPopulaterWorker.prototype._isMetaValid = function() {
+    var self = this;
+    return self.necessary_meta.every(function (meta) {
+      return self.META[meta] !== undefined;
+    });
+  };
 
   // The methods below can be used as utils. TODO: To be exported.
   // '/home/hakan/Documents/tinyos/tos/system/TinySchedulerC.nc' returns 'TinySchedulerC'

@@ -36,7 +36,7 @@ function (PluginConfig, PluginBase, TinyOSPopulaterWorker) {
   * @public
   */
   TinyOSPopulater.prototype.getVersion = function () {
-    return '0.1.0';
+    return '0.0.1';
   };
 
   /**
@@ -70,12 +70,13 @@ function (PluginConfig, PluginBase, TinyOSPopulaterWorker) {
       if (err !== null) {
         self.logger.error(err);
         self.result.setSuccess(false);
+        callback(err, self.result);
       } else {
         self.result.setSuccess(true);
+        self.save('tos is populated', function (err) {
+          callback(null, self.result);
+        });
       }
-      self.save('added obj', function (err) {
-        callback(null, self.result);
-      });
     });
 
   };
