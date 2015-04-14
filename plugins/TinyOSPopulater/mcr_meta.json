@@ -1,0 +1,770 @@
+{
+  "bases": {},
+  "root": {
+    "path": "",
+    "guid": "d86cca82-cb66-818a-9d41-7b91e991244c"
+  },
+  "relids": {
+    "02161d4d-a5a9-6cad-2de9-8e042a59af50": "537076365",
+    "09e938e4-ccb2-b022-32ec-99dd98f8b4e4": "503760399",
+    "12e9f149-a891-56af-4792-c49549b6a649": "1054006315",
+    "1f4417ec-d802-6370-958d-ebf170b25965": "322147883",
+    "32063746-f1d7-c396-50fc-ea17f6293c04": "314100073",
+    "40ef5257-3d3f-a1b9-2457-93e0d43f95c0": "158476732",
+    "6d32d55e-806e-7df7-cd77-f5c9cae4c996": "1830986367",
+    "79c267bc-1c47-ad0c-aaef-fc4da61c4d71": "757136728",
+    "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76": "343840023",
+    "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": "1",
+    "d86cca82-cb66-818a-9d41-7b91e991244c": null,
+    "e106743e-248c-1c23-b318-8c0decdbcea1": "137088271",
+    "fa0d1865-5e31-e5c4-6c21-bb64fab7f82f": "1637204623"
+  },
+  "containment": {
+    "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76": {
+      "02161d4d-a5a9-6cad-2de9-8e042a59af50": {},
+      "09e938e4-ccb2-b022-32ec-99dd98f8b4e4": {},
+      "12e9f149-a891-56af-4792-c49549b6a649": {},
+      "1f4417ec-d802-6370-958d-ebf170b25965": {},
+      "32063746-f1d7-c396-50fc-ea17f6293c04": {},
+      "40ef5257-3d3f-a1b9-2457-93e0d43f95c0": {},
+      "6d32d55e-806e-7df7-cd77-f5c9cae4c996": {},
+      "79c267bc-1c47-ad0c-aaef-fc4da61c4d71": {},
+      "e106743e-248c-1c23-b318-8c0decdbcea1": {},
+      "fa0d1865-5e31-e5c4-6c21-bb64fab7f82f": {}
+    },
+    "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": {}
+  },
+  "nodes": {
+    "02161d4d-a5a9-6cad-2de9-8e042a59af50": {
+      "attributes": {
+        "name": "folder"
+      },
+      "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045",
+      "meta": {
+        "attributes": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "children": {
+          "items": [
+            "02161d4d-a5a9-6cad-2de9-8e042a59af50",
+            "40ef5257-3d3f-a1b9-2457-93e0d43f95c0",
+            "e106743e-248c-1c23-b318-8c0decdbcea1"
+          ],
+          "minItems": [
+            -1,
+            -1,
+            -1
+          ],
+          "maxItems": [
+            -1,
+            -1,
+            -1
+          ]
+        }
+      },
+      "parent": "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76",
+      "pointers": {
+        "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045"
+      },
+      "registry": {
+        "SVGIcon": "Folder2.svg",
+        "decorator": "SVGDecorator",
+        "position": {
+          "x": 86,
+          "y": 96
+        }
+      },
+      "sets": {},
+      "constraints": {}
+    },
+    "09e938e4-ccb2-b022-32ec-99dd98f8b4e4": {
+      "attributes": {
+        "name": "uses"
+      },
+      "base": "40ef5257-3d3f-a1b9-2457-93e0d43f95c0",
+      "meta": {
+        "attributes": {
+          "name": {
+            "type": "string"
+          },
+          "type-arguments": {
+            "type": "string",
+            "default": ""
+          }
+        }
+      },
+      "parent": "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76",
+      "pointers": {
+        "base": "40ef5257-3d3f-a1b9-2457-93e0d43f95c0"
+      },
+      "registry": {
+        "isAbstract": false,
+        "position": {
+          "x": 142,
+          "y": 658
+        }
+      },
+      "sets": {},
+      "constraints": {}
+    },
+    "12e9f149-a891-56af-4792-c49549b6a649": {
+      "attributes": {
+        "name": "provides"
+      },
+      "base": "40ef5257-3d3f-a1b9-2457-93e0d43f95c0",
+      "meta": {
+        "attributes": {
+          "name": {
+            "type": "string"
+          },
+          "type-arguments": {
+            "type": "string",
+            "default": ""
+          }
+        }
+      },
+      "parent": "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76",
+      "pointers": {
+        "base": "40ef5257-3d3f-a1b9-2457-93e0d43f95c0"
+      },
+      "registry": {
+        "isAbstract": false,
+        "position": {
+          "x": 143,
+          "y": 719
+        }
+      },
+      "sets": {},
+      "constraints": {}
+    },
+    "1f4417ec-d802-6370-958d-ebf170b25965": {
+      "attributes": {
+        "name": "configuration"
+      },
+      "base": "6d32d55e-806e-7df7-cd77-f5c9cae4c996",
+      "meta": {
+        "attributes": {
+          "name": {
+            "type": "string"
+          },
+          "translation-unit": {
+            "type": "string",
+            "default": ""
+          }
+        }
+      },
+      "parent": "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76",
+      "pointers": {
+        "base": "6d32d55e-806e-7df7-cd77-f5c9cae4c996"
+      },
+      "registry": {
+        "SVGIcon": "Network.svg",
+        "color": "#ccffff",
+        "isAbstract": false,
+        "position": {
+          "x": 225,
+          "y": 390
+        }
+      },
+      "sets": {},
+      "constraints": {}
+    },
+    "32063746-f1d7-c396-50fc-ea17f6293c04": {
+      "attributes": {
+        "declaration-list": "",
+        "name": "interface-definition"
+      },
+      "base": "e106743e-248c-1c23-b318-8c0decdbcea1",
+      "meta": {
+        "attributes": {
+          "name": {
+            "type": "string"
+          },
+          "translation-unit": {
+            "type": "string",
+            "default": ""
+          },
+          "declaration-list": {
+            "type": "string",
+            "default": ""
+          }
+        }
+      },
+      "parent": "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76",
+      "pointers": {
+        "base": "e106743e-248c-1c23-b318-8c0decdbcea1"
+      },
+      "registry": {
+        "SVGIcon": "Chain.svg",
+        "color": "#ffffcc",
+        "isAbstract": false,
+        "position": {
+          "x": 142,
+          "y": 258
+        }
+      },
+      "sets": {},
+      "constraints": {}
+    },
+    "40ef5257-3d3f-a1b9-2457-93e0d43f95c0": {
+      "attributes": {
+        "name": "uses-provides",
+        "type-arguments": ""
+      },
+      "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045",
+      "meta": {
+        "attributes": {
+          "name": {
+            "type": "string"
+          },
+          "type-arguments": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "pointers": {
+          "interface": {
+            "items": [
+              "32063746-f1d7-c396-50fc-ea17f6293c04"
+            ],
+            "min": 1,
+            "max": 1,
+            "minItems": [
+              -1
+            ],
+            "maxItems": [
+              1
+            ]
+          }
+        }
+      },
+      "parent": "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76",
+      "pointers": {
+        "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045",
+        "interface": null
+      },
+      "registry": {
+        "isAbstract": true,
+        "position": {
+          "x": 72,
+          "y": 603
+        }
+      },
+      "sets": {},
+      "constraints": {}
+    },
+    "6d32d55e-806e-7df7-cd77-f5c9cae4c996": {
+      "attributes": {
+        "name": "component"
+      },
+      "base": "e106743e-248c-1c23-b318-8c0decdbcea1",
+      "meta": {
+        "attributes": {
+          "name": {
+            "type": "string"
+          },
+          "translation-unit": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "children": {
+          "items": [
+            "40ef5257-3d3f-a1b9-2457-93e0d43f95c0"
+          ],
+          "minItems": [
+            -1
+          ],
+          "maxItems": [
+            -1
+          ]
+        }
+      },
+      "parent": "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76",
+      "pointers": {
+        "base": "e106743e-248c-1c23-b318-8c0decdbcea1"
+      },
+      "registry": {
+        "isAbstract": true,
+        "position": {
+          "x": 139,
+          "y": 339
+        }
+      },
+      "sets": {},
+      "constraints": {}
+    },
+    "79c267bc-1c47-ad0c-aaef-fc4da61c4d71": {
+      "attributes": {
+        "name": "module"
+      },
+      "base": "6d32d55e-806e-7df7-cd77-f5c9cae4c996",
+      "meta": {
+        "attributes": {
+          "name": {
+            "type": "string"
+          },
+          "translation-unit": {
+            "type": "string",
+            "default": ""
+          }
+        }
+      },
+      "parent": "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76",
+      "pointers": {
+        "base": "6d32d55e-806e-7df7-cd77-f5c9cae4c996"
+      },
+      "registry": {
+        "SVGIcon": "Rotate.svg",
+        "color": "#ffe6cc",
+        "isAbstract": false,
+        "position": {
+          "x": 225,
+          "y": 460
+        }
+      },
+      "sets": {},
+      "constraints": {}
+    },
+    "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76": {
+      "attributes": {
+        "name": "Language"
+      },
+      "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045",
+      "meta": {
+        "attributes": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "children": {
+          "items": [
+            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045"
+          ],
+          "minItems": [
+            -1
+          ],
+          "maxItems": [
+            -1
+          ]
+        }
+      },
+      "parent": "d86cca82-cb66-818a-9d41-7b91e991244c",
+      "pointers": {
+        "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045"
+      },
+      "registry": {
+        "isAbstract": true,
+        "position": {
+          "x": 99,
+          "y": 154
+        },
+        "validPanels": "ModelEditor METAAspect SetEditor Crosscut GraphViz"
+      },
+      "sets": {},
+      "constraints": {}
+    },
+    "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": {
+      "attributes": {
+        "name": "FCO"
+      },
+      "base": null,
+      "meta": {
+        "attributes": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "children": {
+          "minItems": [],
+          "maxItems": [],
+          "items": []
+        }
+      },
+      "parent": "d86cca82-cb66-818a-9d41-7b91e991244c",
+      "pointers": {
+        "base": null
+      },
+      "registry": {
+        "DisplayFormat": "$name",
+        "PortSVGIcon": "",
+        "SVGIcon": "",
+        "decorator": "",
+        "isAbstract": false,
+        "isPort": false,
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "validPanels": "ModelEditor METAAspect SetEditor Crosscut GraphViz"
+      },
+      "sets": {},
+      "constraints": {
+        "meta": {
+          "script": "function(core, node, callback) {\n    \"use strict\";\n    var error = null,\n        returnValue = {hasViolation:false,message:\"\"},\n        i,\n        neededChekings = 4,\n        meta = core.getJsonMeta(node),\n        typeIndexOfChild = function(typePathsArray,childNode){\n            var index = -1;\n\n            while(childNode && index === -1){\n                index = typePathsArray.indexOf(core.getPath(childNode));\n                childNode = core.getBase(childNode);\n            }\n\n            return index;\n        },\n        checkChildrenRules = function(){\n            var childCount = [],\n                index;\n            core.loadChildren(node,function(err,children){\n                if(err){\n                    returnValue.message += \"error during loading of node\\'s children\\n\";\n                    error = error || err;\n                    return checkingDone();\n                }\n\n                //global count check\n                //min\n                if(meta.children.min && meta.children.min !== -1){\n                    if(children.length < meta.children.min){\n                        returnValue.hasViolation = true;\n                        returnValue.message += \"node hase fewer nodes than needed\\n\";\n                    }\n                }\n                //max\n                if(meta.children.max && meta.children.max !== -1){\n                    if(children.length > meta.children.max){\n                        returnValue.hasViolation = true;\n                        returnValue.message += \"node hase more nodes than allowed\\n\";\n                    }\n                }\n\n                //typedCounts\n                for(i=0;i<meta.children.items.length;i++){\n                    childCount.push(0);\n                }\n                for(i=0;i<children.length;i++){\n                    index = typeIndexOfChild(meta.children.items,children[i]);\n                    if(index === -1 ){\n                        returnValue.hasViolation = true;\n                        returnValue.message += \"child \" + core.getGuid(children[i]) +\" is from prohibited type\\n\";\n                    }\n                    else {\n                        childCount[index]++;\n                    }\n                }\n                for(i=0;i<meta.children.items.length;i++){\n                    //min\n                    if(meta.children.minItems[i] !== -1){\n                        if(meta.children.minItems[i] > childCount[i]){\n                            returnValue.hasViolation = true;\n                            returnValue.message += \"too few type \"+ meta.children.items[i] +\" children\\n\";\n                        }\n                    }\n                    //max\n                    if(meta.children.maxItems[i] !== -1){\n                        if(meta.children.maxItems[i] < childCount[i]){\n                            returnValue.hasViolation = true;\n                            returnValue.message += \"too many type \"+ meta.children.items[i] +\" children\\n\";\n                        }\n                    }\n                }\n                return checkingDone();\n            });\n        },\n        checkPointerRules = function(){\n            //TODO currently there is no quantity check\n            var validNames = core.getValidPointerNames(node),\n                names = core.getPointerNames(node),\n                checkPointer = function(name){\n                    core.loadPointer(node,name,function(err,target){\n                        if(err || !target){\n                            error = error || err;\n                            returnValue.message += \"error during pointer \"+ name +\" load\\n\";\n                            return checkDone();\n                        }\n\n                        if(!core.isValidTargetOf(target,node,name)){\n                            returnValue.hasViolation = true;\n                            returnValue.message += \"target of pointer \"+ name +\" is invalid\\n\";\n                        }\n                        return checkDone();\n                    });\n                },\n                checkDone = function(){\n                    if(--needs === 0){\n                        checkingDone();\n                    }\n                },\n                needs,i;\n            \n            needs = names.length;\n            if(needs > 0){\n                for(i=0;i<names.length;i++){\n                    if(validNames.indexOf(names[i]) === -1){\n                        returnValue.hasViolation = true;\n                        returnValue.message += \" invalid pointer \"+ names[i] +\" has been found\\n\";\n                        checkDone();\n                    } else {\n                        checkPointer(names[i]);\n                    }\n\n                }\n            } else {\n                checkDone();\n            }\n\n        },\n        checkSetRules = function(){\n            //TODO this part is missing yet\n            checkingDone();\n        },\n        checkAttributeRules = function(){\n            var names = core.getAttributeNames(node),\n                validNames = core.getValidAttributeNames(node);\n            for(i=0;i<names.length;i++){\n                if(validNames.indexOf(names[i]) !== -1){\n                    if(!core.isValidAttributeValueOf(node,names[i],core.getAttribute(node,names[i]))){\n                        returnValue.hasViolation = true;\n                        returnValue.message += \"attribute \"+names[i]+\" has invalid value\\n\";\n                    }\n                }\n                else {\n                    returnValue.hasViolation = true;\n                    returnValue.message += \"node has an undefined attribute: \"+names[i];\n                }\n            }\n            checkingDone();\n        },\n        checkingDone = function(){\n            if(--neededChekings === 0){\n                callback(error,returnValue);\n            }\n        };\n\n    checkChildrenRules();\n    checkPointerRules();\n    checkSetRules();\n    checkAttributeRules();\n}",
+          "priority": 10,
+          "info": "this constraint will check all the meta rules defined to an object"
+        }
+      }
+    },
+    "d86cca82-cb66-818a-9d41-7b91e991244c": {
+      "attributes": {
+        "name": "ROOT"
+      },
+      "base": null,
+      "meta": {
+        "attributes": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "children": {
+          "minItems": [
+            -1
+          ],
+          "maxItems": [
+            -1
+          ],
+          "items": [
+            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045"
+          ]
+        }
+      },
+      "parent": null,
+      "pointers": {
+        "base": null
+      },
+      "registry": {
+        "MetaSheets": [
+          {
+            "SetID": "MetaAspectSet_0bbc9a31-aa48-055b-5df3-d1e35b6249da",
+            "order": 0,
+            "title": "META"
+          },
+          {
+            "SetID": "MetaAspectSet_0bb2e638-3f47-d9d8-bc38-6bfe0eec0f1e",
+            "order": 1,
+            "title": "Language"
+          }
+        ],
+        "ProjectRegistry": {
+          "FCO_ID": "/1"
+        },
+        "usedAddOns": "ConstraintAddOn",
+        "validDecorators": "ModelDecorator SVGDecorator CircleDecorator DefaultDecorator",
+        "validPanels": "ModelEditor METAAspect SetEditor Crosscut GraphViz",
+        "validPlugins": ""
+      },
+      "sets": {
+        "MetaAspectSet": [
+          {
+            "attributes": {},
+            "guid": "02161d4d-a5a9-6cad-2de9-8e042a59af50",
+            "registry": {
+              "position": {
+                "x": 336,
+                "y": 128
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "09e938e4-ccb2-b022-32ec-99dd98f8b4e4",
+            "registry": {
+              "position": {
+                "x": 809,
+                "y": 335
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "12e9f149-a891-56af-4792-c49549b6a649",
+            "registry": {
+              "position": {
+                "x": 979,
+                "y": 336
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "1f4417ec-d802-6370-958d-ebf170b25965",
+            "registry": {
+              "position": {
+                "x": 321,
+                "y": 481
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "32063746-f1d7-c396-50fc-ea17f6293c04",
+            "registry": {
+              "position": {
+                "x": 632,
+                "y": 501
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "40ef5257-3d3f-a1b9-2457-93e0d43f95c0",
+            "registry": {
+              "position": {
+                "x": 605,
+                "y": 187
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "6d32d55e-806e-7df7-cd77-f5c9cae4c996",
+            "registry": {
+              "position": {
+                "x": 394,
+                "y": 518
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "79c267bc-1c47-ad0c-aaef-fc4da61c4d71",
+            "registry": {
+              "position": {
+                "x": 516,
+                "y": 488
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76",
+            "registry": {
+              "position": {
+                "x": 448,
+                "y": 280
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045",
+            "registry": {
+              "position": {
+                "x": 100,
+                "y": 100
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "e106743e-248c-1c23-b318-8c0decdbcea1",
+            "registry": {
+              "position": {
+                "x": 531,
+                "y": 485
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "fa0d1865-5e31-e5c4-6c21-bb64fab7f82f",
+            "registry": {
+              "position": {
+                "x": 891,
+                "y": 188
+              }
+            }
+          }
+        ],
+        "MetaAspectSet_0bb2e638-3f47-d9d8-bc38-6bfe0eec0f1e": [
+          {
+            "attributes": {},
+            "guid": "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76",
+            "registry": {
+              "position": {
+                "x": 323,
+                "y": 239
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045",
+            "registry": {
+              "position": {
+                "x": 325,
+                "y": 96
+              }
+            }
+          }
+        ],
+        "MetaAspectSet_0bbc9a31-aa48-055b-5df3-d1e35b6249da": [
+          {
+            "attributes": {},
+            "guid": "02161d4d-a5a9-6cad-2de9-8e042a59af50",
+            "registry": {
+              "position": {
+                "x": 351,
+                "y": 53
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "09e938e4-ccb2-b022-32ec-99dd98f8b4e4",
+            "registry": {
+              "position": {
+                "x": 524,
+                "y": 341
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "12e9f149-a891-56af-4792-c49549b6a649",
+            "registry": {
+              "position": {
+                "x": 654,
+                "y": 341
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "1f4417ec-d802-6370-958d-ebf170b25965",
+            "registry": {
+              "position": {
+                "x": 224,
+                "y": 481
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "32063746-f1d7-c396-50fc-ea17f6293c04",
+            "registry": {
+              "position": {
+                "x": 74,
+                "y": 341
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "40ef5257-3d3f-a1b9-2457-93e0d43f95c0",
+            "registry": {
+              "position": {
+                "x": 514,
+                "y": 181
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "6d32d55e-806e-7df7-cd77-f5c9cae4c996",
+            "registry": {
+              "position": {
+                "x": 294,
+                "y": 341
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "79c267bc-1c47-ad0c-aaef-fc4da61c4d71",
+            "registry": {
+              "position": {
+                "x": 394,
+                "y": 481
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "e106743e-248c-1c23-b318-8c0decdbcea1",
+            "registry": {
+              "position": {
+                "x": 164,
+                "y": 181
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "fa0d1865-5e31-e5c4-6c21-bb64fab7f82f",
+            "registry": {
+              "position": {
+                "x": 824,
+                "y": 181
+              }
+            }
+          }
+        ]
+      },
+      "constraints": {}
+    },
+    "e106743e-248c-1c23-b318-8c0decdbcea1": {
+      "attributes": {
+        "name": "nesC-file",
+        "translation-unit": ""
+      },
+      "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045",
+      "meta": {
+        "attributes": {
+          "name": {
+            "type": "string"
+          },
+          "translation-unit": {
+            "type": "string",
+            "default": ""
+          }
+        }
+      },
+      "parent": "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76",
+      "pointers": {
+        "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045"
+      },
+      "registry": {
+        "isAbstract": true,
+        "position": {
+          "x": 65,
+          "y": 205
+        }
+      },
+      "sets": {},
+      "constraints": {}
+    },
+    "fa0d1865-5e31-e5c4-6c21-bb64fab7f82f": {
+      "attributes": {
+        "name": "event"
+      },
+      "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045",
+      "meta": {
+        "attributes": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "parent": "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76",
+      "pointers": {
+        "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045"
+      },
+      "registry": {
+        "PortSVGIcon": "RedPort.svg",
+        "isPort": true,
+        "position": {
+          "x": 626,
+          "y": 106
+        }
+      },
+      "sets": {},
+      "constraints": {}
+    }
+  },
+  "metaSheets": {}
+}

@@ -2,7 +2,25 @@
 
 - folder
 - interface-definition
-  - interface _identifier_
-  - Ex: interface Boot
+  - attributes
+    - name: string
+    - translation-unit: string
+    - declaration-list: string
+  - _Ex_
+    - interface _identifier_
+    - interface Boot
 - configuration
+  - attributes
+    - name: string
+    - translation-unit: string
 - module
+  - attributes
+    - name: string
+    - translation-unit: string
+- uses-provides
+  - attributes
+    - name: string
+    - type-arguments: string
+  - pointers
+    - interface: interface-definition
+- event

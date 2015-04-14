@@ -31,7 +31,7 @@ function (NesC_XML_Generator, ParseDump) {
   *      }
   */
   TinyOSPopulaterWorker.prototype.main = function(next) {
-    this.necessary_meta = ['folder', 'interface-definition', 'configuration'];
+    this.necessary_meta = ['folder', 'interface-definition', 'configuration', 'module'];
     if (!this._isMetaValid())
       return next('Meta is not valid');
     var self = this;
