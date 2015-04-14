@@ -1,16 +1,15 @@
 define(
   ['plugin/PluginBase',
   'plugin/PluginConfig',
-  'logManager',
   '../../package.json',
-  '../common/NesC_XML_Generator'
+  '../common/NesC_XML_Generator',
+  '../common/ParseDump'
   ],
-  function (PluginBase, PluginConfig, LogManager, pjson, NesC_XML_Generator) {
+  function (PluginBase, PluginConfig, pjson, NesC_XML_Generator, ParseDump) {
     "use strict";
 
     var PlaceHolder = function () {
       PluginBase.call(this);
-      this.logger = LogManager.create('PlaceHolder');
     };
 
     PlaceHolder.prototype = Object.create(PluginBase.prototype);
@@ -29,11 +28,27 @@ define(
       var self = this;
       self.logger.info('main()');
 
-      self.getDirectories(function () {
+      self.getAppJson(function (err, result) {
+        console.log(JSON.stringify(result, null, ' '));
         self.result.setSuccess(true);
         callback(null, self.result);
       });
 
+    };
+
+    PlaceHolder.prototype.getAppJson = function (next) {
+      var self = this;
+      var nxg = new NesC_XML_Generator('exp430');
+      var pd = new ParseDump();
+      var component_path = process.env.TOSDIR + '/system/MainC.nc';
+      nxg.getXML(component_path, '', function(error, xml) {
+        if (error !== null) {
+          next(error);
+        } else {
+          var app_json = pd.parse(component_path, xml);
+          next(null, app_json);
+        }
+      });
     };
 
     PlaceHolder.prototype.getDirectories = function (next) {

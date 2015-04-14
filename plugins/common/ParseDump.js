@@ -227,17 +227,36 @@ define(['libxmljs', 'fs', 'path'],
         output_dict[comp_name] = jsobj;
       }
 
+      var interfacedefs_notes = [];
       var interfacedefs_json = {};
       for (var key in interfacedefs) {
         var interfacedef = interfacedefs[key];
         var qname = interfacedef.attr('qname').value();
         interfacedefs_json[qname] = {
           name: qname,
-          file_path: get_path(interfacedef)
+          file_path: get_path(interfacedef),
+          functions: []
         };
+        var functions = interfacedef.find('xmlns:function', ns);
+        var funct_arr = interfacedefs_json[qname]['functions'];
+        for (var i = 0; i < functions.length; i++) {
+          var funct = functions[i];
+          funct_arr.push({
+            name: funct.attr('name').value(),
+            event: funct.attr('event') === null ? false : true,
+            command: funct.attr('command') === null ? false : true
+          });
+          var isEveryFunctionEventOrCommand = funct_arr[i].event ? !funct_arr[i].command : funct_arr[i].command;
+          if (!isEveryFunctionEventOrCommand) {
+            interfacedefs_notes.push('isEveryFunctionEventOrCommand: ' + qname + ' ' + funct_arr[i].name);
+          }
+        }
       }
 
       var app_json = {};
+      app_json.notes = {
+        interfacedefs_notes: interfacedefs_notes
+      };
       app_json.components = output_dict;
       app_json.interfacedefs = interfacedefs_json;
       app_json.instance_components = instance_components;
