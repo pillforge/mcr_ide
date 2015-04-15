@@ -132,6 +132,7 @@ function (NesC_XML_Generator, ParseDump) {
     throw new Error('Unknown type');
   };
 
+  // Populates the interface definitions
   TinyOSPopulaterWorker.prototype._populateInterfaceDefinitions = function(interfacedefs) {
     var self = this;
     for (var key in interfacedefs) {
@@ -142,6 +143,12 @@ function (NesC_XML_Generator, ParseDump) {
         parent: self._getFolderWebGMEObject(interface_def.file_path)
       });
       self.core.setAttribute(interface_node, 'name', interface_def.name);
+      var declaration_list = '';
+      for (var i = 0; i < interface_def.functions.length; i++) {
+        var funct = interface_def.functions[i];
+        declaration_list += funct.event_command + ' void ' + funct.name + '(); ';
+      }
+      self.core.setAttribute(interface_node, 'declaration-list', declaration_list);
       self.component_cache[interface_def.name] = self.core.getPath(interface_node);
       self.counter.interface_def++;
     }

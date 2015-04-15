@@ -243,14 +243,18 @@ define(['libxmljs', 'fs', 'path'],
           var funct = functions[i];
           funct_arr.push({
             name: funct.attr('name').value(),
-            event: funct.attr('event') === null ? false : true,
-            command: funct.attr('command') === null ? false : true
+            event_command: getEventCommand(funct)
           });
-          var isEveryFunctionEventOrCommand = funct_arr[i].event ? !funct_arr[i].command : funct_arr[i].command;
-          if (!isEveryFunctionEventOrCommand) {
+          if (!funct_arr[i].event_command) {
             interfacedefs_notes.push('isEveryFunctionEventOrCommand: ' + qname + ' ' + funct_arr[i].name);
           }
         }
+      }
+
+      function getEventCommand (element) {
+        return element.attr('event') === null ?
+          (element.attr('command') === null ? '' : 'command') :
+          'event';
       }
 
       var app_json = {};
