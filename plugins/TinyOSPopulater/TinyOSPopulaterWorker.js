@@ -146,7 +146,12 @@ function (NesC_XML_Generator, ParseDump) {
       var declaration_list = '';
       for (var i = 0; i < interface_def.functions.length; i++) {
         var funct = interface_def.functions[i];
-        declaration_list += funct.event_command + ' void ' + funct.name + '(); ';
+        var params = '';
+        for (var j = 0; j < funct.parameters.length; j++) {
+          if (j > 0) params += ', ';
+          params += funct.parameters[j];
+        }
+        declaration_list += 'async ' + funct.event_command + ' void ' + funct.name + '(' + params +'); ';
       }
       self.core.setAttribute(interface_node, 'declaration-list', declaration_list);
       self.component_cache[interface_def.name] = self.core.getPath(interface_node);

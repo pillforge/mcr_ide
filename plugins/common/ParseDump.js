@@ -243,8 +243,19 @@ define(['libxmljs', 'fs', 'path'],
           var funct = functions[i];
           funct_arr.push({
             name: funct.attr('name').value(),
-            event_command: getEventCommand(funct)
+            event_command: getEventCommand(funct),
+            parameters: []
           });
+          var params = funct.find('xmlns:parameters', ns);
+          if (params) {
+            var vars = params[0].find('xmlns:variable', ns);
+            for (var j = 0; j < vars.length; j++) {
+              var par = vars[j];
+              var type_name = ''; //par.find('xmlns:type-var', ns)[0].attr('name').value();
+              var var_name = par.attr('name').value();
+              funct_arr[i].parameters.push(type_name + ' ' + var_name);
+            }
+          }
           if (!funct_arr[i].event_command) {
             interfacedefs_notes.push('isEveryFunctionEventOrCommand: ' + qname + ' ' + funct_arr[i].name);
           }
