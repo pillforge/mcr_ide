@@ -23,17 +23,47 @@ define(
     PlaceHolder.prototype.getDefaultConfig = function () {
       return new PluginConfig();
     };
+    PlaceHolder.prototype.getDescription = function () {
+      return 'This plugin is used for test purposes';
+    };
 
     PlaceHolder.prototype.main = function (callback) {
       var self = this;
       self.logger.info('main()');
 
-      self.getAppJson(function (err, result) {
-        console.log(JSON.stringify(result, null, ' '));
+      debugger;
+
+      self.createMcrMeta(function() {
         self.result.setSuccess(true);
-        callback(null, self.result);
+        self.save('meta is populated', function (err) {
+          callback(null, self.result);
+        });
+        // callback(null, self.result);
       });
 
+      // self.getAppJson(function (err, result) {
+      //   console.log(JSON.stringify(result, null, ' '));
+      //   self.result.setSuccess(true);
+      //   callback(null, self.result);
+      // });
+
+    };
+
+    PlaceHolder.prototype.createMcrMeta = function(next) {
+      // Create language folder ane make it to be able to contain FCO
+      var self = this;
+      var root = self.rootNode;
+      self.core.loadByPath(root, '/1', function(err, fco) {
+        // var language = self.core.createChild(root);
+        // var language = self.core.createChild({parentId: '', baseId: '/1'});//, position: {x: 200, y: 300}});
+        var language = self.core.createNode({
+          base: fco,
+          parent: root,
+        });
+        self.core.setAttribute(language, 'name', 'language');
+        self.core.setChildMeta(language, fco, -1, -1);
+        next();
+      });
     };
 
     PlaceHolder.prototype.getAppJson = function (next) {

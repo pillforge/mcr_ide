@@ -25,5 +25,8 @@
     "gulp": "^3.8.11",
     "gulp-jshint": "^1.10.0"
   },
-  "main": "app.js"
+  "main": "app.js",
+  "scripts": {
+    "start": "node ./app.js"
+  }
 }
