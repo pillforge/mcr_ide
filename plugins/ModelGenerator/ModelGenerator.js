@@ -1,20 +1,17 @@
 define(
   ['plugin/PluginBase',
   'plugin/PluginConfig',
-  'logManager',
   '../../package.json',
-  '../../config.json',
   '../common/NesC_XML_Generator',
   '../common/ParseDump',
   './Refresher',
   '../common/utils'
   ],
-  function (PluginBase, PluginConfig, LogManager, pjson, config_json, NesC_XML_Generator, ParseDump, Refresher, utils) {
+  function (PluginBase, PluginConfig, pjson, NesC_XML_Generator, ParseDump, Refresher, utils) {
     "use strict";
 
     var ModelGenerator = function () {
       PluginBase.call(this);
-      this.logger = LogManager.create('ModelGenerator');
     };
 
     ModelGenerator.prototype = Object.create(PluginBase.prototype);
@@ -32,10 +29,10 @@ define(
     ModelGenerator.prototype.main = function (callback) {
       var self = this;
       self.logger.info('main()');
-      this.utils = new utils(this.core, this.META);
+      this.utils = new utils(this.core, this.META, self.logger.fork('utils'));
 
       var path = require('path');
-      var nxg = new NesC_XML_Generator(config_json.platform || 'exp430');
+      var nxg = new NesC_XML_Generator('exp430');
       var name = self.core.getAttribute(self.activeNode, 'name');
       var current_obj_file = name + '.nc';
 
@@ -46,6 +43,7 @@ define(
             self.logger.error(err_msg + ': ' + error);
             self.result.setSuccess(false);
             self.createMessage(null, err_msg);
+            self.utils.remove_files(created_files);
             callback(null, self.result);
           } else {
             var fs = require('fs');
@@ -53,16 +51,16 @@ define(
             var pd = new ParseDump();
             var app_json = pd.parse(null, xml);
             fs.writeFileSync('app_json.js.log', JSON.stringify(app_json, null, '  '));
-            var r = new Refresher(self.core, self.META, app_json);
+            var r = new Refresher(self.core, self.META, app_json, self.logger.fork('Refresher'));
             r.update(self.activeNode, name, function () {
               self.save('Save Model Generator changes', function () {
                 self.result.setSuccess(true);
                 self.createMessage(null, 'Output file created');
+                self.utils.remove_files(created_files);
                 callback(null, self.result);
               });
             });
           }
-          self.utils.remove_files(created_files);
         });
       });
     };

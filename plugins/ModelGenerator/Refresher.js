@@ -1,10 +1,10 @@
-define(['logManager'], function (logManager) {
+define([], function () {
 
-  var Refresher = function (core, META, app_json) {
+  var Refresher = function (core, META, app_json, logger) {
     this.core = core;
     this.META = META;
     this.app_json = app_json;
-    this.logger = logManager.create('Refresher');
+    this.logger = logger;
   };
 
   Refresher.prototype.update = function (node, component, callback) {

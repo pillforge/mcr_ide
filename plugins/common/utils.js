@@ -1,18 +1,19 @@
-define(['logManager'], function (logManager) {
+define([], function () {
   
   "use strict";
 
-  var utils = function (core, META) {
+  var utils = function (core, META, logger) {
     this.core = core;
     this.META = META;
-    this.logger = logManager.create('utils');
+    this.logger = logger;
   };
 
   utils.prototype.remove_files = function (files) {
     this.logger.info('remove_files()');
     var fs = require('fs');
     for (var i = files.length - 1; i >= 0; i--) {
-      fs.unlinkSync(files[i]);
+      if (fs.existsSync(files[i]))
+        fs.unlinkSync(files[i]);
     }
   };
 
