@@ -15,4 +15,8 @@ config.plugin.basePaths.push('./plugins');
 config.plugin.basePaths.push('./test/meta')
 // config.visualization.decoratorPaths.unshift("./decorators");
 
+config.seedProjects.enable = true;
+config.seedProjects.defaultProject = 'Meta';
+config.seedProjects.basePaths = ['./seeds'];
+
 module.exports = config;

@@ -1,4 +1,4 @@
-var meta_json = require('../../plugins/TinyOSPopulater/mcr_meta');
+var meta_json = require('../../seeds/MetaDev');
 var fs = require('fs');
 
 var nodes = meta_json.nodes;

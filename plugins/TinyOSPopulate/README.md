@@ -9,7 +9,6 @@ TinyOSPopulate is a server side plugin that creates base TinyOS components.
 3. Run the plugin
 ```
 node node_modules/webgme/src/bin/run_plugin.js \
-  -c config.json \
   -p <project_name> \
   -b <branch_name> \
   -n TinyOSPopulate
