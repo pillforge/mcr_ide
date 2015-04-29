@@ -50,12 +50,14 @@ define([], function () {
     var parent = self.core.getParent(component_node);
     var linked_projects = self.core.getAttribute(parent, 'linked_projects').split(' ');
     linked_projects.push('../' + self.core.getAttribute(parent, 'name'));
+    self.logger.debug('linked_projects', linked_projects);
 
     var created = [];
     var counter = 0;
     if (linked_projects.length === 0) next(created);
     self.for_each_then_call_next(linked_projects, function (linked_project, fn_next) {
       var dirs = linked_project.split('/');
+      self.logger.info('dirs', dirs);
       var curr_node = parent;
       self.for_each_then_call_next(dirs, function (dir, fnn_next) {
         if (dir === '..') {
@@ -66,6 +68,7 @@ define([], function () {
             var found = false;
             for (var i = children.length - 1; i >= 0; i--) {
               var name = self.core.getAttribute(children[i], 'name');
+              self.logger.info(name, dir);
               if (name === dir) {
                 found = true;
                 curr_node = children[i];
@@ -75,7 +78,8 @@ define([], function () {
             if (found) {
               fnn_next();
             } else {
-              self.logger.error('save_linked_components()');
+              var name = self.core.getAttribute(curr_node, 'name');
+              self.logger.error('save_linked_components()', name);
               fnn_next();
             }
           });

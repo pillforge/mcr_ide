@@ -1,8 +1,3 @@
-/*jshint node: true*/
-/**
- * @author lattmann / https://github.com/lattmann
- */
-
 var config = require('webgme/config/config.default');
 
 config.server.port = 9091;

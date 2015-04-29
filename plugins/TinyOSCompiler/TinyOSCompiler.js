@@ -1,17 +1,14 @@
 define(
   ['plugin/PluginBase',
   'plugin/PluginConfig',
-  'logManager',
   '../../package.json',
-  '../../config.json'
   ],
-  function (PluginBase, PluginConfig, LogManager, pjson, config_json) {
+  function (PluginBase, PluginConfig, pjson) {
     "use strict";
 
     var TinyOSCompiler = function () {
       PluginBase.call(this);
-      this.logger = LogManager.create('TinyOSCompiler');
-      this.platform = config_json && config_json.platform || 'exp430';
+      this.platform = 'exp430';
     };
 
     TinyOSCompiler.prototype = Object.create(PluginBase.prototype);
@@ -29,7 +26,6 @@ define(
     TinyOSCompiler.prototype.main = function (callback) {
       try {
         var self = this;
-        LogManager.setLogLevel(LogManager.logLevels.DEBUG);
 
         self._compileTheApp(function(err, data) {
           if (err) {
