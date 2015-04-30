@@ -9,12 +9,12 @@ define([], function () {
 
   Refresher.prototype.update = function (node, component, callback) {
     var self = this;
-    self.logger.info('update');
+    self.logger.debug('update');
     self.deleteChildren(node, function () {
       self.updateComponent(node, component, function () {
         self.updateUPInterfaces(node, component, function () {
           self.updateWirings(node, component, function () {
-            self.logger.info('update finished, calling callback');
+            self.logger.debug('update finished, calling callback');
             callback();
           });
         });
@@ -24,7 +24,7 @@ define([], function () {
 
   Refresher.prototype.updateWirings = function (node, component, next) {
     var self = this;
-    self.logger.info('updateWirings');
+    self.logger.debug('updateWirings');
     var wires = self.app_json.components[component].wiring;
     var counter = 0;
     var created = {};
@@ -32,7 +32,7 @@ define([], function () {
     if (wires.length < 1) next();
     wires.forEach(function (w) {
       self.findObject(node, component, w.from.component_base, function (fc) {
-        self.logger.info('wiring from: ' + w.from.component_base + ' ' + (fc ? 'found' : fc) + ' ' + w.from.interface);
+        self.logger.debug('wiring from: ' + w.from.component_base + ' ' + (fc ? 'found' : fc) + ' ' + w.from.interface);
         if (!fc) {
           counter++;
           if (counter == wires.length) {
@@ -40,14 +40,14 @@ define([], function () {
           }
         } else {
           self.findObject(node, component, w.to.component_base, function (tc) {
-            self.logger.info('wiring to: ' + w.to.component_base + ' ' + (tc ? 'found' : tc) + ' ' + w.to.interface);
+            self.logger.debug('wiring to: ' + w.to.component_base + ' ' + (tc ? 'found' : tc) + ' ' + w.to.interface);
             if (!tc) {
               counter++;
               if (counter == wires.length) {
                 next();
               }
             } else {
-              self.logger.info('Both objects are found');
+              self.logger.debug('Both objects are found');
               var from_port_component = create_wiring_component(fc, w.from);
               var to_port_component = create_wiring_component(tc, w.to);
 
@@ -60,7 +60,7 @@ define([], function () {
                       next();
                     }
                   }
-                  self.logger.info('from port is found');
+                  self.logger.debug('from port is found');
                   getPort(to_port_component, w.to.interface, function (to_port) {
 
                     var base_type = self.META.Link_Interface;
@@ -94,13 +94,13 @@ define([], function () {
               }
 
               function getPort (object, name, cb) {
-                self.logger.info('getPort for');
+                self.logger.debug('getPort for');
                 self.core.loadChildren(object, function (err, children) {
                   if (err) {
                     self.logger.error(err);
                     return;
                   }
-                  self.logger.info('getPort children loaded');
+                  self.logger.debug('getPort children loaded');
                   for (var i = children.length - 1; i >= 0; i--) {
                     var n = self.core.getAttribute(children[i], 'name');
                     if (n == name) {
@@ -162,7 +162,7 @@ define([], function () {
 
   Refresher.prototype.findObject = function (node, component, path, callback) {
     var self = this;
-    self.logger.info('findObject' + ' -> ' + component + ' ' + path);
+    self.logger.debug('findObject' + ' -> ' + component + ' ' + path);
     if (self.app_json.components[component].file_path == path) {
       callback(node);
       return;
@@ -183,7 +183,7 @@ define([], function () {
         }
       }
       // Then we try to find the object in its full path
-      self.logger.info('findObject > looking for the full path')
+      self.logger.debug('findObject > looking for the full path')
       var root = self.core.getRoot(node);
       var paths = getPaths(path);
       if (!paths) {
@@ -214,7 +214,7 @@ define([], function () {
               }
             }
             if (!getTheNextChild) {
-              self.logger.info('findObject > findChild > no next child');
+              self.logger.debug('findObject > findChild > no next child');
               callback(null);
               return;
             }
@@ -241,7 +241,7 @@ define([], function () {
 
   Refresher.prototype.deleteChildren = function (node, next) {
     var self = this;
-    self.logger.info('deleteChildren');
+    self.logger.debug('deleteChildren');
     self.core.loadChildren(node, function (err, children) {
       if (err) {
         throw new Error(err);
@@ -256,7 +256,7 @@ define([], function () {
 
   Refresher.prototype.updateComponent = function (node, component, next) {
     var self = this;
-    self.logger.info('updateComponent');
+    self.logger.debug('updateComponent');
     var val = self.app_json.components[component].safe;
     self.core.setAttribute(node, 'safe', val);
     next();
@@ -264,7 +264,7 @@ define([], function () {
 
   Refresher.prototype.updateUPInterfaces = function (node, component, cb) {
     var self = this;
-    self.logger.info('updateUPInterfaces');
+    self.logger.debug('updateUPInterfaces');
     var interfaces = self.app_json.components[component].interface_types;
     var counter = 0;
     var messages = [];

@@ -28,7 +28,7 @@ define(
 
     ModelGenerator.prototype.main = function (callback) {
       var self = this;
-      self.logger.info('main()');
+      self.logger.debug('main()');
       this.utils = new utils(this.core, this.META, self.logger.fork('utils'));
 
       var path = require('path');

@@ -48,7 +48,13 @@ define([], function () {
     var fs = require('fs');
 
     var parent = self.core.getParent(component_node);
-    var linked_projects = self.core.getAttribute(parent, 'linked_projects').split(' ');
+
+    var linked_projects = [];
+
+    var lp = self.core.getAttribute(parent, 'linked_projects').trim();
+    if (lp !== '') {
+      linked_projects.push(lp.split(' '));
+    }
     linked_projects.push('../' + self.core.getAttribute(parent, 'name'));
     self.logger.debug('linked_projects', linked_projects);
 
