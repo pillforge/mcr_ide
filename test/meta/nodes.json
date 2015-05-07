@@ -1,5 +1,6 @@
 {
   "folder": {},
+  "command": {},
   "uses": {},
   "provides": {},
   "configuration": {},
@@ -7,8 +8,9 @@
   "uses-provides": {},
   "component": {},
   "module": {},
+  "event": {},
   "Language": {},
   "FCO": {},
   "nesC-file": {},
-  "event": {}
+  "declaration": {}
 }

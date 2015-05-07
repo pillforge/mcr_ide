@@ -15,7 +15,7 @@ All objects have type and name inherently.
 
 ```
 nesC-file
-  @translation-unit
+  @translation-unit: string
   >interface-definition
     0..* declaration
     Notes
@@ -26,8 +26,10 @@ nesC-file
     >configuration
     >module
 declaration
-  @return-type
+  @async: boolean
+  @return-type: string
   >event
+  >command
 ```
 
 Notes: 'object' refers a WebGME object or node.

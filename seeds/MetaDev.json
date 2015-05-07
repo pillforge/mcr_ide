@@ -6,6 +6,7 @@
   },
   "relids": {
     "02161d4d-a5a9-6cad-2de9-8e042a59af50": "537076365",
+    "098c8bf6-6a54-ce99-b8fe-29fa9851a45a": "843688129",
     "09e938e4-ccb2-b022-32ec-99dd98f8b4e4": "503760399",
     "12e9f149-a891-56af-4792-c49549b6a649": "1054006315",
     "1f4417ec-d802-6370-958d-ebf170b25965": "322147883",
@@ -23,6 +24,7 @@
   "containment": {
     "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76": {
       "02161d4d-a5a9-6cad-2de9-8e042a59af50": {},
+      "098c8bf6-6a54-ce99-b8fe-29fa9851a45a": {},
       "09e938e4-ccb2-b022-32ec-99dd98f8b4e4": {},
       "12e9f149-a891-56af-4792-c49549b6a649": {},
       "1f4417ec-d802-6370-958d-ebf170b25965": {},
@@ -81,6 +83,42 @@
       "sets": {},
       "constraints": {}
     },
+    "098c8bf6-6a54-ce99-b8fe-29fa9851a45a": {
+      "attributes": {
+        "name": "command"
+      },
+      "base": "e506305e-bb66-7722-b02a-4ed27ab3c099",
+      "meta": {
+        "attributes": {
+          "name": {
+            "type": "string"
+          },
+          "return-type": {
+            "type": "string",
+            "default": ""
+          },
+          "async": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "parent": "a8e0d64c-0b1d-ef6b-2508-5b4e99b45c76",
+      "pointers": {
+        "base": "e506305e-bb66-7722-b02a-4ed27ab3c099"
+      },
+      "registry": {
+        "PortSVGIcon": "BluePort.svg",
+        "color": "#3399ff",
+        "isAbstract": false,
+        "position": {
+          "x": 612,
+          "y": 333
+        }
+      },
+      "sets": {},
+      "constraints": {}
+    },
     "09e938e4-ccb2-b022-32ec-99dd98f8b4e4": {
       "attributes": {
         "name": "uses"
@@ -102,10 +140,11 @@
         "base": "40ef5257-3d3f-a1b9-2457-93e0d43f95c0"
       },
       "registry": {
+        "color": "#ffcccc",
         "isAbstract": false,
         "position": {
-          "x": 142,
-          "y": 658
+          "x": 141,
+          "y": 664
         }
       },
       "sets": {},
@@ -132,10 +171,11 @@
         "base": "40ef5257-3d3f-a1b9-2457-93e0d43f95c0"
       },
       "registry": {
+        "color": "#ccffcc",
         "isAbstract": false,
         "position": {
-          "x": 143,
-          "y": 719
+          "x": 139,
+          "y": 724
         }
       },
       "sets": {},
@@ -349,6 +389,10 @@
           "return-type": {
             "type": "string",
             "default": ""
+          },
+          "async": {
+            "type": "boolean",
+            "default": false
           }
         }
       },
@@ -358,6 +402,7 @@
       },
       "registry": {
         "PortSVGIcon": "RedPort.svg",
+        "color": "#ff3333",
         "isAbstract": false,
         "position": {
           "x": 606,
@@ -505,6 +550,16 @@
               "position": {
                 "x": 336,
                 "y": 128
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "098c8bf6-6a54-ce99-b8fe-29fa9851a45a",
+            "registry": {
+              "position": {
+                "x": 944,
+                "y": 354
               }
             }
           },
@@ -664,6 +719,16 @@
           },
           {
             "attributes": {},
+            "guid": "098c8bf6-6a54-ce99-b8fe-29fa9851a45a",
+            "registry": {
+              "position": {
+                "x": 937,
+                "y": 341
+              }
+            }
+          },
+          {
+            "attributes": {},
             "guid": "09e938e4-ccb2-b022-32ec-99dd98f8b4e4",
             "registry": {
               "position": {
@@ -799,6 +864,7 @@
     },
     "e506305e-bb66-7722-b02a-4ed27ab3c099": {
       "attributes": {
+        "async": false,
         "name": "declaration",
         "return-type": ""
       },
@@ -811,6 +877,10 @@
           "return-type": {
             "type": "string",
             "default": ""
+          },
+          "async": {
+            "type": "boolean",
+            "default": false
           }
         }
       },

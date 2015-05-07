@@ -20,3 +20,8 @@ fs.writeFileSync(
   path.join(__dirname, 'gen-' + arg.split('/').slice(-1)),
   JSON.stringify(exp_nodes, null, '  ')
 );
+
+fs.writeFileSync(
+  path.join(__dirname, 'nodes.json'),
+  JSON.stringify(exp_nodes, null, '  ')
+);
