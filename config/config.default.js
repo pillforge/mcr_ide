@@ -13,7 +13,7 @@ config.server.port = 9091;
 config.mongo.uri = 'mongodb://127.0.0.1:27017/multi';
 config.plugin.basePaths.push('./plugins');
 config.plugin.basePaths.push('./test/meta')
-// config.visualization.decoratorPaths.unshift("./decorators");
+config.visualization.decoratorPaths.push("./decorators");
 
 config.seedProjects.enable = true;
 config.seedProjects.defaultProject = 'Meta';

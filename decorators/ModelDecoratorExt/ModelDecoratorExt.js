@@ -7,28 +7,28 @@ define(['js/Decorators/DecoratorBase',
                                                            ModelDecoratorDiagramDesignerWidget,
                                                            ModelDecoratorPartBrowserWidget) {
 
-    var ModelDecorator,
+    var ModelDecoratorExt,
         __parent__ = DecoratorBase,
         __parent_proto__ = DecoratorBase.prototype,
-        DECORATOR_ID = "ModelDecorator";
+        DECORATOR_ID = "ModelDecoratorExt";
 
-    ModelDecorator = function (params) {
+    ModelDecoratorExt = function (params) {
         var opts = _.extend( {"loggerName": this.DECORATORID}, params);
 
         __parent__.apply(this, [opts]);
 
-        this.logger.debug("ModelDecorator ctor");
+        this.logger.debug("ModelDecoratorExt ctor");
     };
 
-    _.extend(ModelDecorator.prototype, __parent_proto__);
-    ModelDecorator.prototype.DECORATORID = DECORATOR_ID;
+    _.extend(ModelDecoratorExt.prototype, __parent_proto__);
+    ModelDecoratorExt.prototype.DECORATORID = DECORATOR_ID;
 
     /*********************** OVERRIDE DecoratorBase MEMBERS **************************/
 
-    ModelDecorator.prototype.initializeSupportedWidgetMap = function () {
+    ModelDecoratorExt.prototype.initializeSupportedWidgetMap = function () {
         this.supportedWidgetMap = {'DiagramDesigner': ModelDecoratorDiagramDesignerWidget,
             'PartBrowser': ModelDecoratorPartBrowserWidget};
     };
 
-    return ModelDecorator;
+    return ModelDecoratorExt;
 });
