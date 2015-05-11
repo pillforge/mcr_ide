@@ -1,8 +1,8 @@
 define([ 'js/Decorators/DecoratorBase'
-       , 'decorators/ModelDecorator/DiagramDesigner/ModelDecorator.DiagramDesignerWidget'
+       , './DiagramDesigner/TosDecorator.DiagramDesignerWidget'
        , 'decorators/ModelDecorator/PartBrowser/ModelDecorator.PartBrowserWidget'
        ],
-function (DecoratorBase, ModelDecoratorDiagramDesignerWidget, ModelDecoratorPartBrowserWidget) {
+function (DecoratorBase, TosDecoratorDiagramDesignerWidget, ModelDecoratorPartBrowserWidget) {
   'use strict';
 
   var TosDecorator = function (params) {
@@ -15,7 +15,7 @@ function (DecoratorBase, ModelDecoratorDiagramDesignerWidget, ModelDecoratorPart
 
   TosDecorator.prototype.initializeSupportedWidgetMap = function () {
     this.supportedWidgetMap = {
-      DiagramDesigner: ModelDecoratorDiagramDesignerWidget,
+      DiagramDesigner: TosDecoratorDiagramDesignerWidget,
       PartBrowser: ModelDecoratorPartBrowserWidget
     };
   };
