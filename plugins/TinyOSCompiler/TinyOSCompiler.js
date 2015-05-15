@@ -26,34 +26,39 @@ define(
     TinyOSCompiler.prototype.main = function (callback) {
       try {
         var self = this;
+        var path = require('path');
+        var fs = require('fs');
 
-        self._compileTheApp(function(err, data) {
+        self._compileTheApp(function(err) {
           if (err) {
             self.result.setSuccess(false);
             callback(err, self.result);
           } else {
-            self.createMessage(self.activeNode, {appc: data});
-            self.result.setSuccess(true);
-            // callback(null, self.result);
             var artifact = self.blobClient.createArtifact(self.projectName + "_src");
-            artifact.addFile('app.c', data, function (e) {
-              if (e) {
+            var build_path = 'build/exp430';
+            var files_list = fs.readdirSync(build_path);
+            var files = {};
+            for (var i = files_list.length - 1; i >= 0; i--) {
+              files[files_list[i]] = fs.readFileSync(path.resolve(build_path, files_list[i]));
+            }
+            artifact.addFiles(files, function (error, hashes) {
+              if (error) {
                 console.log('err in artifact, fix for a quit code');
                 self.result.setSuccess(false);
                 callback(err, self.result);
               } else {
-                self.blobClient.saveAllArtifacts(function (ee, hashes) {
-                  if (ee) {
+                self.blobClient.saveAllArtifacts( function (error, hashes) {
+                  if (error) {
                     console.log('err in artifact saving, fix');
                     self.result.setSuccess(false);
                     callback(err, self.result);
                   } else {
-                    self.logger.info('Artifacts are saved here:');
-                    self.logger.info(hashes);
-                    // result add hashes
-                    for (var j = 0; j < hashes.length; j += 1) {
+                    for (var j = hashes.length - 1; j >= 0; j--) {
                       self.result.addArtifact(hashes[j]);
                     }
+                    self.createMessage(self.activeNode, {
+                      download_url: self.blobClient.getDownloadURL(hashes[0])
+                    });
                     self.result.setSuccess(true);
                     callback(err, self.result);
                   }
@@ -99,10 +104,8 @@ define(
             } else {
               // return the app.c as downloadable
               self.logger.info('return binary');
-              var appc_location = path.resolve('build', self.platform, 'app.c');
-              var appc_content = fs.readFileSync(appc_location, 'utf8');
               self._cleanUp();
-              next(null, appc_content);
+              next(null);
             }
           });
 

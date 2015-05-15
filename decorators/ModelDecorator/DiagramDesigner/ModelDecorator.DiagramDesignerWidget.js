@@ -575,10 +575,7 @@ define(['js/Constants',
     client.runServerPlugin('TinyOSCompiler', context, function (err, result, msg) {
       if (result.success) {
         console.log('The app is compiled');
-        var src_code = result.messages[0].message.appc;
-        var bl = new Blob([src_code], {type: 'text/plain'});
-        var url = window.URL.createObjectURL(bl);
-        self._dialog.createDownloadButton(url);
+        self._dialog.createDownloadButton(result.messages[0].message.download_url);
       } else {
         console.log('The app cannot be compiled');
         console.dir(result.messages);
