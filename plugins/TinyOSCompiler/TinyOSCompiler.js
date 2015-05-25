@@ -59,6 +59,7 @@ define(
                     self.createMessage(self.activeNode, {
                       download_url: self.blobClient.getDownloadURL(hashes[0])
                     });
+			console.log('download_url', self.blobClient.getDownloadURL(hashes[0]));
                     self.result.setSuccess(true);
                     callback(err, self.result);
                   }
@@ -97,6 +98,7 @@ define(
           var exec = require('child_process').exec;
           exec(make_cmd, options, function (error, stdout, stderr) {
             self.logger.info('exec()');
+            self.logger.info(process.env.TOSROOT);
             if (error !== null) {
               self.logger.error('exec make: ' + error);
               self._cleanUp();

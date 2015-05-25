@@ -575,7 +575,9 @@ define(['js/Constants',
     client.runServerPlugin('TinyOSCompiler', context, function (err, result, msg) {
       if (result.success) {
         console.log('The app is compiled');
-        self._dialog.createDownloadButton(result.messages[0].message.download_url);
+	var s = result.messages[0].message.download_url;
+	var url = 'http://pillforge.webgme.org' + s.substr(s.indexOf(':80/') + 3)
+        self._dialog.createDownloadButton(url);
       } else {
         console.log('The app cannot be compiled');
         console.dir(result.messages);

@@ -133,7 +133,7 @@ define([
                       .html('Download the App v' + (vers + 1));
       } else {
         var compile_button = self._dialog.find('.compile').first();
-        compile_button.after('<a href="' + url + '" class="btn btn-danger download" download="app.c" v="0">Download the App</a>');
+        compile_button.after('<a href="' + url + '" target="_blank" class="btn btn-danger download" download="app.c" v="0">Download the App</a>');
       }
     };
 
