@@ -3,9 +3,10 @@ define(
   'plugin/PluginConfig',
   '../../package.json',
   '../common/NesC_XML_Generator',
-  '../common/ParseDump'
+  '../common/ParseDump',
+  '../common/Util'
   ],
-  function (PluginBase, PluginConfig, pjson, NesC_XML_Generator, ParseDump) {
+  function (PluginBase, PluginConfig, pjson, NesC_XML_Generator, ParseDump, Util) {
     "use strict";
 
     var PlaceHolder = function () {
@@ -30,16 +31,28 @@ define(
     PlaceHolder.prototype.main = function (callback) {
       var self = this;
       self.logger.info('main()');
+      this.util = new Util(this.core, this.META);
 
       debugger;
 
-      self.createMcrMeta(function() {
-        self.result.setSuccess(true);
-        self.save('meta is populated', function (err) {
+      self.analyzeObjectStorage(function (err, nodes) {
+        if (err) {
+
+        } else {
+          console.log(nodes);
+          debugger;
+          self.result.setSuccess(true);
           callback(null, self.result);
-        });
-        // callback(null, self.result);
+        }
       });
+
+      // self.createMcrMeta(function() {
+      //   self.result.setSuccess(true);
+      //   self.save('meta is populated', function (err) {
+      //     callback(null, self.result);
+      //   });
+      //   // callback(null, self.result);
+      // });
 
       // self.getAppJson(function (err, result) {
       //   console.log(JSON.stringify(result, null, ' '));
@@ -47,6 +60,17 @@ define(
       //   callback(null, self.result);
       // });
 
+    };
+
+    PlaceHolder.prototype.analyzeObjectStorage = function(next) {
+      var self = this;
+      self.util.loadNodes(self.rootNode, function (err, nodes) {
+        if (err) {
+          next(err);
+        } else {
+          next(null, nodes);
+        }
+      });
     };
 
     PlaceHolder.prototype.createMcrMeta = function(next) {
