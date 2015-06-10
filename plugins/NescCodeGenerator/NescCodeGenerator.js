@@ -37,8 +37,6 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
     //   fs.mkdirSync(self.output_dir);
     // }catch(e){}
 
-    console.log("Module: " + module.uri);
-    console.log("plugin_dir: " + self.plugin_dir);
     //self.updateSuccess(false, "Test failure");
     //callback(false, self.result);
     //return;
@@ -57,7 +55,7 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
       // The app node is special because it's a configuration but may have more information
       var components = [app_node];
       var process = function(cur_comp){
-        console.log("Processing component: " + self._getNodeName(cur_comp));
+        self.logger.info("Processing component: " + self._getNodeName(cur_comp));
         self.core.loadChildren(cur_comp, function(err, children){
           if (err) {
             console.log("Error load_nodes");
@@ -70,8 +68,8 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
             var interface_refs = [];
             var wirings = [];
             var async_ptr = [];
+            var module_implementation = [];
 
-            console.log("Length: " + children.length);
             // We want to differentiate between components that are references to components that already
             // exists in the library and components created in WebGME for which we have to generate code.
             // For now, the way we do this by checking if the referenced(base) component has an empty path
@@ -92,6 +90,19 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
                 async_ptr.push(children[i]);
               }
 
+            }
+
+            var call_graph = {};
+            for (i = children.length - 1; i >= 0; i--) {
+              var child = children[i];
+              var type = self.core.getAttribute(self.core.getBase(child), 'name');
+              if (type === 'call') {
+                var src_path = self.core.getPointerPath(child, 'src');
+                var dst_path = self.core.getPointerPath(child, 'dst');
+                var ael = self.core.getAttribute(child, 'argument-expression-list');
+                call_graph[src_path] = call_graph[src_path] || new Array();
+                call_graph[src_path].push([dst_path, ael]);
+              }
             }
 
 
@@ -116,7 +127,7 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
                   });
                 }
               }else{
-                _generate_output(cur_comp, component_refs, generic_component_refs, interface_refs, wirings);
+                _generate_output(cur_comp, component_refs, generic_component_refs, interface_refs, wirings, module_implementation);
                 if (components.length === 0){
                   self.save('saving nesc code', function (err) {
                     self.result.setSuccess(true);
@@ -128,7 +139,52 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
                 }
               }
             };
-            load_ptr(async_ptr.pop());
+
+            self._loadNodes(self.activeNode, function (err) {
+              for (var src in call_graph) {
+
+                var function_definition = {};
+                var src_node = self._nodeCache[src];
+
+                // set type and return type
+                var base_type = self.core.getBaseType(src_node);
+                if (base_type === self.META.Event) {
+                  function_definition.type = 'event void';
+                }
+
+                // set name
+                function_definition.name = getNameOfFunction(src_node);
+
+                // set calls
+                function_definition.calls = [];
+                for (var i = call_graph[src].length - 1; i >= 0; i--) {
+                  var call_dst_node = self._nodeCache[call_graph[src][i][0]];
+                  var call_func_name = getNameOfFunction(call_dst_node);
+                  function_definition.calls.push({
+                    name: call_func_name,
+                    ael: call_graph[src][i][1]
+                  });
+                }
+
+                module_implementation.push(function_definition);
+                debugger;
+                // self.core.getAttribute(, 'name');
+                // var to_name = self.core.getAttribute(self._nodeCache[])
+                // console.log(src, from_name, call_graph[src]);
+
+              }
+
+              function getNameOfFunction(node) {
+                var parent = self.core.getParent(node);
+                var parent_name = self.core.getAttribute(parent, 'name');
+                var src_name = self.core.getAttribute(node, 'name');
+                return parent_name + '.' + src_name;
+              }
+
+              load_ptr(async_ptr.pop());      
+            });
+
+            
           }
         });
       };
@@ -160,7 +216,6 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
             var wirings = [];
             var children = self._getChildren(cur_comp);
 
-            console.log("Length: " + children.length);
             // We want to differentiate between components that are references to components that already
             // exists in the library and components created in WebGME for which we have to generate code.
             // For now, the way we do this by checking if the referenced(base) component has an empty path
@@ -198,7 +253,7 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
 
     }
 
-    function _generate_output (parent_component, component_refs, generic_component_refs, interface_refs, wirings){
+    function _generate_output (parent_component, component_refs, generic_component_refs, interface_refs, wirings, module_implementation) {
       var tmpl_context = {},
         output_file = "",
         parent_comp_name = self._getNodeName(parent_component);
@@ -213,7 +268,6 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
         };
         // Generate Makefile
         output = makefile_template(tmpl_context);
-        console.log(output);
         output_file = path.resolve(self.output_dir, "Makefile");
         fs.writeFileSync(output_file, output);
       }
@@ -231,7 +285,6 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
         var config_tmpl = fs.readFileSync(path.resolve(self.plugin_dir, "config.nc.tmpl"), 'utf8');
         var config_template = doT.template(config_tmpl);
 
-        console.log("Output:");
         var link_wirings_for_tmpl = [];
         var equate_wirings_for_tmpl = [];
         wirings.forEach(function(node){
@@ -271,13 +324,6 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
           }
         });
 
-        console.log("Interface_refs: " + interface_refs.length);
-        console.log("Provides: " + provides_interface_refs.length);
-        console.log("Uses: " + uses_interface_refs.length);
-        uses_interface_refs.forEach(function(iref){
-          console.log(iref.base);
-        })
-
         debugger;
         tmpl_context = {
           component               : self._createComponent(parent_component),
@@ -286,11 +332,12 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
           provides_interface_refs : provides_interface_refs,
           generic_component_refs  : generic_component_refs.map(self._createComponent, self),
           link_wirings            : link_wirings_for_tmpl,
-          equate_wirings          : equate_wirings_for_tmpl
+          equate_wirings          : equate_wirings_for_tmpl,
+          module_implementation   : module_implementation
         };
         // Generate App file
         var output = config_template(tmpl_context);
-        console.log(output);
+        // console.log(output);
         output_file = path.resolve(self.output_dir, parent_comp_name + ".nc");
         // fs.writeFileSync(output_file, output);
         self.core.setAttribute(self.activeNode, "source", output);
@@ -307,6 +354,12 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
     var out = {'base': base};
     if (base !== name_as)
       out.name= name_as;
+
+    var type = 'configuration';
+    var bt = self.core.getBaseType(node);
+    if (bt === self.META.Module)
+      type = 'module';
+    out.type = type;
 
     return out;
   };
@@ -336,7 +389,6 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
     self._nodeCache = {};
 
     var load = function(node, fn, depth) {
-      console.log("Depth: " + depth);
       self.core.loadChildren(node, function(err, children) {
         if (err) {
           fn(err);

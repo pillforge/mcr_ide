@@ -5,9 +5,9 @@
  * Created on: {{=new Date()}}
  */
 
-configuration {{=it.component.name}} { {{? it.uses_interface_refs && it.uses_interface_refs.length > 0}}
+{{=it.component.type}} {{=it.component.name}} { {{? it.uses_interface_refs && it.uses_interface_refs.length > 0}}
   uses { {{~ it.uses_interface_refs :iref}} 
-    interface {{=iref.base }}{{? iref.name }} as {{=iref.name}}{{?}}; {{~}}
+    interface {{=iref.base }}{{? iref.type_arguments}}<{{=iref.type_arguments}}>{{?}}{{? iref.name }} as {{=iref.name}}{{?}}; {{~}}
   }{{?}}{{? it.provides_interface_refs && it.provides_interface_refs.length > 0}}
     provides { {{~ it.provides_interface_refs :iref}} 
       interface {{=iref.base }}{{? iref.name }} as {{=iref.name}}{{?}}; {{~}}
@@ -26,4 +26,11 @@ implementation {
 
   // Equate {{~ it.equate_wirings :wire}} 
   {{=wire.src }} = {{=wire.dst}}; {{~}}
+
+  // Module-implementation {{~ it.module_implementation :f}} 
+  {{=f.type }} {{=f.name}} () {{{~ f.calls :c}}
+    call {{=c.name}} ({{=c.ael}}); {{~}}
+  }
+  {{~}}
+
 }
