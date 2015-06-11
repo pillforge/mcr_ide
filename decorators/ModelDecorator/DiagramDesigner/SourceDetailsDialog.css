@@ -3,6 +3,19 @@
   height: 90%;
 }
 
+.source-details-dialog .modal-dialog .modal-content {
+  height: 85%;
+}
+
+.source-details-dialog .modal-dialog .modal-content .modal-body {
+  height: 100%;
+}
+
+.source-details-dialog .modal-dialog .modal-content .modal-body .CodeMirror {
+  height: 100%;
+}
+
+/*
 @media(min-height:550px) {
     .modal-body {
         max-height: 300px;
@@ -42,7 +55,7 @@
     .CodeMirror {
       height: 850px;
     }
-}
+}*/
 
 .CodeMirror-hints {
   z-index: 1200 !important;
