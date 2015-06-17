@@ -567,8 +567,8 @@ define(['js/Constants',
         "token": "",
         "activeNode": self._metaInfo[CONSTANTS.GME_ID], // WebGMEGlobal.State.getActiveObject(),
         "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
-        "commit": client.getActualCommit(),
-        "branchName": client.getActualBranch()
+        "commit": client.getActiveCommitHash(),
+        "branchName": client.getActiveBranchName()
       }
     };
 
@@ -595,8 +595,8 @@ define(['js/Constants',
         "token": "",
         "activeNode": self._metaInfo[CONSTANTS.GME_ID], // WebGMEGlobal.State.getActiveObject(),
         "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
-        "commit": client.getActualCommit(),
-        "branchName": client.getActualBranch()
+        "commit": client.getActiveCommitHash(),
+        "branchName": client.getActiveBranchName()
       }
     };
     console.log('NescCodeGenerator plugin');
@@ -620,8 +620,8 @@ define(['js/Constants',
         "token": "",
         "activeNode": self._metaInfo[CONSTANTS.GME_ID], // WebGMEGlobal.State.getActiveObject(),
         "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
-        "commit": client.getActualCommit(),
-        "branchName": client.getActualBranch()
+        "commit": client.getActiveCommitHash(),
+        "branchName": client.getActiveBranchName()
       }
       // ,pluginConfigs: {
       //   TinyOSCompiler:{
