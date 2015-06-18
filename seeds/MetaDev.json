@@ -802,11 +802,11 @@
         "base": "40ef5257-3d3f-a1b9-2457-93e0d43f95c0"
       },
       "registry": {
-        "color": "#ffcccc",
+        "color": "#ffffcc",
         "isAbstract": false,
         "position": {
-          "x": 203,
-          "y": 689
+          "x": 210,
+          "y": 691
         }
       },
       "sets": {},
@@ -1004,8 +1004,8 @@
         "color": "#ccffcc",
         "isAbstract": false,
         "position": {
-          "x": 201,
-          "y": 785
+          "x": 210,
+          "y": 782
         }
       },
       "sets": {},
@@ -1777,7 +1777,7 @@
       },
       "registry": {
         "SVGIcon": "Chain.svg",
-        "color": "#ffffcc",
+        "color": "#ccccff",
         "isAbstract": false,
         "position": {
           "x": 142,
@@ -3926,7 +3926,7 @@
       },
       "registry": {
         "position": {
-          "x": 311,
+          "x": 234,
           "y": 258
         }
       },
@@ -4948,7 +4948,7 @@
       "registry": {
         "position": {
           "x": 370,
-          "y": 306
+          "y": 300
         }
       },
       "sets": {},
@@ -5110,8 +5110,8 @@
       },
       "registry": {
         "position": {
-          "x": 147,
-          "y": 169
+          "x": 178,
+          "y": 183
         }
       },
       "sets": {},
@@ -5182,8 +5182,8 @@
       },
       "registry": {
         "position": {
-          "x": 507,
-          "y": 274
+          "x": 451,
+          "y": 251
         }
       },
       "sets": {},
@@ -6159,8 +6159,8 @@
             "guid": "9fdd34f8-be8b-f04c-3d13-b246cee19bb9",
             "registry": {
               "position": {
-                "x": 936,
-                "y": 181
+                "x": 962,
+                "y": 192
               }
             }
           },
