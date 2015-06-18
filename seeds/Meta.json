@@ -6,6 +6,7 @@
   },
   "relids": {
     "01ac8989-1c60-86b9-6302-3752cfadbaf9": "278939190",
+    "040d8d09-10fb-14a7-8e6e-4cf2632b73a5": "1964470101",
     "0658f3a8-ec6c-ccdb-9de6-d74498ca268f": "937729389",
     "0c2e6377-b47c-e2b7-daa9-f83fc5d6954d": "304835302",
     "15fee409-ec8a-25de-2d12-1c61b45218fb": "590440676",
@@ -47,6 +48,7 @@
   "containment": {
     "b6f142f4-3d76-1661-72e4-caa18e0988e8": {
       "01ac8989-1c60-86b9-6302-3752cfadbaf9": {},
+      "040d8d09-10fb-14a7-8e6e-4cf2632b73a5": {},
       "0658f3a8-ec6c-ccdb-9de6-d74498ca268f": {},
       "0c2e6377-b47c-e2b7-daa9-f83fc5d6954d": {},
       "15fee409-ec8a-25de-2d12-1c61b45218fb": {},
@@ -118,6 +120,71 @@
         "position": {
           "x": 427,
           "y": 199
+        }
+      },
+      "sets": {},
+      "constraints": {}
+    },
+    "040d8d09-10fb-14a7-8e6e-4cf2632b73a5": {
+      "attributes": {
+        "argument-expression-list": "",
+        "name": "call"
+      },
+      "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045",
+      "meta": {
+        "attributes": {
+          "MetaDoc": {
+            "default": "",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "argument-expression-list": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "pointers": {
+          "src": {
+            "items": [
+              "633287a6-8b8e-68a0-2b89-9b15a2183e55"
+            ],
+            "min": 1,
+            "max": 1,
+            "minItems": [
+              -1
+            ],
+            "maxItems": [
+              1
+            ]
+          },
+          "dst": {
+            "items": [
+              "0c2e6377-b47c-e2b7-daa9-f83fc5d6954d"
+            ],
+            "min": 1,
+            "max": 1,
+            "minItems": [
+              -1
+            ],
+            "maxItems": [
+              1
+            ]
+          }
+        }
+      },
+      "parent": "b6f142f4-3d76-1661-72e4-caa18e0988e8",
+      "pointers": {
+        "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045",
+        "dst": null,
+        "src": null
+      },
+      "registry": {
+        "lineEndArrow": "classic-xwide-xlong",
+        "position": {
+          "x": 1026,
+          "y": 138
         }
       },
       "sets": {},
@@ -209,6 +276,8 @@
         "base": "633287a6-8b8e-68a0-2b89-9b15a2183e55"
       },
       "registry": {
+        "PortSVGIcon": "BluePort.svg",
+        "color": "#66b2ff",
         "position": {
           "x": 697,
           "y": 618
@@ -857,6 +926,17 @@
             "type": "string",
             "default": ""
           }
+        },
+        "children": {
+          "items": [
+            "040d8d09-10fb-14a7-8e6e-4cf2632b73a5"
+          ],
+          "minItems": [
+            -1
+          ],
+          "maxItems": [
+            -1
+          ]
         }
       },
       "parent": "b6f142f4-3d76-1661-72e4-caa18e0988e8",
@@ -1239,6 +1319,16 @@
               "position": {
                 "x": 610,
                 "y": 209
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "040d8d09-10fb-14a7-8e6e-4cf2632b73a5",
+            "registry": {
+              "position": {
+                "x": 1326,
+                "y": 371
               }
             }
           },
@@ -1758,8 +1848,18 @@
             "guid": "01ac8989-1c60-86b9-6302-3752cfadbaf9",
             "registry": {
               "position": {
-                "x": 810,
-                "y": 168
+                "x": 948,
+                "y": 51
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "040d8d09-10fb-14a7-8e6e-4cf2632b73a5",
+            "registry": {
+              "position": {
+                "x": 750,
+                "y": 305
               }
             }
           },
@@ -1778,8 +1878,8 @@
             "guid": "0c2e6377-b47c-e2b7-daa9-f83fc5d6954d",
             "registry": {
               "position": {
-                "x": 848,
-                "y": 280
+                "x": 892,
+                "y": 298
               }
             }
           },
@@ -1868,8 +1968,8 @@
             "guid": "61d8086e-cef6-a78f-5fe3-78bbb69731e0",
             "registry": {
               "position": {
-                "x": 332,
-                "y": 634
+                "x": 355,
+                "y": 654
               }
             }
           },
@@ -1948,8 +2048,8 @@
             "guid": "901e245a-e449-c8cb-a191-a6ed27d976c4",
             "registry": {
               "position": {
-                "x": 311,
-                "y": 550
+                "x": 291,
+                "y": 555
               }
             }
           },
@@ -2088,8 +2188,8 @@
             "guid": "fa00eedf-a133-7bed-dcbf-bfec69f8247b",
             "registry": {
               "position": {
-                "x": 551,
-                "y": 460
+                "x": 545,
+                "y": 459
               }
             }
           },
@@ -2516,6 +2616,7 @@
       },
       "registry": {
         "DisplayFormat": "$name",
+        "color": "#ccccff",
         "isAbstract": false,
         "isPort": false,
         "position": {
@@ -2639,6 +2740,8 @@
         "base": "633287a6-8b8e-68a0-2b89-9b15a2183e55"
       },
       "registry": {
+        "PortSVGIcon": "RedPort.svg",
+        "color": "#ff6666",
         "position": {
           "x": 697,
           "y": 558
@@ -2680,11 +2783,13 @@
         "base": "b6f6afea-c0ad-2d99-ebb2-b92881df421f"
       },
       "registry": {
+        "SVGIcon": "",
         "color": "#ffffcc",
+        "decorator": "ModelDecorator",
         "isAbstract": false,
         "position": {
-          "x": 251,
-          "y": 713
+          "x": 250,
+          "y": 670
         }
       },
       "sets": {},
@@ -2766,11 +2871,13 @@
         "base": "b6f6afea-c0ad-2d99-ebb2-b92881df421f"
       },
       "registry": {
+        "SVGIcon": "",
         "color": "#e6ffcc",
+        "decorator": "ModelDecorator",
         "isAbstract": false,
         "position": {
-          "x": 247,
-          "y": 650
+          "x": 253,
+          "y": 736
         }
       },
       "sets": {},
