@@ -62,25 +62,32 @@ define(
                   });
                 } else {
                   // components_paths[0] = '/home/hakan/Documents/mcr_ide/Icra2015ExptAppC.nc';
-                  nxg.getXML(components_paths[index], '', function(error, xml) {
-                    if (error !== null) {
-                      self._wi("Error in generating xml: " +
-                        index + components_paths[index]);
-                    } else {
-                      self._wi(index + " " + components_paths[index] + " prog");
-                      self._app_json = pd.parse(components_paths[index], xml);
-                      // fs.writeFileSync('xml.log/' + index + '.xml', xml);
-                      // fs.writeFileSync('xml.log/' + index + '.js',
-                      //                  util.inspect(self._app_json, {
-                      //                   showHidden: true,
-                      //                   depth: 5
-                      //                  }));
-                      // self._wij(self._app_json);
-                      // self._wi(xml);
-                      self._populate();
-                    }
+                  var path = require('path');
+                  var component_name = path.basename(components_paths[index], '.nc');
+                  if (self._created_components[component_name] === true) {
                     x(index+1);
-                  });
+                  } else {
+                    nxg.getXML(components_paths[index], '', function(error, xml) {
+                      if (error !== null) {
+                        self._wi("Error in generating xml: " +
+                          index + components_paths[index]);
+                      } else {
+                        self._wi(index + " " + components_paths[index] + " prog");
+                        self._app_json = pd.parse(components_paths[index], xml);
+                        // fs.writeFileSync('xml.log' + index + '.xml', xml);
+                        // fs.writeFileSync('xml.log' + index + '.js',
+                        //                  util.inspect(self._app_json, {
+                        //                   showHidden: true,
+                        //                   depth: 5
+                        //                  }));
+                        // self._wij(self._app_json);
+                        // self._wi(xml);
+                        self._populate();
+                      }
+                      x(index+1);
+                    });
+
+                  }
                 }
 
               }
