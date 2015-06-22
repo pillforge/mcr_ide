@@ -313,6 +313,24 @@ define(
       });
       self.core.setAttribute(interface_node, 'name', curr_interface.name);
       self.core.setAttribute(interface_node, 'path', curr_interface.file_path);
+
+      for (var i = 0; i < curr_interface.functions.length; i++) {
+        debugger;
+        var funct = curr_interface.functions[i];
+        var funct_base = funct.event_command == 'event' ? 'Event' : 'Command';
+        var funct_dec_node = self.core.createNode({
+          base: self.META[funct_base],
+          parent: interface_node
+        });
+        self.core.setAttribute(funct_dec_node, 'name', funct.name);
+        // var params = '';
+        // for (var j = 0; j < funct.parameters.length; j++) {
+        //   if (j > 0) params += ', ';
+        //   params += funct.parameters[j];
+        // }
+        // declaration_list += 'async ' + funct.event_command + ' void ' + funct.name + '(' + params +'); ';
+      }
+
       // self.core.setAttribute(interface_node, 'source', self._getSource(curr_interface.file_path));
       self._cacheNode(interface_node);
       self._storeObjectPath(curr_interface, interface_node);
