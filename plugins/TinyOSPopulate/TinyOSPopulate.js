@@ -183,7 +183,11 @@ define(
         var interface_node = null;
         for (var i = c_ids.length - 1; i >= 0; i--) {
           var interf_child = self.core.getChild(c, c_ids[i]);
-          var interface_name = self.core.getAttribute(interf_child, 'name');
+          try {
+            var interface_name = self.core.getAttribute(interf_child, 'name');
+          } catch (e) {
+            return null;
+          }
           if (interface_name == c_interface) return interf_child;
         }
         return null;
@@ -269,10 +273,13 @@ define(
                                curr_interface.argument_type);
         }
 
-        var ref_fpath = self._app_json.interfacedefs[curr_interface.name]
-          .file_path;
+        var ref_interface_def = self._app_json.interfacedefs[curr_interface.name];
+        var ref_fpath = ref_interface_def.file_path;
         self.core.setPointer(interface_node, 'interface',
                              self._nodeCache[self._objectPath[ref_fpath]]);
+
+        self._createFunctionDeclarationsEventsCommands(interface_node, ref_interface_def);
+
         self._cacheNode(interface_node);
       }
 
@@ -314,13 +321,20 @@ define(
       self.core.setAttribute(interface_node, 'name', curr_interface.name);
       self.core.setAttribute(interface_node, 'path', curr_interface.file_path);
 
-      for (var i = 0; i < curr_interface.functions.length; i++) {
-        debugger;
-        var funct = curr_interface.functions[i];
+      self._createFunctionDeclarationsEventsCommands(interface_node, curr_interface);
+      // self.core.setAttribute(interface_node, 'source', self._getSource(curr_interface.file_path));
+      self._cacheNode(interface_node);
+      self._storeObjectPath(curr_interface, interface_node);
+    };
+
+    TinyOSPopulate.prototype._createFunctionDeclarationsEventsCommands = function (parent_node, interfacedef_json) {
+      var self = this;
+      for (var i = 0; i < interfacedef_json.functions.length; i++) {
+        var funct = interfacedef_json.functions[i];
         var funct_base = funct.event_command == 'event' ? 'Event' : 'Command';
         var funct_dec_node = self.core.createNode({
           base: self.META[funct_base],
-          parent: interface_node
+          parent: parent_node
         });
         self.core.setAttribute(funct_dec_node, 'name', funct.name);
         // var params = '';
@@ -330,11 +344,8 @@ define(
         // }
         // declaration_list += 'async ' + funct.event_command + ' void ' + funct.name + '(' + params +'); ';
       }
-
-      // self.core.setAttribute(interface_node, 'source', self._getSource(curr_interface.file_path));
-      self._cacheNode(interface_node);
-      self._storeObjectPath(curr_interface, interface_node);
     };
+
 
     TinyOSPopulate.prototype._getObjectByPath = function(path) {
       return this._nodeCache[this._objectPath[path]];
