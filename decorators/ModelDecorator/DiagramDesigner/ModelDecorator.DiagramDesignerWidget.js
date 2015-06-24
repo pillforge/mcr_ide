@@ -567,17 +567,17 @@ define(['js/Constants',
         "token": "",
         "activeNode": self._metaInfo[CONSTANTS.GME_ID], // WebGMEGlobal.State.getActiveObject(),
         "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
-        "commit": client.getActualCommit(),
-        "branchName": client.getActualBranch()
+        "commit": client.getActiveCommitHash(),
+        "branchName": client.getActiveBranchName()
       }
     };
 
     client.runServerPlugin('TinyOSCompiler', context, function (err, result, msg) {
       if (result.success) {
         console.log('The app is compiled');
-	var s = result.messages[0].message.download_url;
-	var url = 'http://pillforge.webgme.org' + s.substr(s.indexOf(':80/') + 3)
-        self._dialog.createDownloadButton(url);
+        var s = result.messages[0].message.download_url;
+        // var url = window.location.host + s.substr(s.indexOf(':80/') + 3)
+        self._dialog.createDownloadButton(s);
       } else {
         console.log('The app cannot be compiled');
         console.dir(result.messages);
@@ -595,8 +595,8 @@ define(['js/Constants',
         "token": "",
         "activeNode": self._metaInfo[CONSTANTS.GME_ID], // WebGMEGlobal.State.getActiveObject(),
         "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
-        "commit": client.getActualCommit(),
-        "branchName": client.getActualBranch()
+        "commit": client.getActiveCommitHash(),
+        "branchName": client.getActiveBranchName()
       }
     };
     console.log('NescCodeGenerator plugin');
@@ -620,8 +620,8 @@ define(['js/Constants',
         "token": "",
         "activeNode": self._metaInfo[CONSTANTS.GME_ID], // WebGMEGlobal.State.getActiveObject(),
         "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
-        "commit": client.getActualCommit(),
-        "branchName": client.getActualBranch()
+        "commit": client.getActiveCommitHash(),
+        "branchName": client.getActiveBranchName()
       }
       // ,pluginConfigs: {
       //   TinyOSCompiler:{
