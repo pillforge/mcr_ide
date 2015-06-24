@@ -1,4 +1,4 @@
-define([], function () {
+define(['../TinyOSPopulate/TinyOSPopulate'], function (TinyOSPopulate) {
 
   var Refresher = function (core, META, app_json, logger) {
     this.core = core;
@@ -284,6 +284,7 @@ define([], function () {
           });
           self.core.setAttribute(int_node, 'name', interf.as);
           self.core.setPointer(int_node, 'interface', obj);
+          TinyOSPopulate.prototype._createFunctionDeclarationsEventsCommands.call(self, int_node, self.app_json.interfacedefs[interf.name]);
           if (interf.argument_type) {
             self.core.setAttribute(int_node, 'type_arguments', interf.argument_type);
           }
