@@ -32,10 +32,10 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
     self.plugin_dir = path.dirname(module.uri);
     self.output_dir = path.resolve(self.plugin_dir, "output");
 
-      // Create self.output_dir if it doesn't already exist
-    // try{
+    // Create self.output_dir if it doesn't already exist
+    // try {
     //   fs.mkdirSync(self.output_dir);
-    // }catch(e){}
+    // } catch(e) {}
 
     console.log("Module: " + module.uri);
     console.log("plugin_dir: " + self.plugin_dir);
@@ -220,10 +220,12 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
 
       // For modules and anything that has a path, we just copy the file given by the path attribute (for now)
       var nesc_path = self.core.getAttribute(parent_component, "path");
+      var output = '';
       if (nesc_path !== ""){
         output_file = path.resolve(self.output_dir, parent_comp_name + ".nc");
         var input_file_path = path.resolve(self._getTOSRoot(), nesc_path);
-        fs.createReadStream(input_file_path).pipe(fs.createWriteStream(output_file));
+        // fs.createReadStream(input_file_path).pipe(fs.createWriteStream(output_file));
+        output = fs.readFileSync(input_file_path, 'utf8');
       } else {
         // For apps and other configurations, create a context for our template
 
@@ -289,13 +291,14 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
           equate_wirings          : equate_wirings_for_tmpl
         };
         // Generate App file
-        var output = config_template(tmpl_context);
+        output = config_template(tmpl_context);
         console.log(output);
         output_file = path.resolve(self.output_dir, parent_comp_name + ".nc");
         // fs.writeFileSync(output_file, output);
-        self.core.setAttribute(self.activeNode, "source", output);
-        self.createMessage(self.activeNode, {src: output});
       }
+
+      self.core.setAttribute(self.activeNode, "source", output);
+      self.createMessage(self.activeNode, {src: output});
 
     }
   };

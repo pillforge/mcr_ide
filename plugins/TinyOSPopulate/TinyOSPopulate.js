@@ -329,6 +329,7 @@ define(
 
     TinyOSPopulate.prototype._createFunctionDeclarationsEventsCommands = function (parent_node, interfacedef_json) {
       var self = this;
+      var created_nodes = {};
       for (var i = 0; i < interfacedef_json.functions.length; i++) {
         var funct = interfacedef_json.functions[i];
         var funct_base = funct.event_command == 'event' ? 'Event' : 'Command';
@@ -337,6 +338,7 @@ define(
           parent: parent_node
         });
         self.core.setAttribute(funct_dec_node, 'name', funct.name);
+        created_nodes[funct.name] = funct_dec_node;
         // var params = '';
         // for (var j = 0; j < funct.parameters.length; j++) {
         //   if (j > 0) params += ', ';
@@ -344,6 +346,7 @@ define(
         // }
         // declaration_list += 'async ' + funct.event_command + ' void ' + funct.name + '(' + params +'); ';
       }
+      return created_nodes;
     };
 
 

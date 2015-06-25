@@ -1,4 +1,4 @@
-define(['../TinyOSPopulate/TinyOSPopulate'], function (TinyOSPopulate) {
+define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (TinyOSPopulate, ModuleCalls) {
 
   var Refresher = function (core, META, app_json, logger) {
     this.core = core;
@@ -9,17 +9,52 @@ define(['../TinyOSPopulate/TinyOSPopulate'], function (TinyOSPopulate) {
 
   Refresher.prototype.update = function (node, component, callback) {
     var self = this;
+    self._cache = {};
     self.logger.debug('update');
     self.deleteChildren(node, function () {
       self.updateComponent(node, component, function () {
         self.updateUPInterfaces(node, component, function () {
           self.updateWirings(node, component, function () {
+            self.createCallConnectionsModule(node, component);
             self.logger.debug('update finished, calling callback');
             callback();
           });
         });
       });
     });
+  };
+
+  Refresher.prototype.createCallConnectionsModule = function (node, comp_name) {
+    var self = this;
+    var path = require('path');
+    var fs = require('fs');
+    var file_path = path.resolve(comp_name + '.nc');
+    var source = fs.readFileSync(file_path, "utf8");
+    var mc = new ModuleCalls();
+    var all_calls = mc.getCalls(source);
+
+    for (var interface_name in all_calls) {
+      var interface_events = all_calls[interface_name];
+      for (var evnt in interface_events) {
+        var calls = interface_events[evnt];
+        for (var i = calls.length - 1; i >= 0; i--) {
+          var f_int = interface_name;
+          var f_por = evnt;
+          var t_int = calls[i][0];
+          var t_por = calls[i][1];
+          var from_node = self._cache[f_int][f_por];
+          var to_node = self._cache[t_int][t_por];
+
+          var call_node = self.core.createNode({
+            base: self.META.call,
+            parent: node
+          });
+          self.core.setPointer(call_node, 'src', from_node);
+          self.core.setPointer(call_node, 'dst', to_node);
+        }
+      }
+    }
+
   };
 
   Refresher.prototype.updateWirings = function (node, component, next) {
@@ -284,7 +319,7 @@ define(['../TinyOSPopulate/TinyOSPopulate'], function (TinyOSPopulate) {
           });
           self.core.setAttribute(int_node, 'name', interf.as);
           self.core.setPointer(int_node, 'interface', obj);
-          TinyOSPopulate.prototype._createFunctionDeclarationsEventsCommands.call(self, int_node, self.app_json.interfacedefs[interf.name]);
+          self._cache[interf.as] = TinyOSPopulate.prototype._createFunctionDeclarationsEventsCommands.call(self, int_node, self.app_json.interfacedefs[interf.name]);
           if (interf.argument_type) {
             self.core.setAttribute(int_node, 'type_arguments', interf.argument_type);
           }
