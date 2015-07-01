@@ -44,7 +44,8 @@ define(
 
             // keep created component's paths to save in registry
             // { MainC: '/497022377/1117940255/1637150336' }
-            self._component_to_webgme_path = {};
+            self._configuration_paths = {};
+            self._module_paths = {};
 
             nxg.getDirectories(function(error, directories) {
               if (error !== null) {
@@ -61,7 +62,8 @@ define(
                 if ( flag && index >= components_paths.length ) {
                   // flag = false;
                   self._wi("Completed");
-                  self.core.setRegistry(self.rootNode, 'component_paths', self._component_to_webgme_path);
+                  self.core.setRegistry(self.rootNode, 'configuration_paths', self._configuration_paths);
+                  self.core.setRegistry(self.rootNode, 'module_paths', self._module_paths);
                   self.save('save populator finished', function(err) {
                     self.result.setSuccess(true);
                     callback(err, self.result);
@@ -304,7 +306,10 @@ define(
 
       // keep created component's paths to save in registry
       // { MainC: '/497022377/1117940255/1637150336' }
-      self._component_to_webgme_path[component.name] = self.core.getPath(component_node);
+      if (component.comp_type === 'Configuration')
+        var cache_object = self._configuration_paths;
+      else cache_object = self._module_paths;
+      cache_object[component.name] = self.core.getPath(component_node);
 
       function getBase() {
         if (component.comp_type == 'Module') {
