@@ -41,6 +41,11 @@ define(
             var pd = new ParseDump();
             var nxg = new NesC_XML_Generator('exp430');
             self._objectPath = {};
+
+            // keep created component's paths to save in registry
+            // { MainC: '/497022377/1117940255/1637150336' }
+            self._component_to_webgme_path = {};
+
             nxg.getDirectories(function(error, directories) {
               if (error !== null) {
                 self._wi("Can't get platform directories");
@@ -56,6 +61,7 @@ define(
                 if ( flag && index >= components_paths.length ) {
                   // flag = false;
                   self._wi("Completed");
+                  self.core.setRegistry(self.rootNode, 'component_paths', self._component_to_webgme_path);
                   self.save('save populator finished', function(err) {
                     self.result.setSuccess(true);
                     callback(err, self.result);
@@ -130,7 +136,7 @@ define(
       self._wi("Creating Wirings");
       for (key in self._app_json.components) {
         if (self._created_components[key]) continue;
-        self._createWirings(self._app_json.components[key]);
+        // self._createWirings(self._app_json.components[key]);
         self._created_components[key] = true;
       }
 
@@ -183,11 +189,7 @@ define(
         var interface_node = null;
         for (var i = c_ids.length - 1; i >= 0; i--) {
           var interf_child = self.core.getChild(c, c_ids[i]);
-          try {
-            var interface_name = self.core.getAttribute(interf_child, 'name');
-          } catch (e) {
-            return null;
-          }
+          var interface_name = self.core.getAttribute(interf_child, 'name');
           if (interface_name == c_interface) return interf_child;
         }
         return null;
@@ -299,6 +301,10 @@ define(
       // self.core.setAttribute(component_node, 'source', self._getSource(component.file_path));
       self._cacheNode(component_node);
       self._storeObjectPath(component, component_node);
+
+      // keep created component's paths to save in registry
+      // { MainC: '/497022377/1117940255/1637150336' }
+      self._component_to_webgme_path[component.name] = self.core.getPath(component_node);
 
       function getBase() {
         if (component.comp_type == 'Module') {
