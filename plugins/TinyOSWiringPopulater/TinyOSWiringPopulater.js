@@ -53,7 +53,6 @@ function (PluginBase, PluginConfig, Constants) {
     var core = self.core;
     var async = require('async');
     var nodes = {};
-    var DELIMITER = '__';
 
     async.series([
       function (callback) {
@@ -82,7 +81,7 @@ function (PluginBase, PluginConfig, Constants) {
       core.loadChildren(node, function (err, children) {
         async.each(children, function (child, callback) {
           var name = core.getAttribute(child, 'name');
-          var store_name = prefix + DELIMITER + name;
+          var store_name = self.joinPath(prefix, name);
           nodes[store_name] = child;
           load_and_store_children(child, store_name, depth - 1, callback);
         }, next);
@@ -100,44 +99,59 @@ function (PluginBase, PluginConfig, Constants) {
     async.forEachOf(config_wgme_paths, function (value, key, callback) {
       var node = self._nodes[key];
       var config_dump = core.getRegistry(node, 'nesc-dump');
-      wire_configuration(key, node, config_dump.wiring);
-      callback();
+      wire_configuration(key, node, config_dump.wiring, callback);
     }, function (err) {
       next();
     });
     
-    function wire_configuration (config_name, node, wirings) {
-      for (var i = wirings.length - 1; i >= 0; i--) {
-        var wire = wirings[i];
-        var fi_node = get_interface(config_name, node, wire.from);
-        var ti_node = get_interface(config_name, node, wire.to);
-        if (fi_node && ti_node)
-          self.logger.info(config_name, core.getAttribute(fi_node, 'name'), core.getAttribute(ti_node, 'name') );
-      }
+    function wire_configuration (config_name, node, wirings, next) {
+      async.eachSeries(wirings, function (wire, callback) {
+        async.parallel([
+          function (callback) {
+            get_interface(config_name, node, wire.from, function (node) {
+              callback(null, node);
+            });
+          },
+          function (callback) {
+            get_interface(config_name, node, wire.to, function (node) {
+              callback(null, node);
+            });
+          }
+        ], function (err, results) {
+          var fi_node = results[0];
+          var ti_node = results[1];
+          if (fi_node && ti_node)
+            self.logger.info(config_name, core.getAttribute(fi_node, 'name'), core.getAttribute(ti_node, 'name') );
+          callback();
+        });
+      }, function (err) {
+        next();
+      });
+
     }
 
-    function get_interface (config_name, node, end) {
+    function get_interface (config_name, node, end, next) {
       
       if (config_name === end.name)
-        return self._nodes[self.joinPath(end.name, end.interface)];
+        return next(self._nodes[self.joinPath(end.name, end.interface)]);
       
-      if ( !(end.name in instances) ) {
+      if (end.name in instances)
+        return next(instances[self.joinPath(end.name, end.interface)]);
 
-        var instance_node = core.createNode({
-          base: self._nodes[end.name],
-          parent: node
-        });
-        instances[end.name] = instance_node;
+      var instance_node = core.createNode({
+        base: self._nodes[end.name],
+        parent: node
+      });
+      instances[end.name] = instance_node;
 
-        var c_ids = core.getChildrenRelids(instance_node);
-        for (var i = c_ids.length - 1; i >= 0; i--) {
-          var child = self.core.getChild(instance_node, c_ids[i]);
-          var child_name = self.core.getAttribute(child, 'name');
-          instances[self.joinPath(end.name, child_name)] = child;
+      core.loadChildren(instance_node, function (err, children) {
+        for (var i = children.length - 1; i >= 0; i--) {
+          var child_name = core.getAttribute(children[i], 'name');
+          instances[self.joinPath(end.name, child_name)] = children[i];
         }
-      }
+        return next(instances[self.joinPath(end.name, end.interface)]);
+      });
 
-      return instances[self.joinPath(end.name, end.interface)];
     }
 
   };
