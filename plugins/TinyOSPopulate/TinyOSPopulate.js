@@ -311,6 +311,9 @@ define(
       else cache_object = self._module_paths;
       cache_object[component.name] = self.core.getPath(component_node);
 
+      // keep json component specification in registry
+      self.core.setRegistry(component_node, 'nesc-dump', component);
+
       function getBase() {
         if (component.comp_type == 'Module') {
           return component.generic ?
