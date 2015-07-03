@@ -1,5 +1,6 @@
-define(['plugin/PluginBase', 'plugin/PluginConfig', '../utils/Constants', '../utils/PathUtils'],
-function (PluginBase, PluginConfig, Constants, path_utils) {
+define(['plugin/PluginBase', 'plugin/PluginConfig', '../utils/Constants', '../utils/PathUtils',
+       '../ModelGenerator/Refresher'],
+function (PluginBase, PluginConfig, Constants, path_utils, Refresher) {
 
   'use strict';
 
@@ -41,15 +42,13 @@ function (PluginBase, PluginConfig, Constants, path_utils) {
           var obj = {};
           obj[key] = value;
           self.createConfigurationWirings(obj, callback);
-        },
-        function (callback) {
-          self.createModuleCalls(module_wgme_paths, callback);
         }
       ], function (err, results) {
         callback();
       });
 
     }, function (err) {
+      self.createModuleCalls(module_wgme_paths);
       if (save) {
         self.save('save', function (err) {
           call_callback(true);
@@ -180,12 +179,20 @@ function (PluginBase, PluginConfig, Constants, path_utils) {
 
   };
 
-  TinyOSWiringPopulater.prototype.joinPath = function (a, b) {
-    return [a, b].join(Constants.DELIMITER);
+  TinyOSWiringPopulater.prototype.joinPath = function () {
+    return Array.prototype.join.call(arguments, Constants.DELIMITER);
   };
 
-  TinyOSWiringPopulater.prototype.createModuleCalls = function (module_wgme_paths, next) {
-    next();
+  TinyOSWiringPopulater.prototype.createModuleCalls = function (module_wgme_paths) {
+    var self = this;
+    for (var m_name in module_wgme_paths) {
+      var node = self._nodes[m_name];
+      var all_calls = self.core.getRegistry(node, 'calls');
+      Refresher.prototype.createCallConnectionsModule.call(self, node, all_calls, get_node);
+    }
+    function get_node (interf, port) {
+      return self._nodes[self.joinPath(m_name, interf, port)];
+    }
   };
 
   return TinyOSWiringPopulater;

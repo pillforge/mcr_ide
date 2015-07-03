@@ -15,7 +15,7 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
       self.updateComponent(node, component, function () {
         self.updateUPInterfaces(node, component, function () {
           self.updateWirings(node, component, function () {
-            self.createCallConnectionsModule(node, component);
+            self.createCallConnectionsModuleHelper(node, component);
             self.logger.debug('update finished, calling callback');
             callback();
           });
@@ -24,7 +24,7 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
     });
   };
 
-  Refresher.prototype.createCallConnectionsModule = function (node, comp_name) {
+  Refresher.prototype.createCallConnectionsModuleHelper = function (node, comp_name) {
     var self = this;
     var path = require('path');
     var fs = require('fs');
@@ -32,7 +32,11 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
     var source = fs.readFileSync(file_path, "utf8");
     var mc = new ModuleCalls();
     var all_calls = mc.getCalls(source);
+    self.createCallConnectionsModule(node, all_calls);
+  };
 
+  Refresher.prototype.createCallConnectionsModule = function (node, all_calls, get_node) {
+    var self = this;
     for (var interface_name in all_calls) {
       var interface_events = all_calls[interface_name];
       for (var evnt in interface_events) {
@@ -42,19 +46,29 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
           var f_por = evnt;
           var t_int = calls[i][0];
           var t_por = calls[i][1];
-          var from_node = self._cache[f_int][f_por];
-          var to_node = self._cache[t_int][t_por];
 
-          var call_node = self.core.createNode({
-            base: self.META.call,
-            parent: node
-          });
-          self.core.setPointer(call_node, 'src', from_node);
-          self.core.setPointer(call_node, 'dst', to_node);
+          if (get_node) {
+            var from_node = get_node(f_int, f_por);
+            var to_node = get_node(t_int, t_por);
+          } else {
+            from_node = self._cache[f_int][f_por];
+            to_node = self._cache[t_int][t_por];
+          }
+
+          if (from_node && to_node) {
+            var call_node = self.core.createNode({
+              base: self.META.call,
+              parent: node
+            });
+            self.core.setPointer(call_node, 'src', from_node);
+            self.core.setPointer(call_node, 'dst', to_node);
+          } else {
+            self.logger.warn('Missing call. Should be fixed.');
+          }
+
         }
       }
     }
-
   };
 
   Refresher.prototype.updateWirings = function (node, component, next) {

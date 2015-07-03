@@ -7,9 +7,10 @@ define(
   'util',
   '../../package.json',
   '../common/ParseDump',
-  '../common/NesC_XML_Generator'],
+  '../common/NesC_XML_Generator',
+  '../utils/ModuleCalls'],
   function (PluginBase, PluginConfig, fs, path, module, util, pjson,
-    ParseDump, NesC_XML_Generator) {
+    ParseDump, NesC_XML_Generator, ModuleCalls) {
     "use strict";
 
     var TinyOSPopulate = function () {
@@ -31,6 +32,8 @@ define(
 
     TinyOSPopulate.prototype.main = function (callback) {
       var self = this;
+      self.mc = new ModuleCalls();
+
       self._loadNodes(self.rootNode, function(err) {
         if (err) {
           self.result.setSuccess(false);
@@ -197,6 +200,12 @@ define(
 
       // keep json component specification in registry
       self.core.setRegistry(component_node, 'nesc-dump', component);
+
+      // keep call graph in registry
+      if (component.comp_type === 'Module') {
+        var all_calls = self.mc.getCalls(self._getSource(component.file_path));
+        self.core.setRegistry(component_node, 'calls', all_calls);
+      }
 
       function getBase() {
         if (component.comp_type == 'Module') {
