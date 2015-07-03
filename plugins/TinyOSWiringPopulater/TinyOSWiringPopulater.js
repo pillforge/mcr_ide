@@ -22,6 +22,7 @@ function (PluginBase, PluginConfig, Constants, path_utils) {
     var self = this;
     var core = self.core;
     var async = require('async');
+    var save = true;
 
     // { MainC: '/497022377/1117940255/1637150336' }
     var config_wgme_paths = core.getRegistry(self.rootNode, 'configuration_paths');
@@ -49,10 +50,17 @@ function (PluginBase, PluginConfig, Constants, path_utils) {
       });
 
     }, function (err) {
-      self.result.setSuccess(true);
-      callback(null, self.result);
+      if (save) {
+        self.save('save', function (err) {
+          call_callback(true);
+        });
+      } else call_callback(true);
     });
 
+    function call_callback (success) {
+      self.result.setSuccess(success);
+      callback(null, self.result);
+    }
 
   };
 
@@ -117,23 +125,39 @@ function (PluginBase, PluginConfig, Constants, path_utils) {
     function wire_configuration (config_name, node, wirings) {
       for (var i = wirings.length - 1; i >= 0; i--) {
         var wire = wirings[i];
-        var fi_node = get_interface(config_name, node, wire.from);
-        var ti_node = get_interface(config_name, node, wire.to);
-        if (fi_node && ti_node) {
-          // self.logger.info(config_name, core.getAttribute(fi_node, 'name'), core.getAttribute(ti_node, 'name') );
+        var fi = get_interface(config_name, node, wire.from);
+        var ti = get_interface(config_name, node, wire.to);
+        if (fi[0] && ti[0]) {
+          var wiring_node = self.core.createNode({
+            base: getBase(fi[1], ti[1]),
+            parent: node
+          });
+          self.core.setPointer(wiring_node, 'src', fi[0]);
+          self.core.setPointer(wiring_node, 'dst', ti[0]);
+          if (wire.from.cst)
+            self.core.setAttribute(wiring_node, 'src_params', 'cst:' + wire.from.cst);
+          if (wire.to.cst)
+            self.core.setAttribute(wiring_node, 'dst_params', 'cst:' + wire.to.cst);
         } else {
           self.logger.warn('interface couldn\'t be found');
-          if (!fi_node) self.logger.warn('no fi');
-          if (!ti_node) self.logger.warn('no ti');
-          self.logger.warn('',wire);
+          if (!fi[0]) self.logger.warn('no fi');
+          if (!ti[0]) self.logger.warn('no ti');
+          self.logger.warn('', wire);
         }
       }
+
+      function getBase (a, b) {
+        if (a === 'equate' || b === 'equate')
+          return self.META.Equate_Interface;
+        return self.META.Link_Interface;
+      }
+
     }
 
     function get_interface (config_name, node, end) {
 
       if (config_name === end.name)
-        return self._nodes[self.joinPath(end.name, end.interface)];
+        return [self._nodes[self.joinPath(end.name, end.interface)], 'equate'];
       
       if ( !(end.name in instances) ) {
 
@@ -151,7 +175,7 @@ function (PluginBase, PluginConfig, Constants, path_utils) {
         }
       }
 
-      return instances[self.joinPath(end.name, end.interface)];
+      return [instances[self.joinPath(end.name, end.interface)], 'link'];
     }
 
   };
