@@ -201,10 +201,13 @@ define(
       // keep json component specification in registry
       self.core.setRegistry(component_node, 'nesc-dump', component);
 
-      // keep call graph in registry
+      // keep call graph and tasks in registry
       if (component.comp_type === 'Module') {
-        var all_calls = self.mc.getCalls(self._getSource(component.file_path));
+        var source = self._getSource(component.file_path);
+        var all_calls = self.mc.getCalls(source);
         self.core.setRegistry(component_node, 'calls', all_calls);
+        var tasks = self.mc.getTasks(source);
+        self.core.setRegistry(component_node, 'tasks', tasks);
       }
 
       function getBase() {

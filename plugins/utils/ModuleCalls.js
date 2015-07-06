@@ -20,6 +20,17 @@ var ModuleCalls = function () {
     '.' + function_regex + '\\(' + any_character_regex + implementation_regex;
 
   this.function_regex = new RegExp(func_regex_string, 'g');
+
+  this.task_regex = /task\s+\w+\s+(\w+)/g;
+};
+
+ModuleCalls.prototype.getTasks = function (source) {
+  var result = [];
+  var task = null;
+  while ( (task = this.task_regex.exec(source)) !== null ) {
+    result.push(task[1]);
+  }
+  return result;
 };
 
 

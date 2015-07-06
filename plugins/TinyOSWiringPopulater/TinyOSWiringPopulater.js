@@ -48,6 +48,7 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher) {
       });
 
     }, function (err) {
+      self.createTasks(module_wgme_paths);
       self.createModuleCalls(module_wgme_paths);
       if (save) {
         self.save('save', function (err) {
@@ -192,6 +193,21 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher) {
     }
     function get_node (interf, port) {
       return self._nodes[self.joinPath(m_name, interf, port)];
+    }
+  };
+
+  TinyOSWiringPopulater.prototype.createTasks = function(module_wgme_paths) {
+    var self = this;
+    for (var m_name in module_wgme_paths) {
+      var node = self._nodes[m_name];
+      var tasks = self.core.getRegistry(node, 'tasks');
+      for (var i = tasks.length - 1; i >= 0; i--) {
+        var task_node = self.core.createNode({
+          base: self.META.Task,
+          parent: node
+        });
+        self.core.setAttribute(task_node, 'name', tasks[i]);
+      }
     }
   };
 
