@@ -168,7 +168,7 @@ define(['libxmljs', 'fs', 'path'],
 
           return {
             component_base: component_base,
-            interface: interf.attr('name').value(),
+            'interface': interf.attr('name').value(),
             cst: c_arg_value,
             ref: ref,
             name: name
@@ -182,6 +182,7 @@ define(['libxmljs', 'fs', 'path'],
           generic: is_abstract,
           safe: is_safe,
           interface_types: [],
+          tasks: [],
           function_declerations: [],
           parameters: [],
           wiring: wiring
@@ -193,6 +194,11 @@ define(['libxmljs', 'fs', 'path'],
             var intf_name = e.get('xmlns:instance/xmlns:interfacedef-ref', ns)
                                                       .attr('qname').value();
             var intf_as = e.attr('name').value();
+
+            // Check if it is a task definition: TaskBasic
+            if (intf_name === 'TaskBasic') {
+              return jsobj.tasks.push(intf_as);
+            }
 
             var argument_type_list = null;
             var arguments_node = e.get('xmlns:instance/xmlns:arguments', ns);

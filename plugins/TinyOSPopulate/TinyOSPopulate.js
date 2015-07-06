@@ -32,6 +32,7 @@ define(
 
     TinyOSPopulate.prototype.main = function (callback) {
       var self = this;
+      self._debug = true;
       self.mc = new ModuleCalls();
 
       self._loadNodes(self.rootNode, function(err) {
@@ -85,14 +86,14 @@ define(
                       } else {
                         self._wi(index + " " + components_paths[index] + " prog");
                         self._app_json = pd.parse(components_paths[index], xml);
-                        // fs.writeFileSync('xml.log' + index + '.xml', xml);
-                        // fs.writeFileSync('xml.log' + index + '.js',
-                        //                  util.inspect(self._app_json, {
-                        //                   showHidden: true,
-                        //                   depth: 5
-                        //                  }));
-                        // self._wij(self._app_json);
-                        // self._wi(xml);
+                        if (self._debug) {
+                          fs.writeFileSync('./temp/' + component_name + '.log' + index + '.xml', xml);
+                          fs.writeFileSync('./temp/' + component_name + '.log' + index + '.js',
+                                           util.inspect(self._app_json, {
+                                            showHidden: true,
+                                            depth: 5
+                                           }));
+                        }
                         self._populate();
                       }
                       x(index+1);
