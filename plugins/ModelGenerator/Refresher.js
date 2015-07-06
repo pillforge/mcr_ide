@@ -42,44 +42,64 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
       for (var evnt in interface_events) {
         var calls = interface_events[evnt];
         for (var i = calls.length - 1; i >= 0; i--) {
+
           var f_int = interface_name;
           var f_por = evnt;
+          var t_int = calls[i][1];
+          var t_por = calls[i][2];
+          var from_node = get_cmd_evt(f_int, f_por, get_node);
+          var base = null;
 
           switch(calls[i][0]) {
             case 'call':
-            var t_int = calls[i][1];
-            var t_por = calls[i][2];
-
-            if (get_node) {
-              var from_node = get_node(f_int, f_por);
-              var to_node = get_node(t_int, t_por);
-            } else {
-              from_node = self._cache[f_int][f_por];
-              to_node = self._cache[t_int][t_por];
-            }
-
-            if (from_node && to_node) {
-              var call_node = self.core.createNode({
-                base: self.META.call,
-                parent: node
-              });
-              self.core.setPointer(call_node, 'src', from_node);
-              self.core.setPointer(call_node, 'dst', to_node);
-            } else {
-              self.logger.warn('Missing call. Should be fixed.');
-            }
+            var to_node = get_cmd_evt(t_int, t_por, get_node);
+            base = self.META.call;
             break;
 
             case 'signal':
             break;
 
             case 'post':
+            to_node = get_task(t_int, get_node);
+            base = self.META.post;
             break;
+          }
+
+          if (from_node && to_node) {
+            create_connection(from_node, to_node, base, node);
+          } else {
+            self.logger.warn('Missing call. Should be fixed.');
           }
 
         }
       }
     }
+
+    function get_cmd_evt (interf, port, fn) {
+      if (fn) {
+        return fn(interf, port);
+      } else {
+        return self._cache[interf][port];
+      }
+    }
+
+    function get_task (interf, fn) {
+      if (fn) {
+        return fn(interf);
+      } else {
+        // TODO
+      }
+    }
+
+    function create_connection (from, to, base, parent) {
+      var conn_node = self.core.createNode({
+        base: base,
+        parent: parent
+      });
+      self.core.setPointer(conn_node, 'src', from);
+      self.core.setPointer(conn_node, 'dst', to);
+    }
+
   };
 
   Refresher.prototype.updateWirings = function (node, component, next) {

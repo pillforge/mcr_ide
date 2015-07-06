@@ -49,12 +49,15 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher) {
 
     }, function (err) {
       self.createTasks(module_wgme_paths);
-      self.createModuleCalls(module_wgme_paths);
-      if (save) {
-        self.save('save', function (err) {
-          call_callback(true);
-        });
-      } else call_callback(true);
+      self.loadComponents(config_wgme_paths, module_wgme_paths, function (nodes) {
+        self._nodes = nodes;
+        self.createModuleCalls(module_wgme_paths);
+        if (save) {
+          self.save('save', function (err) {
+            call_callback(true);
+          });
+        } else call_callback(true);
+      });
     });
 
     function call_callback (success) {
@@ -192,7 +195,10 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher) {
       Refresher.prototype.createCallConnectionsModule.call(self, node, all_calls, get_node);
     }
     function get_node (interf, port) {
-      return self._nodes[self.joinPath(m_name, interf, port)];
+      var path = self.joinPath(m_name, interf);
+      if (port)
+        path = self.joinPath(path, port);
+      return self._nodes[path];
     }
   };
 
