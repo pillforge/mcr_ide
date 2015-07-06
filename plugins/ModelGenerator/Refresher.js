@@ -37,33 +37,44 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
 
   Refresher.prototype.createCallConnectionsModule = function (node, all_calls, get_node) {
     var self = this;
-    for (var interface_name in all_calls) {
-      var interface_events = all_calls[interface_name];
+    for (var interface_name in all_calls.evcmd) {
+      var interface_events = all_calls.evcmd[interface_name];
       for (var evnt in interface_events) {
         var calls = interface_events[evnt];
         for (var i = calls.length - 1; i >= 0; i--) {
           var f_int = interface_name;
           var f_por = evnt;
-          var t_int = calls[i][0];
-          var t_por = calls[i][1];
 
-          if (get_node) {
-            var from_node = get_node(f_int, f_por);
-            var to_node = get_node(t_int, t_por);
-          } else {
-            from_node = self._cache[f_int][f_por];
-            to_node = self._cache[t_int][t_por];
-          }
+          switch(calls[i][0]) {
+            case 'call':
+            var t_int = calls[i][1];
+            var t_por = calls[i][2];
 
-          if (from_node && to_node) {
-            var call_node = self.core.createNode({
-              base: self.META.call,
-              parent: node
-            });
-            self.core.setPointer(call_node, 'src', from_node);
-            self.core.setPointer(call_node, 'dst', to_node);
-          } else {
-            self.logger.warn('Missing call. Should be fixed.');
+            if (get_node) {
+              var from_node = get_node(f_int, f_por);
+              var to_node = get_node(t_int, t_por);
+            } else {
+              from_node = self._cache[f_int][f_por];
+              to_node = self._cache[t_int][t_por];
+            }
+
+            if (from_node && to_node) {
+              var call_node = self.core.createNode({
+                base: self.META.call,
+                parent: node
+              });
+              self.core.setPointer(call_node, 'src', from_node);
+              self.core.setPointer(call_node, 'dst', to_node);
+            } else {
+              self.logger.warn('Missing call. Should be fixed.');
+            }
+            break;
+
+            case 'signal':
+            break;
+
+            case 'post':
+            break;
           }
 
         }
