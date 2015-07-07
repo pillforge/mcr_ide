@@ -9,26 +9,26 @@ define(
   function (PluginBase, PluginConfig, pjson, NesC_XML_Generator, ParseDump, Util) {
     "use strict";
 
-    var PlaceHolder = function () {
+    var TestPlugin = function () {
       PluginBase.call(this);
     };
 
-    PlaceHolder.prototype = Object.create(PluginBase.prototype);
-    PlaceHolder.prototype.constructor = PlaceHolder;
-    PlaceHolder.prototype.getName = function () {
-      return "PlaceHolder";
+    TestPlugin.prototype = Object.create(PluginBase.prototype);
+    TestPlugin.prototype.constructor = TestPlugin;
+    TestPlugin.prototype.getName = function () {
+      return "TestPlugin";
     };
-    PlaceHolder.prototype.getVersion = function () {
+    TestPlugin.prototype.getVersion = function () {
       return pjson.version;
     };
-    PlaceHolder.prototype.getDefaultConfig = function () {
+    TestPlugin.prototype.getDefaultConfig = function () {
       return new PluginConfig();
     };
-    PlaceHolder.prototype.getDescription = function () {
+    TestPlugin.prototype.getDescription = function () {
       return 'This plugin is used for test purposes';
     };
 
-    PlaceHolder.prototype.main = function (callback) {
+    TestPlugin.prototype.main = function (callback) {
       var self = this;
       self.logger.info('main()');
       this.util = new Util(this.core, this.META);
@@ -62,7 +62,7 @@ define(
 
     };
 
-    PlaceHolder.prototype.analyzeObjectStorage = function(next) {
+    TestPlugin.prototype.analyzeObjectStorage = function(next) {
       var self = this;
       self.util.loadNodes(self.rootNode, function (err, nodes) {
         if (err) {
@@ -73,7 +73,7 @@ define(
       });
     };
 
-    PlaceHolder.prototype.createMcrMeta = function(next) {
+    TestPlugin.prototype.createMcrMeta = function(next) {
       // Create language folder ane make it to be able to contain FCO
       var self = this;
       var root = self.rootNode;
@@ -90,7 +90,7 @@ define(
       });
     };
 
-    PlaceHolder.prototype.getAppJson = function (next) {
+    TestPlugin.prototype.getAppJson = function (next) {
       var self = this;
       var nxg = new NesC_XML_Generator('exp430');
       var pd = new ParseDump();
@@ -107,7 +107,7 @@ define(
       });
     };
 
-    PlaceHolder.prototype.getDirectories = function (next) {
+    TestPlugin.prototype.getDirectories = function (next) {
       var nxg = new NesC_XML_Generator('exp430');
       nxg.getDirectories(function(error, directories) {
         if (error !== null) {
@@ -123,6 +123,6 @@ define(
       });
     };
 
-    return PlaceHolder;
+    return TestPlugin;
   }
 );
