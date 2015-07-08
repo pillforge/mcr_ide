@@ -1,6 +1,6 @@
 define(['plugin/PluginBase', 'plugin/PluginConfig', '../utils/Constants', '../utils/PathUtils',
-       '../ModelGenerator/Refresher'],
-function (PluginBase, PluginConfig, Constants, path_utils, Refresher) {
+       '../ModelGenerator/Refresher', '../utils/LoadObjects'],
+function (PluginBase, PluginConfig, Constants, path_utils, Refresher, load_objects) {
 
   'use strict';
 
@@ -26,14 +26,14 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher) {
     var save = true;
 
     // { MainC: '/497022377/1117940255/1637150336' }
-    var config_wgme_paths = core.getRegistry(self.rootNode, 'configuration_paths');
-    var module_wgme_paths = core.getRegistry(self.rootNode, 'module_paths');
+    var c_wgme_paths = core.getRegistry(self.rootNode, 'configuration_paths');
+    var m_wgme_paths = core.getRegistry(self.rootNode, 'module_paths');
 
     // We are starting over for each configuration and module due to a WebGME bug
-    async.forEachOfSeries(config_wgme_paths, function (value, key, callback) {
+    async.forEachOfSeries(c_wgme_paths, function (value, key, callback) {
       async.series([
         function (callback) {
-          self.loadComponents(config_wgme_paths, module_wgme_paths, function (nodes) {
+          load_objects.loadComponents.call(self, c_wgme_paths, m_wgme_paths, function (nodes) {
             self._nodes = nodes;
             callback();
           });
@@ -48,10 +48,10 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher) {
       });
 
     }, function (err) {
-      self.createTasks(module_wgme_paths);
-      self.loadComponents(config_wgme_paths, module_wgme_paths, function (nodes) {
+      self.createTasks(m_wgme_paths);
+      load_objects.loadComponents.call(self, c_wgme_paths, m_wgme_paths, function (nodes) {
         self._nodes = nodes;
-        self.createModuleCalls(module_wgme_paths);
+        self.createModuleCalls(m_wgme_paths);
         if (save) {
           self.save('save', function (err) {
             call_callback(true);
@@ -67,56 +67,13 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher) {
 
   };
 
-  // calls the callback with { MainC__Scheduler: {<WebGME obj>} }
-  TinyOSWiringPopulater.prototype.loadComponents = function (c_wgme_paths, m_wgme_paths, next) {
-    var self = this;
-    var core = self.core;
-    var async = require('async');
-    var nodes = {};
-
-    async.series([
-      function (callback) {
-        async.forEachOf(c_wgme_paths, function (value, key, callback) {
-          load_and_store(value, key, 1, callback);
-        }, callback);
-      },
-      function (callback) {
-        async.forEachOf(m_wgme_paths, function (value, key, callback) {
-          load_and_store(value, key, 2, callback);
-        }, callback);
-      }
-    ], function (err, results) {
-      next(nodes);
-    });
-
-    function load_and_store (value, key, depth, callback) {
-      core.loadByPath(self.rootNode, value, function (err, node) {
-        nodes[key] = node;
-        load_and_store_children(node, key, depth, callback);
-      });
-    }
-
-    function load_and_store_children (node, prefix, depth, next) {
-      if (depth < 1) return next();
-      core.loadChildren(node, function (err, children) {
-        async.each(children, function (child, callback) {
-          var name = core.getAttribute(child, 'name');
-          var store_name = self.joinPath(prefix, name);
-          nodes[store_name] = child;
-          load_and_store_children(child, store_name, depth - 1, callback);
-        }, next);
-      });
-    }
-
-  };
-
-  TinyOSWiringPopulater.prototype.createConfigurationWirings = function (config_wgme_paths, next) {
+  TinyOSWiringPopulater.prototype.createConfigurationWirings = function (c_wgme_paths, next) {
     var self = this;
     var core = self.core;
     var async = require('async');
     var instances = {};
 
-    async.forEachOf(config_wgme_paths, function (value, key, callback) {
+    async.forEachOf(c_wgme_paths, function (value, key, callback) {
       var node = self._nodes[key];
       var config_dump = core.getRegistry(node, 'nesc-dump');
       wire_configuration(key, node, config_dump.wiring);
@@ -187,9 +144,9 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher) {
     return Array.prototype.join.call(arguments, Constants.DELIMITER);
   };
 
-  TinyOSWiringPopulater.prototype.createModuleCalls = function (module_wgme_paths) {
+  TinyOSWiringPopulater.prototype.createModuleCalls = function (m_wgme_paths) {
     var self = this;
-    for (var m_name in module_wgme_paths) {
+    for (var m_name in m_wgme_paths) {
       var node = self._nodes[m_name];
       var all_calls = self.core.getRegistry(node, 'calls');
       Refresher.prototype.createCallConnectionsModule.call(self, node, all_calls, get_node);
@@ -202,9 +159,9 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher) {
     }
   };
 
-  TinyOSWiringPopulater.prototype.createTasks = function(module_wgme_paths) {
+  TinyOSWiringPopulater.prototype.createTasks = function(m_wgme_paths) {
     var self = this;
-    for (var m_name in module_wgme_paths) {
+    for (var m_name in m_wgme_paths) {
       var node = self._nodes[m_name];
       var tasks = self.core.getRegistry(node, 'tasks');
       for (var i = tasks.length - 1; i >= 0; i--) {

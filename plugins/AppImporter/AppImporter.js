@@ -1,5 +1,5 @@
-define(['plugin/PluginBase', 'plugin/PluginConfig'],
-function (PluginBase, PluginConfig) {
+define(['plugin/PluginBase', 'plugin/PluginConfig', 'path', '../utils/LoadObjects'],
+function (PluginBase, PluginConfig, path, load_objects) {
 
 'use strict';
 
@@ -17,8 +17,20 @@ AppImporter.prototype.getVersion = function () {
 };
 
 AppImporter.prototype.main = function (callback) {
-  this.result.setSuccess(true);
-  callback(null, this.result);
+  var self = this;
+  var core = self.core;
+  var log = self.logger;
+  var app_path = path.resolve(process.env.TOSROOT, 'apps', 'Blink', 'BlinkAppC.nc');
+
+  var cwp = core.getRegistry(self.rootNode, 'configuration_paths');
+  var mwp = core.getRegistry(self.rootNode, 'module_paths');
+
+  load_objects.loadComponents.call(self, cwp, mwp, function (nodes) {
+    log.info(app_path);
+    self.result.setSuccess(true);
+    callback(null, self.result);
+  });
+
 };
 
 return AppImporter;

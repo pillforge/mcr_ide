@@ -23,7 +23,6 @@ define(['../common/Util'], function (Util) {
 
     async.parallel([
       function (callback) {
-        console.log('do i work');
         self.util.loadNodes(self.rootNode, function (err, nodes) {
           if (err) {
             callback(err);
