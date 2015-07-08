@@ -42,7 +42,6 @@ define(
         } else {
           self._wi("Nodes are loaded");
           try {
-            var pd = new ParseDump();
             var nxg = new NesC_XML_Generator('exp430');
             self._objectPath = {};
 
@@ -85,7 +84,7 @@ define(
                           index + components_paths[index]);
                       } else {
                         self._wi(index + " " + components_paths[index] + " prog");
-                        self._app_json = pd.parse(components_paths[index], xml);
+                        self._app_json = ParseDump.parse(xml);
                         if (self._debug) {
                           fs.writeFileSync('./temp/' + component_name + '.log' + index + '.xml', xml);
                           fs.writeFileSync('./temp/' + component_name + '.log' + index + '.js',

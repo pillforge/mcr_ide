@@ -18,27 +18,14 @@
 // - Process interface defs
 
 define(['libxmljs', 'fs', 'path'],
-  function (libxmljs, fs, path) {
-    "use strict";
+function (libxmljs, fs, path) {
+  'use strict';
 
-    // This is based on archive.py found in the tools/tinyos/ncc/nesdoc-py
-    // of a tinyos installation
-    var ParseDump = function(topdir) {
-      if (topdir)
-        this.topdir = topdir;
-      else
-        this.topdir = process.env.TOSROOT;
-    };
+  // This is based on archive.py found in the tools/tinyos/ncc/nesdoc-py
+  // of a tinyos installation
 
-    ParseDump.prototype.parse = function(file_path, xml) {
-
-      var self = this;
-      if (!file_path) {
-        file_path = "MainC.xml"; // For dev
-      }
-      if (!xml) {
-        xml = fs.readFileSync(path.resolve(file_path));
-      }
+  return {
+    parse: function (xml) {
 
       var xml_doc = libxmljs.parseXml(xml, { noblanks: true });
 
@@ -54,10 +41,10 @@ define(['libxmljs', 'fs', 'path'],
       var interfaces = xml_doc.find('//xmlns:interfaces/xmlns:interface', ns);
       var functions = xml_doc.find('//xmlns:functions/xmlns:function', ns);
 
-      // self.logger.info("Found " + components.length + " components");
-      // self.logger.info("Found " + interfacedefs.length + " interfacedefs");
-      // self.logger.info("Found " + interfaces.length + " interfaces");
-      // self.logger.info("Found " + functions.length + " functions");
+      // this.logger.info("Found " + components.length + " components");
+      // this.logger.info("Found " + interfacedefs.length + " interfacedefs");
+      // this.logger.info("Found " + interfaces.length + " interfaces");
+      // this.logger.info("Found " + functions.length + " functions");
 
       var refidx = {};
       var qnameidx = {};
@@ -86,14 +73,14 @@ define(['libxmljs', 'fs', 'path'],
         }
       });
 
-      // self._wi('all refid');
+      // this._wi('all refid');
       // console.dir(refidx);
-      // self._wi('all qname');
+      // this._wi('all qname');
       // console.dir(qnameidx);
-      // self._wi('all speclist');
+      // this._wi('all speclist');
       // console.dir(speclist);
 
-      //self._wi("Qname " + Object.keys(qnameidx).length + " elements");
+      //this._wi("Qname " + Object.keys(qnameidx).length + " elements");
 
       var instance_components = {};
       components.forEach(function(x) {
@@ -296,8 +283,8 @@ define(['libxmljs', 'fs', 'path'],
         if (col !== -1) {
           loc = loc.slice(col + 1);
         }
-        if (loc.search(self.topdir) === 0) {
-          loc = loc.slice(self.topdir.length + 1);
+        if (loc.search(process.env.TOSROOT) === 0) {
+          loc = loc.slice(process.env.TOSROOT.length + 1);
         }
 
         // Not sure why this is necessary
@@ -308,8 +295,7 @@ define(['libxmljs', 'fs', 'path'],
       }
 
       return app_json;
-    };
+    }
+  };
 
-    return ParseDump;
-  }
-);
+});

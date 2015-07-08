@@ -45,7 +45,6 @@ function (NesC_XML_Generator, ParseDump) {
       component: 0
     };
     self.nxg = new NesC_XML_Generator();
-    self.pd = new ParseDump();
     self.nxg.getComponentsPaths(function (error, components_paths) {
       if (error !== null) {
         next(error);
@@ -171,7 +170,7 @@ function (NesC_XML_Generator, ParseDump) {
       if (error !== null) {
         next(error);
       } else {
-        var app_json = self.pd.parse(component_path, xml);
+        var app_json = ParseDump.parse(xml);
         next(null, app_json);
       }
     });

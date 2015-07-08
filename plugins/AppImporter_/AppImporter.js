@@ -67,8 +67,7 @@ define(
           self.logger.error(err_msg + ': ' + error);
           next(error);
         } else {
-          var pd = new ParseDump();
-          var app_json = pd.parse(null, xml);
+          var app_json = ParseDump.parse(xml);
           self.app_json = app_json;
           fs.writeFileSync('app_json.js.log', JSON.stringify(app_json, null, '  '));
           self.createInterfaces(app_json.interfacedefs, function () {

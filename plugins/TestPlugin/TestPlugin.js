@@ -93,7 +93,6 @@ define(
     TestPlugin.prototype.getAppJson = function (next) {
       var self = this;
       var nxg = new NesC_XML_Generator('exp430');
-      var pd = new ParseDump();
       // var component_path = process.env.TOSDIR + '/system/MainC.nc';
       var component_path = process.env.TOSDIR + '/platforms/exp430/ActiveMessageC.nc';
       nxg.getXML(component_path, '', function(error, xml) {
@@ -101,7 +100,7 @@ define(
           next(error);
         } else {
           // console.log(xml);
-          var app_json = pd.parse(component_path, xml);
+          var app_json = ParseDump.parse(xml);
           next(null, app_json);
         }
       });

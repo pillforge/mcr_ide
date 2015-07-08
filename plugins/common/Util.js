@@ -50,8 +50,7 @@ define(
         return next('Cannot get XML');
       } else {
         if (self.debug) fs.writeFileSync('app_xml.xml.log', xml);
-        var pd = new ParseDump();
-        var app_json = pd.parse(null, xml);
+        var app_json = ParseDump.parse(xml);
         return next(null, app_json);
       }
     });

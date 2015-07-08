@@ -48,8 +48,7 @@ define(
           } else {
             var fs = require('fs');
             fs.writeFileSync('app_xml.xml.log', xml);
-            var pd = new ParseDump();
-            var app_json = pd.parse(null, xml);
+            var app_json = ParseDump.parse(xml);
             fs.writeFileSync('app_json.js.log', JSON.stringify(app_json, null, '  '));
             var r = new Refresher(self.core, self.META, app_json, self.logger.fork('Refresher'));
             r.update(self.activeNode, name, function () {
