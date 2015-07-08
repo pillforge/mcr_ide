@@ -563,7 +563,7 @@ define(['js/Constants',
     var client = self._control._client;
     var context = {
       managerConfig: {
-        "project": client.getActiveProjectName(),
+        "project": client.getActiveProjectId(),
         "token": "",
         "activeNode": self._metaInfo[CONSTANTS.GME_ID], // WebGMEGlobal.State.getActiveObject(),
         "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
@@ -591,7 +591,7 @@ define(['js/Constants',
     var client = self._control._client;
     var context = {
       managerConfig: {
-        "project": client.getActiveProjectName(),
+        "project": client.getActiveProjectId(),
         "token": "",
         "activeNode": self._metaInfo[CONSTANTS.GME_ID], // WebGMEGlobal.State.getActiveObject(),
         "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
@@ -616,7 +616,7 @@ define(['js/Constants',
     var client = self._control._client;
     var context = {
       managerConfig: {
-        "project": client.getActiveProjectName(),
+        "project": client.getActiveProjectId(),
         "token": "",
         "activeNode": self._metaInfo[CONSTANTS.GME_ID], // WebGMEGlobal.State.getActiveObject(),
         "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
