@@ -3,7 +3,7 @@ define(['./Constants'], function (Constants) {
   return {
 
     // should be called with 'this' object having core and rootNode
-    // calls the callback(next) with { MainC__Scheduler: {<WebGME obj>} }
+    // calls the callback(next) with err and { MainC__Scheduler: {<WebGME obj>} }
     loadComponents: function (c_wgme_paths, m_wgme_paths, next) {
       var self = this;
       var core = self.core;
@@ -22,7 +22,7 @@ define(['./Constants'], function (Constants) {
           }, callback);
         }
       ], function (err, results) {
-        next(nodes);
+        next(null, nodes);
       });
 
       function load_and_store (value, key, depth, callback) {
