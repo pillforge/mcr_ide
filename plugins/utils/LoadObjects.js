@@ -3,6 +3,24 @@ define(['./Constants'], function (Constants) {
   return {
 
     // should be called with 'this' object having core and rootNode
+    // returns the existing or created WebGME object
+    mkdirp: function (file_path) {
+      var self = this;
+      var path = require('path');
+      var dirs = path.dirname(file_path).split(path.sep);
+      var parent_node = self.rootNode;
+      for (var i = 0; i < dirs.length; i++) {
+        var dir_node = self.core.createNode({
+          base: self.META.Folder,
+          parent: parent_node
+        });
+        self.core.setAttribute(dir_node, 'name', dirs[i]);
+        parent_node = dir_node;
+      }
+      return parent_node;
+    },
+
+    // should be called with 'this' object having core and rootNode
     // calls the callback(next) with err and { MainC__Scheduler: {<WebGME obj>} }
     loadComponents: function (c_wgme_paths, m_wgme_paths, next) {
       var self = this;

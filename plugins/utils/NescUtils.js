@@ -1,13 +1,13 @@
-define(['../common/NesC_XML_Generator', '../common/ParseDump'],
-function (NXG, ParseDump) {
+define(['../common/NesC_XML_Generator', '../common/ParseDump', 'path'],
+function (NXG, ParseDump, path) {
 
 'use strict';
 
 return {
   getAppJson: function (c_path, next) {
     var nxg = new NXG();
-    nxg.getXML(c_path, '', function (err, xml) {
-      console.log(c_path);
+    var opts = '-I' + path.dirname(c_path);
+    nxg.getXML(c_path, opts, function (err, xml) {
       if (err) {
         return next(err);
       } else {

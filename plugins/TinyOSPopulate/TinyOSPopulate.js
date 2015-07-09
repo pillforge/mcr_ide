@@ -49,6 +49,7 @@ define(
             // { MainC: '/497022377/1117940255/1637150336' }
             self._configuration_paths = {};
             self._module_paths = {};
+            self._folder_paths = {};
 
             nxg.getDirectories(function(error, directories) {
               if (error !== null) {
@@ -67,6 +68,7 @@ define(
                   self._wi("Completed");
                   self.core.setRegistry(self.rootNode, 'configuration_paths', self._configuration_paths);
                   self.core.setRegistry(self.rootNode, 'module_paths', self._module_paths);
+                  self.core.setRegistry(self.rootNode, 'folder_paths', self._folder_paths);
                   self.save('save populator finished', function(err) {
                     self.result.setSuccess(true);
                     callback(err, self.result);
@@ -277,7 +279,9 @@ define(
       self._wi("Path: " + path);
       var dirs = path.split('/');
       var parent_node = self.rootNode;
+      var f_name = '';
       for (var i = 0; i < dirs.length; i++) {
+        f_name += (f_name === '' ? dirs[i] : '__' + dirs[i]);
         var dir_node = self._findNodeByName(parent_node, dirs[i]);
         if (!dir_node) {
           self._wi("Creating directory: " + dirs[i]);
@@ -287,6 +291,9 @@ define(
           });
           self.core.setAttribute(dir_node, 'name', dirs[i]);
           self._cacheNode(dir_node);
+          // to keep in registry
+          self._folder_paths[f_name] = self.core.getPath(dir_node);
+
         } else {
           self._wi("Skipping directory: " + dirs[i]);
         }

@@ -26,6 +26,7 @@ AppImporter.prototype.main = function (callback) {
 
   var cwp = core.getRegistry(self.rootNode, 'configuration_paths');
   var mwp = core.getRegistry(self.rootNode, 'module_paths');
+  var fwp = core.getRegistry(self.rootNode, 'folder_paths');
 
   async.parallel([
     function (callback) {
@@ -38,10 +39,16 @@ AppImporter.prototype.main = function (callback) {
   function (err, results) {
     if (err) {
       log.info(err);
+      self.result.setSuccess(false);
       return callback(null, self.result);
     }
     self._nodes = results[0];
     self._app_json = results[1];
+    log.info(app_path);
+
+    var fs = require('fs-extra');
+    fs.outputJsonSync('temp/BlinkAppC.json', results[1], {spaces: 2});
+
     self.result.setSuccess(true);
     callback(null, self.result);
   });
