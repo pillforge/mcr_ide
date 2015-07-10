@@ -1,5 +1,6 @@
-define(['plugin/PluginBase', 'plugin/PluginConfig', 'path', '../utils/LoadObjects', '../utils/NescUtils'],
-function (PluginBase, PluginConfig, path, load_objects, nesc_utils) {
+define(['plugin/PluginBase', 'plugin/PluginConfig', 'path',
+       '../utils/WebgmeUtils', '../utils/NescUtils'],
+function (PluginBase, PluginConfig, path, wgme_utils, nesc_utils) {
 
 'use strict';
 
@@ -28,9 +29,15 @@ AppImporter.prototype.main = function (callback) {
   var mwp = core.getRegistry(self.rootNode, 'module_paths');
   var fwp = core.getRegistry(self.rootNode, 'folder_paths');
 
+  var paths_arr = [
+    { paths: cwp, depth: 1 },
+    { paths: mwp, depth: 2 },
+    { paths: fwp, depth: 0 }
+  ];
+
   async.parallel([
     function (callback) {
-      load_objects.loadComponents.call(self, cwp, mwp, callback);
+      wgme_utils.loadObjects.call(self, paths_arr, callback);
     },
     function (callback) {
       nesc_utils.getAppJson(app_path, callback);

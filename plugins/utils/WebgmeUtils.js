@@ -22,24 +22,18 @@ define(['./Constants'], function (Constants) {
 
     // should be called with 'this' object having core and rootNode
     // calls the callback(next) with err and { MainC__Scheduler: {<WebGME obj>} }
-    loadComponents: function (c_wgme_paths, m_wgme_paths, next) {
+    // paths_arr = [ {paths: c_wgme_paths, depth: 1 }, { paths: m_wgme_paths, depth: 2 } ];
+    loadObjects: function (paths_arr, next) {
       var self = this;
       var core = self.core;
       var async = require('async');
       var nodes = {};
 
-      async.series([
-        function (callback) {
-          async.forEachOf(c_wgme_paths, function (value, key, callback) {
-            load_and_store(value, key, 1, callback);
-          }, callback);
-        },
-        function (callback) {
-          async.forEachOf(m_wgme_paths, function (value, key, callback) {
-            load_and_store(value, key, 2, callback);
-          }, callback);
-        }
-      ], function (err, results) {
+      async.each(paths_arr, function (obj, callback) {
+        async.forEachOf(obj.paths, function (value, key, callback) {
+          load_and_store(value, key, obj.depth, callback);
+        }, callback);
+      }, function (err) {
         next(null, nodes);
       });
 

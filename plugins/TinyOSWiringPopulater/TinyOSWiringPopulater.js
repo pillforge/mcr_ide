@@ -1,6 +1,6 @@
 define(['plugin/PluginBase', 'plugin/PluginConfig', '../utils/Constants', '../utils/PathUtils',
-       '../ModelGenerator/Refresher', '../utils/LoadObjects'],
-function (PluginBase, PluginConfig, Constants, path_utils, Refresher, load_objects) {
+       '../ModelGenerator/Refresher', '../utils/WebgmeUtils'],
+function (PluginBase, PluginConfig, Constants, path_utils, Refresher, wgme_utils) {
 
   'use strict';
 
@@ -29,11 +29,16 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher, load_objec
     var c_wgme_paths = core.getRegistry(self.rootNode, 'configuration_paths');
     var m_wgme_paths = core.getRegistry(self.rootNode, 'module_paths');
 
+    var paths_arr = [
+      { paths: c_wgme_paths, depth: 1 },
+      { paths: m_wgme_paths, depth: 2 }
+    ];
+
     // We are starting over for each configuration and module due to a WebGME bug
     async.forEachOfSeries(c_wgme_paths, function (value, key, callback) {
       async.series([
         function (callback) {
-          load_objects.loadComponents.call(self, c_wgme_paths, m_wgme_paths, function (nodes) {
+          wgme_utils.loadObjects.call(self, paths_arr, function (err, nodes) {
             self._nodes = nodes;
             callback();
           });
@@ -49,7 +54,7 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher, load_objec
 
     }, function (err) {
       self.createTasks(m_wgme_paths);
-      load_objects.loadComponents.call(self, c_wgme_paths, m_wgme_paths, function (nodes) {
+      wgme_utils.loadObjects.call(self, paths_arr, function (err, nodes) {
         self._nodes = nodes;
         self.createModuleCalls(m_wgme_paths);
         if (save) {

@@ -88,6 +88,8 @@ define(
                         self._wi(index + " " + components_paths[index] + " prog");
                         self._app_json = ParseDump.parse(xml);
                         if (self._debug) {
+                          var fse = require('fs-extra');
+                          fse.mkdirpSync('./temp');
                           fs.writeFileSync('./temp/' + component_name + '.log' + index + '.xml', xml);
                           fs.writeFileSync('./temp/' + component_name + '.log' + index + '.js',
                                            util.inspect(self._app_json, {
