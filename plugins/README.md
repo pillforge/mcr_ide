@@ -4,3 +4,8 @@ ROOT object has two registry records: configuration_paths and module_paths. They
 ```
 { MainC: '/497022377/1117940255/1637150336' }
 ```
+
+The recent plugins keep nodes in the following format:
+```
+{ "MainC": <WebGME object>, "MainC__Scheduler": <WebGME object> }
+```

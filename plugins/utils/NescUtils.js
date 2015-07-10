@@ -4,6 +4,11 @@ function (NXG, ParseDump, path) {
 'use strict';
 
 return {
+
+  getBase: function (c_json) {
+    return ( c_json.generic ? 'Generic' : '' ) + c_json.comp_type;
+  },
+
   getAppJson: function (c_path, next) {
     var nxg = new NXG();
     var opts = '-I' + path.dirname(c_path);
