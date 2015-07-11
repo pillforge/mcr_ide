@@ -42,6 +42,8 @@ AppImporter.prototype.main = function (callback) {
     fwp: fwp
   };
 
+  log.info('', reg_obj);
+
   async.parallel([
     function (callback) {
       wgme_utils.loadObjects.call(self, paths_arr, callback);
@@ -79,6 +81,7 @@ AppImporter.prototype.main = function (callback) {
 
 AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
   var self = this;
+  var core = self.core;
   // Create components
   var components = app_json.components;
   for (var c_name in components) {
@@ -86,14 +89,34 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
       var comp_json = components[c_name];
       var parent = wgme_utils.mkdirp.call(self, comp_json.file_path, nodes, reg_obj.fwp);
       var base = wgme_utils.getMetaNode.call(self, nesc_utils.getBase(comp_json));
-      self.createNode(c_name, parent, base);
+      var new_node = self.createNode(c_name, parent, base);
+      core.setAttribute(new_node, 'safe', comp_json.safe);
+      cache_and_register();
     }
   }
-  self.core.setRegistry(self.rootNode, 'folder_paths', reg_obj.fwp);
+
+  function cache_and_register () {
+    nodes[c_name] = new_node;
+
+    if ( comp_json.comp_type === 'Configuration')
+      var wp = reg_obj.cwp;
+    else if ( comp_json.comp_type === 'Module')
+      wp = reg_obj.mwp;
+    wp[c_name] = core.getPath(new_node);
+
+    core.setRegistry(new_node, 'nesc-dump', comp_json);
+    // TODO: set call graph and tasks in registry
+  }
+
 };
 
 AppImporter.prototype.createNode = function(name, parent, base) {
-  this.logger.info('', 'to be created', name);
+  var new_node = this.core.createNode({
+    parent: parent,
+    base: base
+  });
+  this.core.setAttribute(new_node, 'name', name);
+  return new_node;
 };
 
 return AppImporter;
