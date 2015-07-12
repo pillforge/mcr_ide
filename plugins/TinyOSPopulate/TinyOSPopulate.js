@@ -47,6 +47,7 @@ define(
 
             // keep created component's paths to save in registry
             // { MainC: '/497022377/1117940255/1637150336' }
+            self._interface_paths = {};
             self._configuration_paths = {};
             self._module_paths = {};
             self._folder_paths = {};
@@ -66,6 +67,7 @@ define(
                 if ( flag && index >= components_paths.length ) {
                   // flag = false;
                   self._wi("Completed");
+                  self.core.setRegistry(self.rootNode, 'interface_paths', self._interface_paths);
                   self.core.setRegistry(self.rootNode, 'configuration_paths', self._configuration_paths);
                   self.core.setRegistry(self.rootNode, 'module_paths', self._module_paths);
                   self.core.setRegistry(self.rootNode, 'folder_paths', self._folder_paths);
@@ -234,6 +236,9 @@ define(
       });
       self.core.setAttribute(interface_node, 'name', curr_interface.name);
       self.core.setAttribute(interface_node, 'path', curr_interface.file_path);
+
+      // set registry
+      self._interface_paths[curr_interface.name] = self.core.getPath(interface_node);
 
       self._createFunctionDeclarationsEventsCommands(interface_node, curr_interface);
       // self.core.setAttribute(interface_node, 'source', self._getSource(curr_interface.file_path));

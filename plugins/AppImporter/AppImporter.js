@@ -29,20 +29,21 @@ AppImporter.prototype.main = function (callback) {
   var cwp = core.getRegistry(self.rootNode, 'configuration_paths');
   var mwp = core.getRegistry(self.rootNode, 'module_paths');
   var fwp = core.getRegistry(self.rootNode, 'folder_paths');
+  var iwp = core.getRegistry(self.rootNode, 'interface_paths');
 
   var paths_arr = [
+    { paths: iwp, depth: 0 },
     { paths: cwp, depth: 1 },
     { paths: mwp, depth: 2 },
     { paths: fwp, depth: 0 }
   ];
 
   var reg_obj = {
+    iwp: iwp,
     cwp: cwp,
     mwp: mwp,
     fwp: fwp
   };
-
-  log.info('', reg_obj);
 
   async.parallel([
     function (callback) {
@@ -82,6 +83,13 @@ AppImporter.prototype.main = function (callback) {
 AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
   var self = this;
   var core = self.core;
+
+  // Create interfaces
+  var interfacedefs = app_json.interfacedefs;
+  for (var i_name in interfacedefs) {
+
+  }
+
   // Create components
   var components = app_json.components;
   for (var c_name in components) {
@@ -92,6 +100,18 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
       var new_node = self.createNode(c_name, parent, base);
       core.setAttribute(new_node, 'safe', comp_json.safe);
       cache_and_register();
+      createUP();
+    }
+  }
+
+  function createUP () {
+    for (var i = comp_json.interface_types.length - 1; i >= 0; i--) {
+      var ci_json = comp_json.interface_types[i];
+      var parent = nodes[c_name];
+      var base = wgme_utils.getMetaNode.call(self, nesc_utils.getBaseUP(ci_json));
+      var up_node = self.createNode(ci_json.as, parent, base);
+      core.setPointer(up_node, 'interface', nodes[ci_json.name]);
+      // TODO: _createFunctionDeclarationsEventsCommands
     }
   }
 

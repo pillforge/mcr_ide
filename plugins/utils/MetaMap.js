@@ -8,7 +8,9 @@ define([], function () {
     Module: 'Module',
     GenericConfiguration: 'Generic_Configuration',
     GenericModule: 'Generic_Module',
-    Folder: 'Folder'
+    Folder: 'Folder',
+    Uses: 'Uses_Interface',
+    Provides: 'Provides_Interface'
   };
 
 });
