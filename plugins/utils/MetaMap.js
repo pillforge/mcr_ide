@@ -4,11 +4,12 @@ define([], function () {
   'use strict';
 
   return {
+    Folder: 'Folder',
+    Interface: 'Interface_Definition',
     Configuration: 'Configuration',
     Module: 'Module',
     GenericConfiguration: 'Generic_Configuration',
     GenericModule: 'Generic_Module',
-    Folder: 'Folder',
     Uses: 'Uses_Interface',
     Provides: 'Provides_Interface'
   };

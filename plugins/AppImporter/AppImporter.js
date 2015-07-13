@@ -25,29 +25,17 @@ AppImporter.prototype.main = function (callback) {
   var save = true;
 
   var app_path = path.resolve(process.env.TOSROOT, 'apps', 'Blink', 'BlinkAppC.nc');
-
-  var cwp = core.getRegistry(self.rootNode, 'configuration_paths');
-  var mwp = core.getRegistry(self.rootNode, 'module_paths');
-  var fwp = core.getRegistry(self.rootNode, 'folder_paths');
-  var iwp = core.getRegistry(self.rootNode, 'interface_paths');
-
+  var reg_obj = self.getRegistry();
   var paths_arr = [
-    { paths: iwp, depth: 0 },
-    { paths: cwp, depth: 1 },
-    { paths: mwp, depth: 2 },
-    { paths: fwp, depth: 0 }
+    { paths: reg_obj.iwp, depth: 0 },
+    { paths: reg_obj.cwp, depth: 1 },
+    { paths: reg_obj.mwp, depth: 2 },
+    { paths: reg_obj.fwp, depth: 0 }
   ];
-
-  var reg_obj = {
-    iwp: iwp,
-    cwp: cwp,
-    mwp: mwp,
-    fwp: fwp
-  };
 
   async.parallel([
     function (callback) {
-      wgme_utils.loadObjects.call(self, paths_arr, callback);
+      wgme_utils.loadObjects(self, paths_arr, callback);
     },
     function (callback) {
       nesc_utils.getAppJson(app_path, callback);
@@ -57,10 +45,11 @@ AppImporter.prototype.main = function (callback) {
     if (err) {
       log.info(err);
       self.result.setSuccess(false);
-      return callback(null, self.result);
+      return callback(err, self.result);
     }
 
     self.run(results[1], results[0], reg_obj);
+    self.setRegistry(reg_obj);
 
     var fs = require('fs-extra');
     fs.outputJsonSync('temp/BlinkAppC.json', results[1], {spaces: 2});
@@ -80,6 +69,7 @@ AppImporter.prototype.main = function (callback) {
 
 };
 
+// keep nodes and reg_obj updated with the new nodes
 AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
   var self = this;
   var core = self.core;
@@ -87,7 +77,15 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
   // Create interfaces
   var interfacedefs = app_json.interfacedefs;
   for (var i_name in interfacedefs) {
-
+    if ( nodes[i_name] === undefined ) {
+      var i_json = interfacedefs[i_name];
+      var parent = wgme_utils.mkdirp(self, i_json.file_path, nodes, reg_obj.fwp);
+      var base = wgme_utils.getMetaNode(self, 'interface');
+      var new_node = self.createNode(i_name, parent, base);
+      // TODO: _createFunctionDeclarationsEventsCommands
+      reg_obj.iwp[i_name] = core.getPath(new_node);
+      nodes[i_name] = new_node;
+    }
   }
 
   // Create components
@@ -95,8 +93,8 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
   for (var c_name in components) {
     if ( nodes[c_name] === undefined ) {
       var comp_json = components[c_name];
-      var parent = wgme_utils.mkdirp.call(self, comp_json.file_path, nodes, reg_obj.fwp);
-      var base = wgme_utils.getMetaNode.call(self, nesc_utils.getBase(comp_json));
+      var parent = wgme_utils.mkdirp(self, comp_json.file_path, nodes, reg_obj.fwp);
+      var base = wgme_utils.getMetaNode(self, 'component', comp_json);
       var new_node = self.createNode(c_name, parent, base);
       core.setAttribute(new_node, 'safe', comp_json.safe);
       cache_and_register();
@@ -108,7 +106,7 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
     for (var i = comp_json.interface_types.length - 1; i >= 0; i--) {
       var ci_json = comp_json.interface_types[i];
       var parent = nodes[c_name];
-      var base = wgme_utils.getMetaNode.call(self, nesc_utils.getBaseUP(ci_json));
+      var base = wgme_utils.getMetaNode(self, 'up', ci_json);
       var up_node = self.createNode(ci_json.as, parent, base);
       core.setPointer(up_node, 'interface', nodes[ci_json.name]);
       // TODO: _createFunctionDeclarationsEventsCommands
@@ -137,6 +135,22 @@ AppImporter.prototype.createNode = function(name, parent, base) {
   });
   this.core.setAttribute(new_node, 'name', name);
   return new_node;
+};
+
+AppImporter.prototype.getRegistry = function () {
+  return {
+    iwp: this.core.getRegistry(this.rootNode, 'interface_paths') || {},
+    cwp: this.core.getRegistry(this.rootNode, 'configuration_paths') || {},
+    mwp: this.core.getRegistry(this.rootNode, 'module_paths') || {},
+    fwp: this.core.getRegistry(this.rootNode, 'folder_paths') || {}
+  };
+};
+
+AppImporter.prototype.setRegistry = function (reg_obj) {
+  this.core.setRegistry(this.rootNode, 'interface_paths', reg_obj.iwp);
+  this.core.setRegistry(this.rootNode, 'configuration_paths', reg_obj.cwp);
+  this.core.setRegistry(this.rootNode, 'module_paths', reg_obj.mwp);
+  this.core.setRegistry(this.rootNode, 'folder_paths', reg_obj.fwp);
 };
 
 return AppImporter;

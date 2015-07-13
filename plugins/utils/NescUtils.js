@@ -5,13 +5,17 @@ function (NXG, ParseDump, path) {
 
 return {
 
+  getBaseInterface: function () {
+    return 'Interface';
+  },
+
+  getBaseComp: function (c_json) {
+    return ( c_json.generic ? 'Generic' : '' ) + c_json.comp_type;
+  },
+
   getBaseUP: function (i_type) {
     if (i_type.provided) return 'Provides';
     return 'Uses';
-  },
-
-  getBase: function (c_json) {
-    return ( c_json.generic ? 'Generic' : '' ) + c_json.comp_type;
   },
 
   getAppJson: function (c_path, next) {
