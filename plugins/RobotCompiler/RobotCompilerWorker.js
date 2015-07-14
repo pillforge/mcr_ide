@@ -1,11 +1,11 @@
-define(['logManager', '../common/Util', 'path'], function (LogManager, Util, path) {
+define(['../common/Util', 'path'], function (Util, path) {
   "use strict";
 
-  var RobotCompilerWorker = function (core, META, rootNode) {
+  var RobotCompilerWorker = function (core, META, rootNode, logger) {
     this.core = core;
     this.META = META;
     this.rootNode = rootNode;
-    this.logger = LogManager.create('RobotCompilerWorker');
+    this.logger = logger;
     this.util = new Util(this.core, this.META, this.rootNode);
   };
 

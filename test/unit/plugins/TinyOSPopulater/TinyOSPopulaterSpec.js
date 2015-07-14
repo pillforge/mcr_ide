@@ -27,7 +27,7 @@ describe('TinyOSPopulater', function () {
       //rootNode = core.getRootNode();
       //modelsNode = core.createNode({base: meta.ModelElement, parent: rootNode});
       //core.setAttribute(modelsNode, 'name', 'Models');
-    done();
+      done();
     });
   });
 
