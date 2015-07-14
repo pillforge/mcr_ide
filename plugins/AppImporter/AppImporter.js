@@ -1,6 +1,8 @@
 define(['plugin/PluginBase', 'plugin/PluginConfig', 'path',
-       '../utils/WebgmeUtils', '../utils/NescUtils'],
-function (PluginBase, PluginConfig, path, wgme_utils, nesc_utils) {
+       '../utils/WebgmeUtils', '../utils/NescUtils',
+       '../utils/Constants',
+       '../TinyOSWiringPopulater/TinyOSWiringPopulater'],
+function (PluginBase, PluginConfig, path, wgme_utils, nesc_utils, Constants, twp) {
 
 'use strict';
 
@@ -98,34 +100,48 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
       var new_node = self.createNode(c_name, parent, base);
       core.setAttribute(new_node, 'safe', comp_json.safe);
       cache_and_register();
-      createUP();
+      create_up();
     }
   }
 
-  function createUP () {
+  // Create wirings for configurations
+  var components = app_json.components;
+  for (var c_name in components) {
+    create_wire_configuration(c_name, nodes[c_name], components[c_name].wiring);
+  }
+
+  function create_wire_configuration (c_name, node, wirings) {
+    self._nodes = nodes;
+    twp.prototype.wireConfiguration.call(self, c_name, node, wirings);
+  }
+
+  function create_up () {
     for (var i = comp_json.interface_types.length - 1; i >= 0; i--) {
       var ci_json = comp_json.interface_types[i];
       var parent = nodes[c_name];
       var base = wgme_utils.getMetaNode(self, 'up', ci_json);
       var up_node = self.createNode(ci_json.as, parent, base);
       core.setPointer(up_node, 'interface', nodes[ci_json.name]);
+      nodes[[c_name, ci_json.as].join(Constants.DELIMITER)] = up_node;
       // TODO: _createFunctionDeclarationsEventsCommands
     }
   }
 
   function cache_and_register () {
-    nodes[c_name] = new_node;
-
     if ( comp_json.comp_type === 'Configuration')
       var wp = reg_obj.cwp;
     else if ( comp_json.comp_type === 'Module')
       wp = reg_obj.mwp;
     wp[c_name] = core.getPath(new_node);
-
+    nodes[c_name] = new_node;
     core.setRegistry(new_node, 'nesc-dump', comp_json);
     // TODO: set call graph and tasks in registry
   }
 
+};
+
+AppImporter.prototype.joinPath = function () {
+  return Array.prototype.join.call(arguments, Constants.DELIMITER);
 };
 
 AppImporter.prototype.createNode = function(name, parent, base) {

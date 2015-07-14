@@ -38,7 +38,7 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher, wgme_utils
     async.forEachOfSeries(c_wgme_paths, function (value, key, callback) {
       async.series([
         function (callback) {
-          wgme_utils.loadObjects.call(self, paths_arr, function (err, nodes) {
+          wgme_utils.loadObjects(self, paths_arr, function (err, nodes) {
             self._nodes = nodes;
             callback();
           });
@@ -54,7 +54,7 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher, wgme_utils
 
     }, function (err) {
       self.createTasks(m_wgme_paths);
-      wgme_utils.loadObjects.call(self, paths_arr, function (err, nodes) {
+      wgme_utils.loadObjects(self, paths_arr, function (err, nodes) {
         self._nodes = nodes;
         self.createModuleCalls(m_wgme_paths);
         if (save) {
@@ -76,47 +76,49 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher, wgme_utils
     var self = this;
     var core = self.core;
     var async = require('async');
-    var instances = {};
 
     async.forEachOf(c_wgme_paths, function (value, key, callback) {
       var node = self._nodes[key];
       var config_dump = core.getRegistry(node, 'nesc-dump');
-      wire_configuration(key, node, config_dump.wiring);
+      self.wireConfiguration(key, node, config_dump.wiring);
       callback();
     }, function (err) {
       next();
     });
-    
-    function wire_configuration (config_name, node, wirings) {
-      for (var i = wirings.length - 1; i >= 0; i--) {
-        var wire = wirings[i];
-        var fi = get_interface(config_name, node, wire.from);
-        var ti = get_interface(config_name, node, wire.to);
-        if (fi[0] && ti[0]) {
-          var wiring_node = self.core.createNode({
-            base: getBase(fi[1], ti[1]),
-            parent: node
-          });
-          self.core.setPointer(wiring_node, 'src', fi[0]);
-          self.core.setPointer(wiring_node, 'dst', ti[0]);
-          if (wire.from.cst)
-            self.core.setAttribute(wiring_node, 'src_params', 'cst:' + wire.from.cst);
-          if (wire.to.cst)
-            self.core.setAttribute(wiring_node, 'dst_params', 'cst:' + wire.to.cst);
-        } else {
-          self.logger.warn('interface couldn\'t be found');
-          if (!fi[0]) self.logger.warn('no fi');
-          if (!ti[0]) self.logger.warn('no ti');
-          self.logger.warn('', wire);
-        }
-      }
 
-      function getBase (a, b) {
-        if (a === 'equate' || b === 'equate')
-          return self.META.Equate_Interface;
-        return self.META.Link_Interface;
-      }
+  };
 
+  TinyOSWiringPopulater.prototype.wireConfiguration = function (config_name, node, wirings) {
+    var self = this;
+    var core = self.core;
+    var instances = {};
+    for (var i = wirings.length - 1; i >= 0; i--) {
+      var wire = wirings[i];
+      var fi = get_interface(config_name, node, wire.from);
+      var ti = get_interface(config_name, node, wire.to);
+      if (fi[0] && ti[0]) {
+        var wiring_node = self.core.createNode({
+          base: getBase(fi[1], ti[1]),
+          parent: node
+        });
+        self.core.setPointer(wiring_node, 'src', fi[0]);
+        self.core.setPointer(wiring_node, 'dst', ti[0]);
+        if (wire.from.cst)
+          self.core.setAttribute(wiring_node, 'src_params', 'cst:' + wire.from.cst);
+        if (wire.to.cst)
+          self.core.setAttribute(wiring_node, 'dst_params', 'cst:' + wire.to.cst);
+      } else {
+        self.logger.warn('interface couldn\'t be found');
+        if (!fi[0]) self.logger.warn('no fi');
+        if (!ti[0]) self.logger.warn('no ti');
+        self.logger.warn('', wire);
+      }
+    }
+
+    function getBase (a, b) {
+      if (a === 'equate' || b === 'equate')
+        return self.META.Equate_Interface;
+      return self.META.Link_Interface;
     }
 
     function get_interface (config_name, node, end) {
@@ -125,7 +127,6 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher, wgme_utils
         return [self._nodes[self.joinPath(end.name, end.interface)], 'equate'];
       
       if ( !(end.name in instances) ) {
-
         var instance_node = core.createNode({
           base: self._nodes[path_utils.getFileName(end.component_base)],
           parent: node
