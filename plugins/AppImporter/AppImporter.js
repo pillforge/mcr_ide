@@ -1,8 +1,9 @@
 define(['plugin/PluginBase', 'plugin/PluginConfig', 'path',
        '../utils/WebgmeUtils', '../utils/NescUtils',
        '../utils/Constants',
-       '../TinyOSWiringPopulater/TinyOSWiringPopulater'],
-function (PluginBase, PluginConfig, path, wgme_utils, nesc_utils, Constants, twp) {
+       '../TinyOSWiringPopulater/TinyOSWiringPopulater',
+       '../TinyOSPopulate/TinyOSPopulate'],
+function (PluginBase, PluginConfig, path, wgme_utils, nesc_utils, Constants, twp, top) {
 
 'use strict';
 
@@ -85,6 +86,7 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
       var base = wgme_utils.getMetaNode(self, 'interface');
       var new_node = self.createNode(i_name, parent, base);
       // TODO: _createFunctionDeclarationsEventsCommands
+      top.prototype._createFunctionDeclarationsEventsCommands.call(self, new_node, i_json);
       reg_obj.iwp[i_name] = core.getPath(new_node);
       nodes[i_name] = new_node;
     }
@@ -124,6 +126,10 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
       core.setPointer(up_node, 'interface', nodes[ci_json.name]);
       nodes[[c_name, ci_json.as].join(Constants.DELIMITER)] = up_node;
       // TODO: _createFunctionDeclarationsEventsCommands
+      var ec = top.prototype._createFunctionDeclarationsEventsCommands.call(self, up_node, app_json.interfacedefs[ci_json.name]);
+      for (var ec_i in ec) {
+        nodes[[c_name, ci_json.as, ec_i].join(Constants.DELIMITER)] = ec[ec_i];
+      }
     }
   }
 
