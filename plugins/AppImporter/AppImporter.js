@@ -17,7 +17,7 @@ AppImporter.prototype.getName = function () {
   return "AppImporter";
 };
 AppImporter.prototype.getVersion = function () {
-  return '0.0.0';
+  return '0.0.1';
 };
 
 AppImporter.prototype.main = function (callback) {
@@ -27,7 +27,8 @@ AppImporter.prototype.main = function (callback) {
   var async = require('async');
   var save = true;
 
-  var app_path = path.resolve(process.env.TOSROOT, 'apps', 'Blink', 'BlinkAppC.nc');
+  // var app_path = path.resolve(process.env.TOSROOT, 'apps', 'Blink', 'BlinkAppC.nc');
+  var app_path = path.resolve(process.env.TOSROOT, 'apps', 'Sense', 'SenseAppC.nc');
   var reg_obj = self.getRegistry();
   var paths_arr = [
     { paths: reg_obj.iwp, depth: 0 },
@@ -107,10 +108,20 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
   }
 
   // Create wirings for configurations
-  var components = app_json.components;
   for (var c_name in components) {
     create_wire_configuration(c_name, nodes[c_name], components[c_name].wiring);
   }
+
+  // Create tasks for modules
+  var tn = twp.prototype.createTasks.call(self, reg_obj.mwp);
+  for (var tn_i in tn) {
+    nodes[tn_i] = tn[tn_i];
+  }
+
+  // Create module calls
+  self._nodes = nodes;
+  twp.prototype.createModuleCalls.call(self, reg_obj.mwp);
+
 
   function create_wire_configuration (c_name, node, wirings) {
     self._nodes = nodes;
@@ -142,6 +153,7 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
     nodes[c_name] = new_node;
     core.setRegistry(new_node, 'nesc-dump', comp_json);
     // TODO: set call graph and tasks in registry
+    wgme_utils.setRegistryCallsTasks(self, new_node, comp_json);
   }
 
 };

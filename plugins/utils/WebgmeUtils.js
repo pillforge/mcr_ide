@@ -1,9 +1,21 @@
-define(['./Constants', './NescUtils', './MetaMap'],
-function (Constants, nesc_utils, m_map) {
+define(['./Constants', './NescUtils', './MetaMap', './PathUtils', './ModuleCalls'],
+function (Constants, nesc_utils, m_map, path_utils, ModuleCalls) {
 
 'use strict';
 
 return {
+
+  // set registry for 'calls' and 'tasks'
+  setRegistryCallsTasks: function (client, node, c_json) {
+    if ( nesc_utils.isModule(c_json) ) {
+      var mc = new ModuleCalls();
+      var source = path_utils.readFileSync(c_json);
+      var all_calls = mc.getCalls(source);
+      var tasks = mc.getTasks(source);
+      client.core.setRegistry(node, 'calls', all_calls);
+      client.core.setRegistry(node, 'tasks', tasks);
+    }
+  },
 
   // the first argument should be plugin's this object
   getMetaNode: function (client, type, obj_json) {

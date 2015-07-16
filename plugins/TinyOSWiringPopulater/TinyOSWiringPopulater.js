@@ -167,6 +167,7 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher, wgme_utils
 
   TinyOSWiringPopulater.prototype.createTasks = function(m_wgme_paths) {
     var self = this;
+    var created_nodes = {};
     for (var m_name in m_wgme_paths) {
       var node = self._nodes[m_name];
       var tasks = self.core.getRegistry(node, 'tasks');
@@ -176,8 +177,10 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher, wgme_utils
           parent: node
         });
         self.core.setAttribute(task_node, 'name', tasks[i]);
+        created_nodes[[m_name, tasks[i]].join(Constants.DELIMITER)] = task_node;
       }
     }
+    return created_nodes;
   };
 
   return TinyOSWiringPopulater;

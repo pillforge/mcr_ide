@@ -29,7 +29,12 @@ return {
         return next(null, app_json);
       }
     });
+  },
+
+  isModule: function (c_json) {
+    return c_json.comp_type === 'Module';
   }
+
 };
 
 });
