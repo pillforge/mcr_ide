@@ -27,8 +27,11 @@ AppImporter.prototype.main = function (callback) {
   var async = require('async');
   var save = true;
 
-  // var app_path = path.resolve(process.env.TOSROOT, 'apps', 'Blink', 'BlinkAppC.nc');
-  var app_path = path.resolve(process.env.TOSROOT, 'apps', 'Sense', 'SenseAppC.nc');
+  var app_path = path.resolve(process.env.TOSROOT, 'apps', 'Blink', 'BlinkAppC.nc');
+  // var app_path = path.resolve(process.env.TOSROOT, 'apps', 'Sense', 'SenseAppC.nc');
+  var app_dir_path = null;
+  app_dir_path = path.dirname(app_path);
+
   var reg_obj = self.getRegistry();
   var paths_arr = [
     { paths: reg_obj.iwp, depth: 0 },
@@ -42,7 +45,13 @@ AppImporter.prototype.main = function (callback) {
       wgme_utils.loadObjects(self, paths_arr, callback);
     },
     function (callback) {
-      nesc_utils.getAppJson(app_path, callback);
+      if (app_dir_path) {
+        var a_json = nesc_utils.getAppJsonFromMakeSync(app_dir_path, 'exp430');
+        var fs = require('fs-extra');
+        callback(null, a_json);
+      } else {
+        nesc_utils.getAppJson(app_path, callback);
+      }
     }
   ],
   function (err, results) {
@@ -52,15 +61,21 @@ AppImporter.prototype.main = function (callback) {
       return callback(err, self.result);
     }
 
-    self.run(results[1], results[0], reg_obj);
-    self.setRegistry(reg_obj);
-
     var fs = require('fs-extra');
     fs.outputJsonSync('temp/BlinkAppC.json', results[1], {spaces: 2});
 
+    self.run(results[1], results[0], reg_obj);
+    self.setRegistry(reg_obj);
+
+
     if (save) {
       self.save('save', function (err) {
-        call_callback(true);
+        if (err) {
+          log.error(err);
+          call_callback(false);
+        } else {
+          call_callback(true);
+        }
       });
     } else call_callback(true);
 
@@ -153,7 +168,7 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
     nodes[c_name] = new_node;
     core.setRegistry(new_node, 'nesc-dump', comp_json);
     // TODO: set call graph and tasks in registry
-    wgme_utils.setRegistryCallsTasks(self, new_node, comp_json);
+    wgme_utils.setRegistryCallsTasks(self, new_node, comp_json, app_json.notes);
   }
 
 };

@@ -6,10 +6,10 @@ function (Constants, nesc_utils, m_map, path_utils, ModuleCalls) {
 return {
 
   // set registry for 'calls' and 'tasks'
-  setRegistryCallsTasks: function (client, node, c_json) {
+  setRegistryCallsTasks: function (client, node, c_json, notes) {
     if ( nesc_utils.isModule(c_json) ) {
       var mc = new ModuleCalls();
-      var source = path_utils.readFileSync(c_json);
+      var source = path_utils.readFileSync(c_json, notes);
       var all_calls = mc.getCalls(source);
       var tasks = mc.getTasks(source);
       client.core.setRegistry(node, 'calls', all_calls);
@@ -40,6 +40,10 @@ return {
   mkdirp: function (client, file_path, nodes, fwp) {
     var path = require('path');
     var dirs = path.dirname(file_path).split(path.sep);
+    // A possible WebGME bug
+    if (dirs[0] === '.') {
+      dirs = ['apps'];
+    }
     var parent_node = client.rootNode;
     var curr_path = '';
     for (var i = 0; i < dirs.length; i++) {

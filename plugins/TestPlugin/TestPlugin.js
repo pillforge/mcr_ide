@@ -31,20 +31,30 @@ define(
     TestPlugin.prototype.main = function (callback) {
       var self = this;
       self.logger.info('main()');
-      this.util = new Util(this.core, this.META);
 
-      debugger;
+      self.createNodeName('a');
+      self.createNodeName('.');
+      self.createNodeName('b');
+      self.createNodeName('c');
 
-      self.analyzeObjectStorage(function (err, nodes) {
-        if (err) {
-
-        } else {
-          console.log(nodes);
-          debugger;
-          self.result.setSuccess(true);
-          callback(null, self.result);
-        }
+      self.save('', function () {
+        return call_callback(true);
       });
+
+      // this.util = new Util(this.core, this.META);
+
+      // debugger;
+
+      // self.analyzeObjectStorage(function (err, nodes) {
+      //   if (err) {
+
+      //   } else {
+      //     console.log(nodes);
+      //     debugger;
+      //     self.result.setSuccess(true);
+      //     callback(null, self.result);
+      //   }
+      // });
 
       // self.createMcrMeta(function() {
       //   self.result.setSuccess(true);
@@ -60,6 +70,20 @@ define(
       //   callback(null, self.result);
       // });
 
+      function call_callback (success) {
+        self.result.setSuccess(success);
+        callback(null, self.result);
+      }
+
+    };
+
+    TestPlugin.prototype.createNodeName = function (name) {
+      var self = this;
+      var new_node = this.core.createNode({
+        parent: this.rootNode,
+        base: self.META.Folder
+      });
+      self.core.setAttribute(new_node, 'name', name);
     };
 
     TestPlugin.prototype.analyzeObjectStorage = function(next) {

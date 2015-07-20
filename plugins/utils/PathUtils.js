@@ -2,12 +2,18 @@ define([], function () {
   'use strict';
   return {
 
-    readFileSync: function (o_json) {
+    readFileSync: function (o_json, notes) {
       var path = require('path');
       var fs = require('fs');
-      return fs.readFileSync(path.join(process.env.TOSROOT, o_json.file_path), {
-        encoding: 'utf8'
-      });
+      var f_path = path.join(process.env.TOSROOT, o_json.file_path);
+      if (!fs.existsSync(f_path) && notes.app_dir_path) {
+        f_path = path.join(notes.app_dir_path, o_json.file_path);
+      }
+      if (fs.existsSync(f_path))
+        return fs.readFileSync(f_path, {
+          encoding: 'utf8'
+        });
+      return '';
     },
 
     getFileName: function (file_path) {

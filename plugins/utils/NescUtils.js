@@ -18,6 +18,10 @@ return {
     return 'Uses';
   },
 
+  isModule: function (c_json) {
+    return c_json.comp_type === 'Module';
+  },
+
   getAppJson: function (c_path, next) {
     var nxg = new NXG();
     var opts = '-I' + path.dirname(c_path);
@@ -31,16 +35,39 @@ return {
     });
   },
 
-  getNccFromMake: function (d_path, target) {
+  getAppJsonFromMakeSync: function (d_path, target) {
+    var xml = this.getXmlSync(d_path, target);
+    var a_json = ParseDump.parse(xml);
+    a_json.notes.app_dir_path = d_path;
+    return a_json;
+  },
+
+  getXmlSync: function (d_path, target) {
+    var cmd = this.getNccFromMakeSync(d_path, target);
     var execSync = require('child_process').execSync;
-    return execSync('make -n ' + target + ' | grep ncc', {
+
+    var n_cmd = [
+      cmd,
+      '-fnesc-dump=interfacedefs',
+      '-fnesc-dump=interfaces',
+      "'-fnesc-dump=referenced(interfaces,components,functions)'",
+      "'-fnesc-dump=functions(!global())'",
+      "'-fnesc-dump=components(wiring)'",
+      '-fnesc-dump=wiring',
+      '-fsyntax-only'
+    ].join(' ');
+    return execSync(n_cmd, {
       cwd: d_path,
       encoding: 'utf8'
     });
   },
 
-  isModule: function (c_json) {
-    return c_json.comp_type === 'Module';
+  getNccFromMakeSync: function (d_path, target) {
+    var execSync = require('child_process').execSync;
+    return execSync('make -n ' + target + ' | grep ncc | tr -d "\\n"', {
+      cwd: d_path,
+      encoding: 'utf8'
+    });
   }
 
 };
