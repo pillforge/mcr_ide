@@ -3,7 +3,7 @@
   "version": "0.1.5",
   "description": "Design Enviroment for Medical Capsule Robots",
   "engines": {
-    "node": ">=0.10.0"
+    "node": ">=0.12.0"
   },
   "homepage": "http://github.com/pillforge/mcr_ide",
   "keywords": [

@@ -31,6 +31,14 @@ return {
     });
   },
 
+  getNccFromMake: function (d_path, target) {
+    var execSync = require('child_process').execSync;
+    return execSync('make -n ' + target + ' | grep ncc', {
+      cwd: d_path,
+      encoding: 'utf8'
+    });
+  },
+
   isModule: function (c_json) {
     return c_json.comp_type === 'Module';
   }
