@@ -23,7 +23,8 @@ AppImporter.prototype.getVersion = function () {
 AppImporter.prototype.main = function (callback) {
   var self = this;
   var config = {
-    app_path: path.resolve(process.env.TOSROOT, 'apps', 'Blink', 'BlinkAppC.nc'),
+    app_path: path.resolve(process.env.TOSROOT, 'apps', 'BaseStation', 'BaseStationC.nc'),
+    // app_path: path.resolve(process.env.TOSROOT, 'apps', 'Blink', 'BlinkAppC.nc'),
     recursive: false,
     save: true
   };
@@ -37,7 +38,7 @@ AppImporter.prototype.main = function (callback) {
   ];
 
   wgme_utils.loadObjects(self, paths_arr, function (err, nodes) {
-    self.importApps(nodes, reg_obj, config, function (err) {
+    self.importApps(nodes, reg_obj, config, paths_arr, function (err) {
       self.setRegistry(reg_obj);
       call_callback(true);
     });
@@ -54,14 +55,13 @@ AppImporter.prototype.main = function (callback) {
 
 };
 
-AppImporter.prototype.importApps = function (nodes, reg_obj, config, next) {
+AppImporter.prototype.importApps = function (nodes, reg_obj, config, paths_arr, next) {
   var self = this;
   var fs = require('fs');
   var stats = fs.statSync(config.app_path);
   if (stats.isFile()) {
     nesc_utils.getAppJson(config.app_path, function (err, app_json) {
-      self.run(app_json, nodes, reg_obj);
-      next();
+      self.run(app_json, nodes, reg_obj, paths_arr, next);
     });
   } else if (stats.isDirectory()) {
     next();
@@ -69,9 +69,10 @@ AppImporter.prototype.importApps = function (nodes, reg_obj, config, next) {
 };
 
 // keep nodes and reg_obj updated with the new nodes
-AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
+AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, next) {
   var self = this;
   var core = self.core;
+  var async = require('async');
 
   // Create interfaces
   var interfacedefs = app_json.interfacedefs;
@@ -102,20 +103,27 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj) {
     }
   }
 
-  // Create wirings for configurations
-  for (var c_name in components) {
-    create_wire_configuration(c_name, nodes[c_name], components[c_name].wiring);
-  }
+  // We load all nodes for every new configuration due to a WebGME bug: TODO when it is fixed
+  async.forEachOf(components, function (value, key, callback) {
+    wgme_utils.loadObjects(self, paths_arr, function (err, new_nodes) {
+      nodes = new_nodes;
+      create_wire_configuration(key, nodes[key], value.wiring);
+      callback();
+    });
+  }, function (err) {
 
-  // Create tasks for modules
-  var tn = twp.prototype.createTasks.call(self, reg_obj.mwp);
-  for (var tn_i in tn) {
-    nodes[tn_i] = tn[tn_i];
-  }
+    // Create tasks for modules
+    var tn = twp.prototype.createTasks.call(self, reg_obj.mwp);
+    for (var tn_i in tn) {
+      nodes[tn_i] = tn[tn_i];
+    }
 
-  // Create module calls
-  self._nodes = nodes;
-  twp.prototype.createModuleCalls.call(self, reg_obj.mwp);
+    // Create module calls
+    self._nodes = nodes;
+    twp.prototype.createModuleCalls.call(self, reg_obj.mwp);
+
+    next();
+  });
 
 
   function create_wire_configuration (c_name, node, wirings) {
