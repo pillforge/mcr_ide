@@ -22,15 +22,11 @@ AppImporter.prototype.getVersion = function () {
 
 AppImporter.prototype.main = function (callback) {
   var self = this;
-  var core = self.core;
-  var log = self.logger;
-  var async = require('async');
-  var save = true;
-
-  var app_path = path.resolve(process.env.TOSROOT, 'apps', 'Blink', 'BlinkAppC.nc');
-  // var app_path = path.resolve(process.env.TOSROOT, 'apps', 'Sense', 'SenseAppC.nc');
-  var app_dir_path = null;
-  app_dir_path = path.dirname(app_path);
+  var config = {
+    app_path: path.resolve(process.env.TOSROOT, 'apps', 'Blink', 'BlinkAppC.nc'),
+    recursive: false,
+    save: true
+  };
 
   var reg_obj = self.getRegistry();
   var paths_arr = [
@@ -40,52 +36,36 @@ AppImporter.prototype.main = function (callback) {
     { paths: reg_obj.fwp, depth: 0 }
   ];
 
-  async.parallel([
-    function (callback) {
-      wgme_utils.loadObjects(self, paths_arr, callback);
-    },
-    function (callback) {
-      if (app_dir_path) {
-        var a_json = nesc_utils.getAppJsonFromMakeSync(app_dir_path, 'exp430');
-        var fs = require('fs-extra');
-        callback(null, a_json);
-      } else {
-        nesc_utils.getAppJson(app_path, callback);
-      }
-    }
-  ],
-  function (err, results) {
-    if (err) {
-      log.info(err);
-      self.result.setSuccess(false);
-      return callback(err, self.result);
-    }
-
-    var fs = require('fs-extra');
-    fs.outputJsonSync('temp/BlinkAppC.json', results[1], {spaces: 2});
-
-    self.run(results[1], results[0], reg_obj);
-    self.setRegistry(reg_obj);
-
-
-    if (save) {
-      self.save('save', function (err) {
-        if (err) {
-          log.error(err);
-          call_callback(false);
-        } else {
-          call_callback(true);
-        }
-      });
-    } else call_callback(true);
-
+  wgme_utils.loadObjects(self, paths_arr, function (err, nodes) {
+    self.importApps(nodes, reg_obj, config, function (err) {
+      self.setRegistry(reg_obj);
+      call_callback(true);
+    });
   });
 
   function call_callback (success) {
     self.result.setSuccess(success);
-    callback(null, self.result);
+    if (config.save) {
+      self.save('', function () {
+        callback(null, self.result);
+      });
+    } else callback(null, self.result);
   }
 
+};
+
+AppImporter.prototype.importApps = function (nodes, reg_obj, config, next) {
+  var self = this;
+  var fs = require('fs');
+  var stats = fs.statSync(config.app_path);
+  if (stats.isFile()) {
+    nesc_utils.getAppJson(config.app_path, function (err, app_json) {
+      self.run(app_json, nodes, reg_obj);
+      next();
+    });
+  } else if (stats.isDirectory()) {
+    next();
+  }
 };
 
 // keep nodes and reg_obj updated with the new nodes
