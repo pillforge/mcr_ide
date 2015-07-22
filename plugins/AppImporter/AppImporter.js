@@ -23,9 +23,10 @@ AppImporter.prototype.getVersion = function () {
 AppImporter.prototype.main = function (callback) {
   var self = this;
   var config = {
-    app_path: path.resolve(process.env.TOSROOT, 'apps', 'BaseStation'),//, 'BaseStationC.nc'),
+    app_path: path.resolve(process.env.TOSROOT, 'apps'),//, 'Two'),
+    // app_path: path.resolve(process.env.TOSROOT, 'apps', 'BaseStation', 'BaseStationC.nc'),
     // app_path: path.resolve(process.env.TOSROOT, 'apps', 'Blink', 'BlinkAppC.nc'),
-    recursive: false,
+    recursive: true,
     save: true
   };
 
@@ -37,11 +38,8 @@ AppImporter.prototype.main = function (callback) {
     { paths: reg_obj.fwp, depth: 0 }
   ];
 
-  wgme_utils.loadObjects(self, paths_arr, function (err, nodes) {
-    self.importApps(nodes, reg_obj, config, paths_arr, function (err) {
-      self.setRegistry(reg_obj);
-      call_callback(true);
-    });
+  self.importApps(reg_obj, config, config.app_path, paths_arr, function (err) {
+    call_callback(true);
   });
 
   function call_callback (success) {
@@ -55,19 +53,45 @@ AppImporter.prototype.main = function (callback) {
 
 };
 
-AppImporter.prototype.importApps = function (nodes, reg_obj, config, paths_arr, next) {
+AppImporter.prototype.importApps = function (reg_obj, config, a_path, paths_arr, next) {
   var self = this;
   var fs = require('fs');
   var path = require('path');
-  var stats = fs.statSync(config.app_path);
+  var async = require('async');
+  if (config.recursive && fs.statSync(a_path).isDirectory()) {
+    var dirs = fs.readdirSync(a_path);
+    async.eachSeries(dirs, function (file, callback) {
+      var b_path = path.resolve(a_path, file);
+      if (fs.statSync(b_path).isDirectory()) {
+        self.importApps(reg_obj, config, b_path, paths_arr, callback);
+      } else callback();
+    }, function (err) {
+      self.importApp(reg_obj, a_path, paths_arr, next);
+    });
+  } else {
+    self.importApp(reg_obj, a_path, paths_arr, next);
+  }
+};
+
+AppImporter.prototype.importApp = function (reg_obj, a_path, paths_arr, next) {
+  var self = this;
+  var fs = require('fs');
+  var path = require('path');
+  var stats = fs.statSync(a_path);
   if (stats.isFile()) {
-    nesc_utils.getAppJson(config.app_path, function (err, app_json) {
+    nesc_utils.getAppJson(a_path, function (err, app_json) {
       self.run(app_json, nodes, reg_obj, paths_arr, next);
     });
   } else if (stats.isDirectory()) {
-    if (fs.existsSync(path.resolve(config.app_path, 'Makefile'))) {
-      var app_json = nesc_utils.getAppJsonFromMakeSync(config.app_path, 'exp430');
-      self.run(app_json, nodes, reg_obj, paths_arr, next);
+    if (fs.existsSync(path.resolve(a_path, 'Makefile'))) {
+      self.logger.info('Being imported', a_path);
+      var app_json = nesc_utils.getAppJsonFromMakeSync(a_path, 'exp430');
+      wgme_utils.loadObjects(self, paths_arr, function (err, nodes) {
+        self.run(app_json, nodes, reg_obj, paths_arr, function () {
+          self.setRegistry(reg_obj);
+          self.save('import ' + a_path, next);
+        });
+      });
     } else {
       next();
     }

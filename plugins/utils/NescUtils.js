@@ -37,6 +37,7 @@ return {
 
   getAppJsonFromMakeSync: function (d_path, target) {
     var xml = this.getXmlSync(d_path, target);
+    if (xml === '') return {};
     var a_json = ParseDump.parse(xml);
     a_json.notes.app_dir_path = d_path;
     return a_json;
@@ -56,10 +57,17 @@ return {
       '-fnesc-dump=wiring',
       '-fsyntax-only'
     ].join(' ');
-    return execSync(n_cmd, {
-      cwd: d_path,
-      encoding: 'utf8'
-    });
+    var res = '';
+    try {
+      res = execSync(n_cmd, {
+        cwd: d_path,
+        encoding: 'utf8'
+      });
+    } catch (e) {
+      console.log('err:', e);
+      res = '';
+    }
+    return res;
   },
 
   getNccFromMakeSync: function (d_path, target) {
