@@ -23,7 +23,7 @@ AppImporter.prototype.getVersion = function () {
 AppImporter.prototype.main = function (callback) {
   var self = this;
   var config = {
-    app_path: path.resolve(process.env.TOSROOT, 'apps', 'BaseStation', 'BaseStationC.nc'),
+    app_path: path.resolve(process.env.TOSROOT, 'apps', 'BaseStation'),//, 'BaseStationC.nc'),
     // app_path: path.resolve(process.env.TOSROOT, 'apps', 'Blink', 'BlinkAppC.nc'),
     recursive: false,
     save: true
@@ -58,13 +58,19 @@ AppImporter.prototype.main = function (callback) {
 AppImporter.prototype.importApps = function (nodes, reg_obj, config, paths_arr, next) {
   var self = this;
   var fs = require('fs');
+  var path = require('path');
   var stats = fs.statSync(config.app_path);
   if (stats.isFile()) {
     nesc_utils.getAppJson(config.app_path, function (err, app_json) {
       self.run(app_json, nodes, reg_obj, paths_arr, next);
     });
   } else if (stats.isDirectory()) {
-    next();
+    if (fs.existsSync(path.resolve(config.app_path, 'Makefile'))) {
+      var app_json = nesc_utils.getAppJsonFromMakeSync(config.app_path, 'exp430');
+      self.run(app_json, nodes, reg_obj, paths_arr, next);
+    } else {
+      next();
+    }
   }
 };
 
