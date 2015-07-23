@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+
+var program = require('commander');
+var path = require('path');
+var execSync = require('child_process').execSync;
+
+program
+  .version('0.0.1')
+  .option('-p --project [string]', 'Project [mandatory]')
+  .option('-b --branch [string]', 'Branch [mandatory]')
+  .option('-r --recursive', 'Recursive')
+  .parse(process.argv);
+
+if (!program.project || !program.branch)
+  program.help();
+
+var rpp = path.resolve(__dirname, '../node_modules/webgme/src/bin/run_plugin.js');
+var cmd = ['node', rpp, '-n AppImporter', '-p', program.project, '-b', program.branch].join(' ');
+
+execSync(cmd, {
+  stdio: 'inherit'
+});

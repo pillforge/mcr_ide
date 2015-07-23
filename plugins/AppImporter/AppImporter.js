@@ -23,10 +23,10 @@ AppImporter.prototype.getVersion = function () {
 AppImporter.prototype.main = function (callback) {
   var self = this;
   var config = {
-    app_path: path.resolve(process.env.TOSROOT, 'apps'),//, 'Two'),
+    app_path: '/home/hakan/github/pillforge/tinyos-apps/Icra2015Demo/MCR',
     // app_path: path.resolve(process.env.TOSROOT, 'apps', 'BaseStation', 'BaseStationC.nc'),
     // app_path: path.resolve(process.env.TOSROOT, 'apps', 'Blink', 'BlinkAppC.nc'),
-    recursive: true,
+    recursive: false,
     save: true
   };
 
