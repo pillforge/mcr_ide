@@ -2,7 +2,13 @@
 
 var program = require('commander');
 var path = require('path');
+var fs = require('fs-extra');
 var execSync = require('child_process').execSync;
+
+var path_for_config = path.resolve(
+  __dirname,
+  'config_' + new Date().getTime().toString() + '.json'
+);
 
 program
   .version('0.0.1')
@@ -14,9 +20,25 @@ program
 if (!program.project || !program.branch)
   program.help();
 
+if (program.args.length !== 1)
+  console.log('Please provide a single argument');
+
+var app_path = path.resolve(process.cwd(), program.args[0]);
+fs.writeJsonSync(path_for_config, {
+  app_path: app_path,
+  recursive: program.recursive
+});
+
 var rpp = path.resolve(__dirname, '../node_modules/webgme/src/bin/run_plugin.js');
-var cmd = ['node', rpp, '-n AppImporter', '-p', program.project, '-b', program.branch].join(' ');
+var cmd = ['node', rpp,
+  '-n AppImporter',
+  '-p', program.project,
+  '-b', program.branch,
+  '-j', path_for_config
+].join(' ');
 
 execSync(cmd, {
   stdio: 'inherit'
 });
+
+fs.removeSync(path_for_config);
