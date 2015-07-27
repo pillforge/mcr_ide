@@ -1,6 +1,8 @@
 ### Command Line Interface
 
-All commands can be invoked with `cli`. Ex: `cli import`.
+All commands can be invoked with `cli`.
+Ex: `cli import`.
+`cli import -n -p BlinkProject ../tinyos/apps/Blink -r`
 
 ### cli Usage
 ```
@@ -25,7 +27,8 @@ Options:
 
   -h, --help             output usage information
   -V, --version          output the version number
+  -n --new               Create new project
   -p --project [string]  Project [mandatory]
-  -b --branch [string]   Branch [mandatory]
+  -b --branch [string]   Branch [mandatory, if new is not set]
   -r --recursive         Recursive
 ```

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+'use strict';
+
 var program = require('commander');
 var path = require('path');
 var fs = require('fs-extra');
@@ -9,19 +11,35 @@ var path_for_config = path.resolve(
   __dirname,
   'config_' + new Date().getTime().toString() + '.json'
 );
+var root_path = path.resolve(__dirname, '..');
+var wb_path = path.resolve(root_path, 'node_modules/webgme/src/bin/');
+var s_path = path.resolve(root_path, 'seeds/Meta.json');
 
 program
   .version('0.0.1')
+  .option('-n --new', 'Create new project')
   .option('-p --project [string]', 'Project [mandatory]')
-  .option('-b --branch [string]', 'Branch [mandatory]')
+  .option('-b --branch [string]', 'Branch [mandatory, if new is not set]')
   .option('-r --recursive', 'Recursive')
   .parse(process.argv);
 
-if (!program.project || !program.branch)
+if (!program.project || (!program.new && !program.branch))
   program.help();
 
 if (program.args.length !== 1)
   console.log('Please provide a single argument');
+
+if (program.new) {
+  var ip = path.resolve(wb_path, 'import.js');
+  var i_cmd = ['node', ip,
+    '-p', program.project,
+    '-b', program.branch || 'master',
+    s_path
+  ].join(' ');
+  execSync(i_cmd, {
+    stdio: 'inherit'
+  });
+}
 
 var app_path = path.resolve(process.cwd(), program.args[0]);
 fs.writeJsonSync(path_for_config, {
@@ -29,7 +47,7 @@ fs.writeJsonSync(path_for_config, {
   recursive: program.recursive
 });
 
-var rpp = path.resolve(__dirname, '../node_modules/webgme/src/bin/run_plugin.js');
+var rpp = path.resolve(wb_path, 'run_plugin.js');
 var cmd = ['node', rpp,
   '-n AppImporter',
   '-p', program.project,
