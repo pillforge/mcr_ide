@@ -1,9 +1,9 @@
 define(['plugin/PluginBase', 'plugin/PluginConfig', 'path',
-       '../utils/WebgmeUtils', '../utils/NescUtils',
+       '../utils/WebgmeUtils', '../utils/NescUtils', '../utils/PathUtils',
        '../utils/Constants',
        '../TinyOSWiringPopulater/TinyOSWiringPopulater',
        '../TinyOSPopulate/TinyOSPopulate'],
-function (PluginBase, PluginConfig, path, wgme_utils, nesc_utils, Constants, twp, top) {
+function (PluginBase, PluginConfig, path, wgme_utils, nesc_utils, p_utils, Constants, twp, top) {
 
 'use strict';
 
@@ -127,6 +127,7 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, next)
       var base = wgme_utils.getMetaNode(self, 'component', comp_json);
       var new_node = self.createNode(c_name, parent, base);
       core.setAttribute(new_node, 'safe', comp_json.safe);
+      core.setAttribute(new_node, 'source', p_utils.readFileSync(comp_json, app_json.notes));
       cache_and_register();
       create_up();
     }

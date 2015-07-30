@@ -17,6 +17,7 @@ var s_path = path.resolve(root_path, 'seeds/Meta.json');
 
 program
   .version('0.0.1')
+  .usage('[options] <file>')
   .option('-n --new', 'Create new project')
   .option('-p --project [string]', 'Project [mandatory]')
   .option('-b --branch [string]', 'Branch [mandatory, if new is not set]')
