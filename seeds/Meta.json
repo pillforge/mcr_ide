@@ -9,6 +9,7 @@
     "040d8d09-10fb-14a7-8e6e-4cf2632b73a5": "1964470101",
     "0658f3a8-ec6c-ccdb-9de6-d74498ca268f": "937729389",
     "0c2e6377-b47c-e2b7-daa9-f83fc5d6954d": "304835302",
+    "14e87dd9-6efe-47c3-4653-fd6866084d27": "1986679232",
     "15fee409-ec8a-25de-2d12-1c61b45218fb": "590440676",
     "1abb2afd-7c51-9dad-dc36-966c30523703": "1565394322",
     "1cf8f503-b336-25c6-6bfe-67c65a22b1d1": "942229515",
@@ -53,6 +54,7 @@
       "040d8d09-10fb-14a7-8e6e-4cf2632b73a5": {},
       "0658f3a8-ec6c-ccdb-9de6-d74498ca268f": {},
       "0c2e6377-b47c-e2b7-daa9-f83fc5d6954d": {},
+      "14e87dd9-6efe-47c3-4653-fd6866084d27": {},
       "15fee409-ec8a-25de-2d12-1c61b45218fb": {},
       "1abb2afd-7c51-9dad-dc36-966c30523703": {},
       "1cf8f503-b336-25c6-6bfe-67c65a22b1d1": {},
@@ -285,6 +287,37 @@
         "position": {
           "x": 697,
           "y": 618
+        }
+      },
+      "sets": {},
+      "constraints": {}
+    },
+    "14e87dd9-6efe-47c3-4653-fd6866084d27": {
+      "attributes": {
+        "name": "variable"
+      },
+      "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045",
+      "meta": {
+        "attributes": {
+          "MetaDoc": {
+            "default": "",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "parent": "b6f142f4-3d76-1661-72e4-caa18e0988e8",
+      "pointers": {
+        "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045"
+      },
+      "registry": {
+        "SVGIcon": "SmallCircle.svg",
+        "decorator": "SVGDecorator",
+        "position": {
+          "x": 800,
+          "y": 780
         }
       },
       "sets": {},
@@ -1027,15 +1060,18 @@
         "children": {
           "items": [
             "040d8d09-10fb-14a7-8e6e-4cf2632b73a5",
+            "14e87dd9-6efe-47c3-4653-fd6866084d27",
             "328ea5ff-1b7a-5817-2b71-a8cacebf3e81",
             "4aed0a08-940d-2e58-228b-e67a6dec02d0"
           ],
           "minItems": [
             -1,
             -1,
+            -1,
             -1
           ],
           "maxItems": [
+            -1,
             -1,
             -1,
             -1
@@ -1462,6 +1498,16 @@
           },
           {
             "attributes": {},
+            "guid": "14e87dd9-6efe-47c3-4653-fd6866084d27",
+            "registry": {
+              "position": {
+                "x": 216,
+                "y": 519
+              }
+            }
+          },
+          {
+            "attributes": {},
             "guid": "15fee409-ec8a-25de-2d12-1c61b45218fb",
             "registry": {
               "position": {
@@ -1830,6 +1876,16 @@
               "position": {
                 "x": 707,
                 "y": 284
+              }
+            }
+          },
+          {
+            "attributes": {},
+            "guid": "14e87dd9-6efe-47c3-4653-fd6866084d27",
+            "registry": {
+              "position": {
+                "x": 216,
+                "y": 519
               }
             }
           },

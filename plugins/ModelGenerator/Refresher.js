@@ -35,6 +35,7 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
     self.createCallConnectionsModule(node, all_calls);
   };
 
+  // Creates calls and variables
   Refresher.prototype.createCallConnectionsModule = function (node, all_calls, get_node) {
     var self = this;
     for (var interface_name in all_calls.evcmd) {
@@ -73,6 +74,15 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
 
         }
       }
+    }
+
+    // create variables
+    for (var variable in all_calls.variables) {
+      var var_node = self.core.createNode({
+        base: self.META.variable,
+        parent: node
+      });
+      self.core.setAttribute(var_node, 'name', variable);
     }
 
     function get_cmd_evt (interf, port, fn) {

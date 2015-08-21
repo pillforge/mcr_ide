@@ -124,11 +124,15 @@ return {
   convertJsonPassiveToActive: function (from) {
     var to = {
       evcmd: {},
-      tasks: {}
+      tasks: {},
+      variables: {}
     };
 
     for (var iname in from) {
-      if (iname.indexOf('__variables') < 0) continue;
+      if (iname.indexOf('__variables') > -1) {
+        to.variables = from[iname];
+        continue;
+      }
       for (var fname in from[iname]) {
         var a_fn = from[iname][fname];
         for (var i = a_fn.length - 1; i >= 0; i--) {
