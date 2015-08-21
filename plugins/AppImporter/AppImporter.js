@@ -17,7 +17,7 @@ AppImporter.prototype.getName = function () {
   return "AppImporter";
 };
 AppImporter.prototype.getVersion = function () {
-  return '0.0.1';
+  return '0.0.2';
 };
 
 AppImporter.prototype.main = function (callback) {
@@ -75,6 +75,7 @@ AppImporter.prototype.importApps = function (reg_obj, config, a_path, paths_arr,
 AppImporter.prototype.importApp = function (reg_obj, a_path, paths_arr, next) {
   var self = this;
   var fs = require('fs');
+  var fse = require('fs-extra');
   var path = require('path');
   var stats = fs.statSync(a_path);
   if (stats.isFile()) {
@@ -84,9 +85,12 @@ AppImporter.prototype.importApp = function (reg_obj, a_path, paths_arr, next) {
   } else if (stats.isDirectory()) {
     if (fs.existsSync(path.resolve(a_path, 'Makefile'))) {
       self.logger.info('Being imported', a_path);
-      var app_json = nesc_utils.getAppJsonFromMakeSync(a_path, 'exp430');
+      var calls_json_path = path.join(process.cwd(), 'calls.json');
+      var app_json = nesc_utils.getAppJsonFromMakeSync(a_path, 'exp430', calls_json_path);
+      var calls = fse.readJsonSync(calls_json_path);
+      fse.removeSync(calls_json_path);
       wgme_utils.loadObjects(self, paths_arr, function (err, nodes) {
-        self.run(app_json, nodes, reg_obj, paths_arr, function () {
+        self.run(app_json, nodes, reg_obj, paths_arr, calls, function () {
           self.setRegistry(reg_obj);
           self.save('import ' + a_path, next);
         });
@@ -98,7 +102,7 @@ AppImporter.prototype.importApp = function (reg_obj, a_path, paths_arr, next) {
 };
 
 // keep nodes and reg_obj updated with the new nodes
-AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, next) {
+AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls, next) {
   var self = this;
   var core = self.core;
   var async = require('async');
@@ -186,7 +190,9 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, next)
     nodes[c_name] = new_node;
     core.setRegistry(new_node, 'nesc-dump', comp_json);
     // TODO: set call graph and tasks in registry
-    wgme_utils.setRegistryCallsTasks(self, new_node, comp_json, app_json.notes);
+    if (comp_json.comp_type === 'Module') {
+      wgme_utils.setRegistryCallsTasks(self, new_node, comp_json, app_json.notes, calls[c_name]);
+    }
   }
 
 };

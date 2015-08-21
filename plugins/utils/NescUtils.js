@@ -35,15 +35,15 @@ return {
     });
   },
 
-  getAppJsonFromMakeSync: function (d_path, target) {
-    var xml = this.getXmlSync(d_path, target);
+  getAppJsonFromMakeSync: function (d_path, target, calls_json_path) {
+    var xml = this.getXmlSync(d_path, target, calls_json_path);
     if (xml === '') return {};
     var a_json = ParseDump.parse(xml);
     a_json.notes.app_dir_path = d_path;
     return a_json;
   },
 
-  getXmlSync: function (d_path, target) {
+  getXmlSync: function (d_path, target, calls_json_path) {
     var cmd = this.getNccFromMakeSync(d_path, target);
     var execSync = require('child_process').execSync;
 
@@ -57,6 +57,9 @@ return {
       '-fnesc-dump=wiring',
       '-fsyntax-only'
     ].join(' ');
+    if (calls_json_path) {
+      n_cmd += ' -get-calls=' + calls_json_path;
+    }
     var res = '';
     try {
       res = execSync(n_cmd, {

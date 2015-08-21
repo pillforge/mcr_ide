@@ -6,15 +6,19 @@ function (Constants, nesc_utils, m_map, path_utils, ModuleCalls) {
 return {
 
   // set registry for 'calls' and 'tasks'
-  setRegistryCallsTasks: function (client, node, c_json, notes) {
-    if ( nesc_utils.isModule(c_json) ) {
-      var mc = new ModuleCalls();
-      var source = path_utils.readFileSync(c_json, notes);
-      var all_calls = mc.getCalls(source);
-      var tasks = mc.getTasks(source);
-      client.core.setRegistry(node, 'calls', all_calls);
-      client.core.setRegistry(node, 'tasks', tasks);
-    }
+  // should be called only for 'modules'
+  setRegistryCallsTasks: function (client, node, c_json, notes, calls) {
+    var mc = new ModuleCalls();
+    var source = path_utils.readFileSync(c_json, notes);
+    // var all_calls = mc.getCalls(source);
+    var tasks = mc.getTasks(source);
+    // if (client.core.getAttribute(node, 'name') == 'BlinkC') {
+    //   console.log('allcalls: ', JSON.stringify(all_calls, null, '  '));
+    //   console.log('just calls', JSON.stringify(calls, null, '  '));
+    //   console.log('converted', JSON.stringify(this.convertJsonPassiveToActive(calls), null, '  '));
+    // }
+    client.core.setRegistry(node, 'calls', this.convertJsonPassiveToActive(calls));
+    client.core.setRegistry(node, 'tasks', tasks);
   },
 
   // the first argument should be plugin's this object
@@ -96,6 +100,48 @@ return {
         }, next);
       });
     }
+  },
+
+  //
+  // from:
+  // {
+  // "Timer0": {
+  //   "startPeriodic": [
+  //     [
+  //       "call",
+  //       "Boot",
+  //       "booted"
+  //     ]
+  // --> to:
+  // "evcmd": {
+  //   "Boot": {
+  //     "booted": [
+  //       [
+  //         "call",
+  //         "Timer0",
+  //         "startPeriodic"
+  //       ],
+  convertJsonPassiveToActive: function (from) {
+    var to = {
+      evcmd: {},
+      tasks: {}
+    };
+
+    for (var iname in from) {
+      if (iname.indexOf('__variables') < 0) continue;
+      for (var fname in from[iname]) {
+        var a_fn = from[iname][fname];
+        for (var i = a_fn.length - 1; i >= 0; i--) {
+          var fncall = a_fn[i];
+          to.evcmd[fncall[1]] = to.evcmd[fncall[1]] || {};
+          to.evcmd[fncall[1]][fncall[2]] = to.evcmd[fncall[1]][fncall[2]] || [];
+          to.evcmd[fncall[1]][fncall[2]].push([fncall[0], iname, fname]);
+        }
+      }
+    }
+
+    return to;
+
   }
 
 };
