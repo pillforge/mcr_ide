@@ -78,6 +78,7 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
 
     // create variables
     for (var variable in all_calls.variables) {
+      if (variable.indexOf('__nesc_sillytask') > -1 ) continue;
       var var_node = self.core.createNode({
         base: self.META.variable,
         parent: node
@@ -314,9 +315,6 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
       }
 
     });
-
-
-
 
     function getPaths(path) {
       var paths;

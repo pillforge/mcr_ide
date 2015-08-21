@@ -7,18 +7,10 @@ return {
 
   // set registry for 'calls' and 'tasks'
   // should be called only for 'modules'
-  setRegistryCallsTasks: function (client, node, c_json, notes, calls) {
-    var mc = new ModuleCalls();
-    var source = path_utils.readFileSync(c_json, notes);
-    // var all_calls = mc.getCalls(source);
-    var tasks = mc.getTasks(source);
-    // if (client.core.getAttribute(node, 'name') == 'BlinkC') {
-    //   console.log('allcalls: ', JSON.stringify(all_calls, null, '  '));
-    //   console.log('just calls', JSON.stringify(calls, null, '  '));
-    //   console.log('converted', JSON.stringify(this.convertJsonPassiveToActive(calls), null, '  '));
-    // }
-    client.core.setRegistry(node, 'calls', this.convertJsonPassiveToActive(calls));
-    client.core.setRegistry(node, 'tasks', tasks);
+  setRegistryCallsTasks: function (client, node, calls) {
+    var all_info = this.convertJsonPassiveToActive(calls);
+    client.core.setRegistry(node, 'calls', all_info);
+    client.core.setRegistry(node, 'tasks', all_info.t_variables);
   },
 
   // the first argument should be plugin's this object
@@ -125,21 +117,37 @@ return {
     var to = {
       evcmd: {},
       tasks: {},
-      variables: {}
+      variables: {},
+      t_variables: []
     };
 
     for (var iname in from) {
       if (iname.indexOf('__variables') > -1) {
-        to.variables = from[iname];
+        for (var vname in from[iname]) {
+          if (vname.indexOf('__nesc_sillytask_') < 0) {
+            to.variables[vname] = from[iname][vname];
+          } else {
+            to.t_variables.push(vname.substr('__nesc_sillytask_'.length));
+          }
+        }
         continue;
       }
       for (var fname in from[iname]) {
         var a_fn = from[iname][fname];
         for (var i = a_fn.length - 1; i >= 0; i--) {
           var fncall = a_fn[i];
-          to.evcmd[fncall[1]] = to.evcmd[fncall[1]] || {};
-          to.evcmd[fncall[1]][fncall[2]] = to.evcmd[fncall[1]][fncall[2]] || [];
-          to.evcmd[fncall[1]][fncall[2]].push([fncall[0], iname, fname]);
+          var new_call = [fncall[0], iname, fname];
+          if (fname === 'postTask') {
+            new_call = ['post', iname];
+          }
+          if (fncall[2] === 'runTask') {
+            to.tasks[fncall[1]] = to.tasks[fncall[1]] || [];
+            to.tasks[fncall[1]].push(new_call);
+          } else {
+            to.evcmd[fncall[1]] = to.evcmd[fncall[1]] || {};
+            to.evcmd[fncall[1]][fncall[2]] = to.evcmd[fncall[1]][fncall[2]] || [];
+            to.evcmd[fncall[1]][fncall[2]].push(new_call);
+          }
         }
       }
     }

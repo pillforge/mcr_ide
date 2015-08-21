@@ -191,7 +191,7 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
     core.setRegistry(new_node, 'nesc-dump', comp_json);
     // TODO: set call graph and tasks in registry
     if (comp_json.comp_type === 'Module') {
-      wgme_utils.setRegistryCallsTasks(self, new_node, comp_json, app_json.notes, calls[c_name]);
+      wgme_utils.setRegistryCallsTasks(self, new_node, calls[c_name]);
     }
   }
 
