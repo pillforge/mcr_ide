@@ -59,7 +59,7 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
       }
     }
 
-    // create variables
+    // create variables and access patterns
     for (var variable in all_calls.variables) {
       if (variable.indexOf('__nesc_sillytask') > -1 ) continue;
       var var_node = self.core.createNode({
@@ -67,6 +67,28 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
         parent: node
       });
       self.core.setAttribute(var_node, 'name', variable);
+
+      var access_list = all_calls.variables[variable];
+      var new_list = {};
+      for (var k = access_list.length - 1; k >= 0; k--) {
+        var access = access_list[k];
+        var key = [access[0], access[1]].join('__');
+        new_list[key] = new_list[key] || access[2];
+        if (new_list[key].indexOf(access[2]) < 0)
+          new_list[key] = 'readwrite';
+      }
+      for (key in new_list) {
+        var access = key.split('__').concat(new_list[key]);
+        if (access[1] === 'runTask')
+          from_node = get_task(access[0], get_node);
+        else from_node = get_cmd_evt(access[0], access[1], get_node);
+        var access_node = self.core.createNode({
+          base: self.META[access[2]],
+          parent: node
+        });
+        self.core.setPointer(access_node, 'src', from_node);
+        self.core.setPointer(access_node, 'dst', var_node);
+      }
     }
 
     function create_calls_from_node (from_node, call_data) {
