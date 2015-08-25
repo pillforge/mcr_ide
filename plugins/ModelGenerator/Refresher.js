@@ -38,41 +38,24 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
   // Creates calls and variables
   Refresher.prototype.createCallConnectionsModule = function (node, all_calls, get_node) {
     var self = this;
+    // calls, posts, signals from events and commands
     for (var interface_name in all_calls.evcmd) {
       var interface_events = all_calls.evcmd[interface_name];
       for (var evnt in interface_events) {
         var calls = interface_events[evnt];
+        var from_node = get_cmd_evt(interface_name, evnt, get_node);
         for (var i = calls.length - 1; i >= 0; i--) {
-
-          var f_int = interface_name;
-          var f_por = evnt;
-          var t_int = calls[i][1];
-          var t_por = calls[i][2];
-          var from_node = get_cmd_evt(f_int, f_por, get_node);
-          var base = null;
-
-          switch(calls[i][0]) {
-            case 'call':
-            var to_node = get_cmd_evt(t_int, t_por, get_node);
-            base = self.META.call;
-            break;
-
-            case 'signal':
-            break;
-
-            case 'post':
-            to_node = get_task(t_int, get_node);
-            base = self.META.post;
-            break;
-          }
-
-          if (from_node && to_node) {
-            create_connection(from_node, to_node, base, node);
-          } else {
-            self.logger.warn('Missing call. Should be fixed.');
-          }
-
+          create_calls_from_node(from_node, calls[i]);
         }
+      }
+    }
+
+    // calls, posts, signals from tasks
+    for (var task_name in all_calls.tasks) {
+      var t_calls = all_calls.tasks[task_name];
+      from_node = get_task(task_name, get_node);
+      for (var j = t_calls.length - 1; j >= 0; j--) {
+        create_calls_from_node(from_node, t_calls[j]);
       }
     }
 
@@ -84,6 +67,30 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
         parent: node
       });
       self.core.setAttribute(var_node, 'name', variable);
+    }
+
+    function create_calls_from_node (from_node, call_data) {
+      var base = null;
+      switch(call_data[0]) {
+        case 'call':
+        var to_node = get_cmd_evt(call_data[1], call_data[2], get_node);
+        base = self.META.call;
+        break;
+
+        case 'signal':
+        break;
+
+        case 'post':
+        to_node = get_task(call_data[1], get_node);
+        base = self.META.post;
+        break;
+      }
+
+      if (from_node && to_node) {
+        create_connection(from_node, to_node, base, node);
+      } else {
+        self.logger.warn('Missing call. Should be fixed.');
+      }
     }
 
     function get_cmd_evt (interf, port, fn) {
