@@ -27,8 +27,10 @@ program
 if (!program.project || (!program.new && !program.branch))
   program.help();
 
-if (program.args.length !== 1)
+if (program.args.length !== 1) {
   console.log('Please provide a single argument');
+  program.help();
+}
 
 if (program.new) {
   var ip = path.resolve(wb_path, 'import.js');
@@ -38,6 +40,7 @@ if (program.new) {
     s_path
   ].join(' ');
   execSync(i_cmd, {
+    cwd: root_path,
     stdio: 'inherit'
   });
 }
@@ -57,6 +60,7 @@ var cmd = ['node', rpp,
 ].join(' ');
 
 execSync(cmd, {
+  cwd: root_path,
   stdio: 'inherit'
 });
 
