@@ -53,10 +53,9 @@ fs.writeJsonSync(path_for_config, {
 
 var rpp = path.resolve(wb_path, 'run_plugin.js');
 var cmd = ['node', rpp,
-  '-n AppImporter',
-  '-p', program.project,
   '-b', program.branch,
-  '-j', path_for_config
+  '-j', path_for_config,
+  'AppImporter', program.project
 ].join(' ');
 
 execSync(cmd, {
