@@ -245,7 +245,10 @@ function (libxmljs, fs, path) {
             for (var j = 0; j < vars.length; j++) {
               var par = vars[j];
               var type_name = ''; //par.find('xmlns:type-var', ns)[0].attr('name').value();
-              var var_name = par.attr('name').value();
+              var var_name = '';
+              if (par.attr('name')) {
+                var_name = par.attr('name').value();
+              }
               funct_arr[i].parameters.push(type_name + ' ' + var_name);
             }
           }
