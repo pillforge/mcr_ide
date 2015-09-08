@@ -83,7 +83,7 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
           from_node = get_task(access[0], get_node);
         else from_node = get_cmd_evt(access[0], access[1], get_node);
         var access_node = self.core.createNode({
-          base: self.META[access[2]],
+          base: self.META[access[2]] || self.META.read, // when a variables is accessed via its address, the access returns empty
           parent: node
         });
         self.core.setPointer(access_node, 'src', from_node);
