@@ -40,6 +40,9 @@ return {
     if (dirs[0] === '.') {
       dirs = ['apps'];
     }
+    if (dirs[0] === '..') {
+      dirs[0] = 'apps';
+    }
     var parent_node = client.rootNode;
     var curr_path = '';
     for (var i = 0; i < dirs.length; i++) {
