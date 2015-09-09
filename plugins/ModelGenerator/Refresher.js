@@ -62,6 +62,7 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
     // create variables and access patterns
     for (var variable in all_calls.variables) {
       if (variable.indexOf('__nesc_sillytask') > -1 ) continue;
+      if (all_calls.t_variables.indexOf(variable) > -1 ) continue;
       var var_node = self.core.createNode({
         base: self.META.variable,
         parent: node
