@@ -112,7 +112,7 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
   for (var i_name in interfacedefs) {
     if ( nodes[i_name] === undefined ) {
       var i_json = interfacedefs[i_name];
-      var parent = wgme_utils.mkdirp(self, i_json.file_path, nodes, reg_obj.fwp);
+      var parent = wgme_utils.mkdirp(self, i_json.file_path, nodes, reg_obj.fwp, app_json.notes);
       var base = wgme_utils.getMetaNode(self, 'interface');
       var new_node = self.createNode(i_name, parent, base);
       // TODO: _createFunctionDeclarationsEventsCommands
@@ -127,7 +127,7 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
   for (var c_name in components) {
     if ( nodes[c_name] === undefined ) {
       var comp_json = components[c_name];
-      var parent = wgme_utils.mkdirp(self, comp_json.file_path, nodes, reg_obj.fwp);
+      var parent = wgme_utils.mkdirp(self, comp_json.file_path, nodes, reg_obj.fwp, app_json.notes);
       var base = wgme_utils.getMetaNode(self, 'component', comp_json);
       var new_node = self.createNode(c_name, parent, base);
       core.setAttribute(new_node, 'safe', comp_json.safe);

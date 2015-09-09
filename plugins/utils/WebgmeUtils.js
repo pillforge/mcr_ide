@@ -33,15 +33,20 @@ return {
   // the first argument should be plugin's this object
   // caches the created object in nodes and add its path in fwp
   // returns the existing or created WebGME object
-  mkdirp: function (client, file_path, nodes, fwp) {
+  mkdirp: function (client, file_path, nodes, fwp, notes) {
     var path = require('path');
     var dirs = path.dirname(file_path).split(path.sep);
-    // A possible WebGME bug
-    if (dirs[0] === '.') {
-      dirs = ['apps'];
-    }
-    if (dirs[0] === '..') {
-      dirs[0] = 'apps';
+    if (dirs[0] !== 'tos') {
+      if (dirs[0] === '.') {
+        dirs = ['apps'];
+        if (notes) {
+          dirs.push(path.basename(notes.app_dir_path));
+        }
+      } else if (dirs[0] === '..') {
+        dirs[0] = 'apps';
+      } else {
+        dirs.unshift('apps');
+      }
     }
     var parent_node = client.rootNode;
     var curr_path = '';
