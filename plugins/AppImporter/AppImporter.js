@@ -123,6 +123,8 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
   }
 
   // Create components
+  var new_mwp = {};
+  var new_cwp = {};
   var components = app_json.components;
   for (var c_name in components) {
     if ( nodes[c_name] === undefined ) {
@@ -139,22 +141,26 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
 
   // We load all nodes for every new configuration due to a WebGME bug: TODO when it is fixed
   async.forEachOf(components, function (value, key, callback) {
-    wgme_utils.loadObjects(self, paths_arr, function (err, new_nodes) {
-      nodes = new_nodes;
-      create_wire_configuration(key, nodes[key], value.wiring);
+    if (!new_cwp[key]) {
       callback();
-    });
+    } else {
+      wgme_utils.loadObjects(self, paths_arr, function (err, new_nodes) {
+        nodes = new_nodes;
+        create_wire_configuration(key, nodes[key], value.wiring);
+        callback();
+      });
+    }
   }, function (err) {
 
     // Create tasks for modules
-    var tn = twp.prototype.createTasks.call(self, reg_obj.mwp);
+    var tn = twp.prototype.createTasks.call(self, new_mwp);
     for (var tn_i in tn) {
       nodes[tn_i] = tn[tn_i];
     }
 
     // Create module calls
     self._nodes = nodes;
-    twp.prototype.createModuleCalls.call(self, reg_obj.mwp);
+    twp.prototype.createModuleCalls.call(self, new_mwp);
 
     next();
   });
@@ -182,11 +188,14 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
   }
 
   function cache_and_register () {
-    if ( comp_json.comp_type === 'Configuration')
-      var wp = reg_obj.cwp;
-    else if ( comp_json.comp_type === 'Module')
-      wp = reg_obj.mwp;
-    wp[c_name] = core.getPath(new_node);
+    var c_path = core.getPath(new_node);
+    if ( comp_json.comp_type === 'Configuration') {
+      reg_obj.cwp[c_name] = c_path;
+      new_cwp[c_name] = c_path;
+    } else if (comp_json.comp_type === 'Module') {
+      reg_obj.mwp[c_name] = c_path;
+      new_mwp[c_name] = c_path;
+    }
     nodes[c_name] = new_node;
     core.setRegistry(new_node, 'nesc-dump', comp_json);
     // TODO: set call graph and tasks in registry
