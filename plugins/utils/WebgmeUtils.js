@@ -150,7 +150,11 @@ return {
           }
           if (fncall[2] === 'runTask') {
             to.tasks[fncall[1]] = to.tasks[fncall[1]] || [];
-            to.tasks[fncall[1]].push(new_call);
+            if (!to.tasks[fncall[1]].some(function (e) {
+              return e.join() == new_call.join();
+            })) {
+              to.tasks[fncall[1]].push(new_call);
+            }
           } else {
             to.evcmd[fncall[1]] = to.evcmd[fncall[1]] || {};
             to.evcmd[fncall[1]][fncall[2]] = to.evcmd[fncall[1]][fncall[2]] || [];
