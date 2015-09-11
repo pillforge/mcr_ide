@@ -101,6 +101,8 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
         break;
 
         case 'signal':
+        var to_node = get_cmd_evt(call_data[1], call_data[2], get_node);
+        base = self.META.signal;
         break;
 
         case 'post':
