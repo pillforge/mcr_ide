@@ -576,7 +576,9 @@ define(['js/Constants',
       if (result.success) {
         console.log('The app is compiled');
         var s = result.messages[0].message.download_url;
-        // var url = window.location.host + s.substr(s.indexOf(':80/') + 3)
+        var l = document.createElement('a');
+        l.href = s;
+        s = s.replace(l.host, window.location.host);
         self._dialog.createDownloadButton(s);
       } else {
         console.log('The app cannot be compiled');
