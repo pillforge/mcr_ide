@@ -66,6 +66,26 @@ return {
     return parent_node;
   },
 
+  create_header_files: function (client, include_paths, parent) {
+    var fs = require('fs');
+    var path = require('path');
+    if (!include_paths) return;
+    include_paths.forEach(function(p) {
+      var files = fs.readdirSync(p);
+      files.forEach(function(f) {
+        if (path.extname(f) == '.h') {
+          var f_content = fs.readFileSync(path.resolve(p, f), 'utf8');
+          var h_node = client.core.createNode({
+            parent: parent,
+            base: client.META.Header_File
+          });
+          client.core.setAttribute(h_node, 'name', path.basename(f, '.h'));
+          client.core.setAttribute(h_node, 'source', f_content);
+        }
+      });
+    });
+  },
+
   // the first argument should be plugin's this object
   // calls the callback(next) with err and { MainC__Scheduler: {<WebGME obj>} }
   // paths_arr = [ {paths: c_wgme_paths, depth: 1 }, { paths: m_wgme_paths, depth: 2 } ];

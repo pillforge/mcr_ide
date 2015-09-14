@@ -79,6 +79,33 @@ return {
       cwd: d_path,
       encoding: 'utf8'
     });
+  },
+
+  getIncludePathsMake: function (full_path) {
+    var fs = require('fs');
+    var makefile_path = path.join(full_path, 'Makefile');
+    if (!fs.existsSync(makefile_path)) {
+      return null;
+    }
+    var file = fs.readFileSync(makefile_path, 'utf8');
+
+    var include_paths = file.match(/-I\S+/g);
+    if (include_paths !== null) {
+      include_paths = include_paths.map(function(include_path) {
+        return path.normalize(path.join(full_path, include_path.substr(2)));
+      });
+    }
+
+    var component = null;
+    var component_search = /COMPONENT=(\S+)/.exec(file);
+    if (component_search !== null) {
+      component = component_search[1];
+    }
+
+    return {
+      component: component,
+      include: include_paths
+    };
   }
 
 };

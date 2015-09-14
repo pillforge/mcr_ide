@@ -85,12 +85,13 @@ AppImporter.prototype.importApp = function (reg_obj, a_path, paths_arr, next) {
   } else if (stats.isDirectory()) {
     if (fs.existsSync(path.resolve(a_path, 'Makefile'))) {
       self.logger.info('Being imported', a_path);
+      var include_paths = nesc_utils.getIncludePathsMake(a_path);
       var calls_json_path = path.join(process.cwd(), 'calls.json');
       var app_json = nesc_utils.getAppJsonFromMakeSync(a_path, 'exp430', calls_json_path);
       var calls = fse.readJsonSync(calls_json_path);
       fse.removeSync(calls_json_path);
       wgme_utils.loadObjects(self, paths_arr, function (err, nodes) {
-        self.run(app_json, nodes, reg_obj, paths_arr, calls, function () {
+        self.run(app_json, nodes, reg_obj, paths_arr, calls, include_paths, function () {
           self.setRegistry(reg_obj);
           self.save('import ' + a_path, next);
         });
@@ -102,7 +103,7 @@ AppImporter.prototype.importApp = function (reg_obj, a_path, paths_arr, next) {
 };
 
 // keep nodes and reg_obj updated with the new nodes
-AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls, next) {
+AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls, include_paths, next) {
   var self = this;
   var core = self.core;
   var async = require('async');
@@ -136,6 +137,9 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
       core.setAttribute(new_node, 'source', p_utils.readFileSync(comp_json, app_json.notes));
       cache_and_register();
       create_up();
+      if (c_name === include_paths.component) {
+        wgme_utils.create_header_files(self, include_paths.include, parent);
+      }
     }
   }
 

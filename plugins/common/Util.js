@@ -56,6 +56,7 @@ define(
     });
   };
 
+  // To be removed. Check utils/NescUtils.js
   Util.prototype.getMakefile = function (full_path) {
     var makefile_path = path.join(full_path, 'Makefile');
     if (!fs.existsSync(makefile_path)) {
