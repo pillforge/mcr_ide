@@ -31,7 +31,6 @@
         "80f23f1c-d190-6928-2a96-da28cd07dd7a": "-4",
         "869f774c-2fb1-04e0-655f-8a29af81d570": "1127484543",
         "8bb0fd5f-80f1-f8f6-b329-86f3b9073247": "-31",
-        "901e245a-e449-c8cb-a191-a6ed27d976c4": "867181070",
         "96424ae6-550b-5b0d-32a3-7e266484d530": "429589300",
         "9a6033bc-e947-2353-a87e-d3973c31a090": "1806458316",
         "9bf4c450-bdcb-6da7-1232-e1855b77e7f8": "1664885431",
@@ -81,7 +80,6 @@
             "80f23f1c-d190-6928-2a96-da28cd07dd7a": {},
             "869f774c-2fb1-04e0-655f-8a29af81d570": {},
             "8bb0fd5f-80f1-f8f6-b329-86f3b9073247": {},
-            "901e245a-e449-c8cb-a191-a6ed27d976c4": {},
             "96424ae6-550b-5b0d-32a3-7e266484d530": {},
             "9a6033bc-e947-2353-a87e-d3973c31a090": {},
             "9bf4c450-bdcb-6da7-1232-e1855b77e7f8": {},
@@ -742,10 +740,16 @@
         },
         "693e5667-6b5f-2016-6046-ed785d4f8625": {
             "attributes": {
+                "include": "",
                 "name": "Configuration"
             },
             "base": "9c563a86-825d-408e-fc27-6dc6c854526f",
             "meta": {
+                "attributes": {
+                    "include": {
+                        "type": "string"
+                    }
+                },
                 "children": {
                     "items": [
                         "693e5667-6b5f-2016-6046-ed785d4f8625",
@@ -772,8 +776,8 @@
                 "color": "#ccffff",
                 "isAbstract": false,
                 "position": {
-                    "x": 993,
-                    "y": 329
+                    "x": 128,
+                    "y": 347
                 }
             },
             "sets": {},
@@ -985,25 +989,6 @@
             "sets": {},
             "constraints": {}
         },
-        "901e245a-e449-c8cb-a191-a6ed27d976c4": {
-            "attributes": {
-                "name": "App"
-            },
-            "base": "693e5667-6b5f-2016-6046-ed785d4f8625",
-            "meta": {},
-            "parent": "b6f142f4-3d76-1661-72e4-caa18e0988e8",
-            "pointers": {
-                "base": "693e5667-6b5f-2016-6046-ed785d4f8625"
-            },
-            "registry": {
-                "position": {
-                    "x": 253,
-                    "y": 329
-                }
-            },
-            "sets": {},
-            "constraints": {}
-        },
         "96424ae6-550b-5b0d-32a3-7e266484d530": {
             "attributes": {
                 "name": "Source_File",
@@ -1191,28 +1176,23 @@
                         "title": "MetaContainers"
                     },
                     {
-                        "SetID": "MetaAspectSet_6269af7a-6eaa-4557-85d2-05e772d7261c",
-                        "order": 3,
-                        "title": "App"
-                    },
-                    {
                         "SetID": "MetaAspectSet_cdfc218b-7c1a-4534-c74e-39d951cb5b0c",
-                        "order": 4,
+                        "order": 3,
                         "title": "Generics"
                     },
                     {
                         "SetID": "MetaAspectSet_fc37f8ab-ec1d-c752-85e7-051a4a306d9c",
-                        "order": 5,
+                        "order": 4,
                         "title": "Interfaces"
                     },
                     {
                         "SetID": "MetaAspectSet_793e5d18-0fe6-ea1b-35a9-754f6ae5247a",
-                        "order": 6,
+                        "order": 5,
                         "title": "Containers"
                     },
                     {
                         "SetID": "MetaAspectSet_d01b58fa-46c0-278f-b9e9-1b50bd263d03",
-                        "order": 7,
+                        "order": 6,
                         "title": "All"
                     }
                 ],
@@ -1480,17 +1460,6 @@
                             "position": {
                                 "x": 773,
                                 "y": 630
-                            }
-                        }
-                    },
-                    {
-                        "attributes": {},
-                        "guid": "901e245a-e449-c8cb-a191-a6ed27d976c4",
-                        "registry": {
-                            "color": "#ffffff",
-                            "position": {
-                                "x": 155,
-                                "y": 502
                             }
                         }
                     },
@@ -1839,28 +1808,6 @@
                         }
                     }
                 ],
-                "MetaAspectSet_6269af7a-6eaa-4557-85d2-05e772d7261c": [
-                    {
-                        "attributes": {},
-                        "guid": "693e5667-6b5f-2016-6046-ed785d4f8625",
-                        "registry": {
-                            "position": {
-                                "x": 150,
-                                "y": 228
-                            }
-                        }
-                    },
-                    {
-                        "attributes": {},
-                        "guid": "901e245a-e449-c8cb-a191-a6ed27d976c4",
-                        "registry": {
-                            "position": {
-                                "x": 164,
-                                "y": 397
-                            }
-                        }
-                    }
-                ],
                 "MetaAspectSet_793e5d18-0fe6-ea1b-35a9-754f6ae5247a": [
                     {
                         "attributes": {},
@@ -2173,16 +2120,6 @@
                             "position": {
                                 "x": 972,
                                 "y": 670
-                            }
-                        }
-                    },
-                    {
-                        "attributes": {},
-                        "guid": "901e245a-e449-c8cb-a191-a6ed27d976c4",
-                        "registry": {
-                            "position": {
-                                "x": 291,
-                                "y": 555
                             }
                         }
                     },

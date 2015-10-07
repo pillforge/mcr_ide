@@ -28,6 +28,7 @@ define(
         var self = this;
         var path = require('path');
         var fs = require('fs');
+        self.build_path = path.join(process.cwd(), 'temp_build');
 
         self._compileTheApp(function(err) {
           if (err) {
@@ -35,7 +36,8 @@ define(
             callback(err, self.result);
           } else {
             var artifact = self.blobClient.createArtifact(self.projectName + "_src");
-            var build_path = 'build/exp430';
+            var p_name = self.core.getAttribute(self.core.getParent(self.activeNode), 'name');
+            var build_path = path.join(self.build_path, p_name, 'build/exp430');
             var files_list = fs.readdirSync(build_path);
             var files = {};
             for (var i = files_list.length - 1; i >= 0; i--) {
@@ -59,7 +61,7 @@ define(
                     self.createMessage(self.activeNode, {
                       download_url: self.blobClient.getDownloadURL(hashes[0])
                     });
-			console.log('download_url', self.blobClient.getDownloadURL(hashes[0]));
+                    console.log('download_url', self.blobClient.getDownloadURL(hashes[0]));
                     self.result.setSuccess(true);
                     callback(err, self.result);
                   }
@@ -81,89 +83,87 @@ define(
       var self = this;
       var fs = require('fs');
       var path = require('path');
+      var execSync = require('child_process').execSync;
 
-      self._saveSiblingsAsFiles(self.activeNode, function () {
+      self._saveFolders(self.activeNode, function () {
 
         self.logger.info('_compileTheApp()');
         try {
           // create makefile
           var name = self.core.getAttribute(self.activeNode, 'name');
+          var p_name = self.core.getAttribute(self.core.getParent(self.activeNode), 'name');
+          var includes = self.core.getAttribute(self.activeNode, 'include');
+          includes = includes.trim().split(/\W+/).join(' -I../');
           var rules = "COMPONENT=" + name + "\n";
+          rules += 'CFLAGS+=-I../' + includes + '\n';
           rules += "include $(MAKERULES)\n";
-          self._writeFileSync('Makefile', rules);
+          fs.writeFileSync(path.join(self.build_path, p_name, 'Makefile'), rules);
 
-          // run make
-          var make_cmd = "make " + self.platform;
-          var options = {};
-          var exec = require('child_process').exec;
-          exec(make_cmd, options, function (error, stdout, stderr) {
-            self.logger.info('exec()');
-            self.logger.info(process.env.TOSROOT);
-            if (error !== null) {
-              self.logger.error('exec make: ' + error);
-              self._cleanUp();
-              next(error);
-            } else {
-              // return the app.c as downloadable
-              self.logger.info('return binary');
-              self._cleanUp();
-              next(null);
-            }
+          var cmd = 'make ' + self.platform;
+
+          execSync(cmd, {
+            cwd: path.join(self.build_path, p_name),
+            stdio: 'inherit'
           });
+          next(null);
 
         } catch (e) {
           self.logger.error('_compileTheApp');
           self.logger.error(e);
-          self._cleanUp();
         }
 
 
       });
     };
 
-    TinyOSCompiler.prototype._writeFileSync = function(filename, content) {
+    TinyOSCompiler.prototype._saveFolders = function(node, next) {
       var self = this;
-      var fs = require('fs');
-      fs.writeFileSync(filename, content);
-      self._toBeRemoved.push(filename);
+      var path = require('path');
+      var fs = require('fs-extra');
+      var async = require('async');
+      var wfp = self.core.getRegistry(self.rootNode, 'folder_paths');
+      var include_folders = self.core.getAttribute(node, 'include');
+      include_folders = include_folders.trim().split(/\W+/);
+      var parent_name = self.core.getAttribute(self.core.getParent(node), 'name');
+      include_folders.push(parent_name);
+      async.each(include_folders, function (folder_name, callback) {
+        var f_path = path.join(self.build_path, folder_name);
+        fs.mkdirpSync(f_path);
+        var w_path = wfp['apps__' + folder_name]; // TODO: find the folder
+        if (w_path) {
+          self.core.loadByPath(self.rootNode, w_path, function (err, node) {
+            if (err) {
+              console.log('load by path err', err);
+              callback(err);
+            } else {
+              self._saveFiles(node, f_path, callback);
+            }
+          });
+        } else {
+          callback();
+        }
+      }, function (err) {
+        next();
+      });
     };
 
-    TinyOSCompiler.prototype._cleanUp = function () {
-      var fs = require('fs');
-      this._removeSiblingFiles();
-      // fs.rmdirSync('build');
-    };
-
-    TinyOSCompiler.prototype._saveSiblingsAsFiles = function (node, next) {
+    TinyOSCompiler.prototype._saveFiles = function(node, f_path, next) {
       var self = this;
-      var fs = require('fs');
-      self._toBeRemoved = [];
-      // get siblings
-      var parent = self.core.getParent(node);
-      self.core.loadChildren(parent, function (err, children) {
-        if (err) return;
+      var path = require('path');
+      var fs = require('fs-extra');
+      self.core.loadChildren(node, function (err, children) {
+        if (err) return next();
         for (var i = children.length - 1; i >= 0; i--) {
-          // check if the child is conf or module then save it.
           var src = self.core.getAttribute(children[i], 'source');
           var name = self.core.getAttribute(children[i], 'name');
           var base_obj = self.core.getBase(children[i]);
           var base_name = self.core.getAttribute(base_obj, 'name');
           var extension = '.nc';
           if (base_name === 'Header_File') extension = '.h';
-          fs.writeFileSync(name + extension, src);
-          self._toBeRemoved.push(name + extension);
+          fs.writeFileSync(path.join(f_path, name) + extension, src);
         }
         next();
       });
-    };
-
-    TinyOSCompiler.prototype._removeSiblingFiles = function () {
-      var self = this;
-      var fs = require('fs');
-      while (self._toBeRemoved.length > 0 ) {
-        var rem = self._toBeRemoved.pop();
-        fs.unlinkSync(rem);
-      }
     };
 
     return TinyOSCompiler;
