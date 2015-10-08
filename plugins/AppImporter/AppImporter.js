@@ -127,6 +127,7 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
   // Create components
   var new_mwp = {};
   var new_cwp = {};
+  var def_parent;
   var components = app_json.components;
   for (var c_name in components) {
     if ( nodes[c_name] === undefined ) {
@@ -139,10 +140,12 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
       cache_and_register();
       create_up();
       if (c_name === include_paths.component) {
-        wgme_utils.create_header_files(self, include_paths.include, parent);
+        def_parent = parent;
       }
     }
   }
+
+  wgme_utils.createHeaderFiles(self, include_paths.include, nodes, def_parent);
 
   // We load all nodes for every new configuration due to a WebGME bug: TODO when it is fixed
   async.forEachOf(components, function (value, key, callback) {

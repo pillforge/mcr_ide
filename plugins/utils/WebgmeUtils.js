@@ -66,23 +66,29 @@ return {
     return parent_node;
   },
 
-  create_header_files: function (client, include_paths, parent) {
+  createHeaderFiles: function (client, include_paths, nodes, def_parent) {
     var fs = require('fs');
     var path = require('path');
     if (!include_paths) return;
     include_paths.forEach(function(p) {
       var files = fs.readdirSync(p);
-      files.forEach(function(f) {
-        if (path.extname(f) == '.h') {
-          var f_content = fs.readFileSync(path.resolve(p, f), 'utf8');
-          var h_node = client.core.createNode({
-            parent: parent,
-            base: client.META.Header_File
-          });
-          client.core.setAttribute(h_node, 'name', path.basename(f, '.h'));
-          client.core.setAttribute(h_node, 'source', f_content);
-        }
-      });
+      parent = nodes['apps__' + path.basename(p)]; // TODO
+      if (!parent) {
+        parent = def_parent;
+      }
+      if (parent) {
+        files.forEach(function(f) {
+          if (path.extname(f) == '.h') {
+            var f_content = fs.readFileSync(path.resolve(p, f), 'utf8');
+            var h_node = client.core.createNode({
+              parent: parent,
+              base: client.META.Header_File
+            });
+            client.core.setAttribute(h_node, 'name', path.basename(f, '.h'));
+            client.core.setAttribute(h_node, 'source', f_content);
+          }
+        });
+      }
     });
   },
 
