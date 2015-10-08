@@ -146,6 +146,16 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
   }
 
   wgme_utils.createHeaderFiles(self, include_paths.include, nodes, def_parent);
+  if (include_paths.include) {
+    var include_fold = [];
+    include_paths.include.forEach(function(p) {
+      var bn = path.basename(p);
+      if (reg_obj.fwp['apps__' + bn]) {
+        include_fold.push(bn);
+      }
+    });
+    core.setAttribute(nodes[include_paths.component], 'include', include_fold.join(' '));
+  }
 
   // We load all nodes for every new configuration due to a WebGME bug: TODO when it is fixed
   async.forEachOf(components, function (value, key, callback) {

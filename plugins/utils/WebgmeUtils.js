@@ -72,7 +72,7 @@ return {
     if (!include_paths) return;
     include_paths.forEach(function(p) {
       var files = fs.readdirSync(p);
-      parent = nodes['apps__' + path.basename(p)]; // TODO
+      var parent = nodes['apps__' + path.basename(p)]; // TODO
       if (!parent) {
         parent = def_parent;
       }
