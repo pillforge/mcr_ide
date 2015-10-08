@@ -28,7 +28,7 @@ define(
         var self = this;
         var path = require('path');
         var fs = require('fs');
-        self.build_path = path.join(process.cwd(), 'temp_build');
+        self.build_path = path.join(process.cwd(), 'temp', 'temp_build');
 
         self._compileTheApp(function(err) {
           if (err) {

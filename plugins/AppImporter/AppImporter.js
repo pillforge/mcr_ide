@@ -116,6 +116,7 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
       var parent = wgme_utils.mkdirp(self, i_json.file_path, nodes, reg_obj.fwp, app_json.notes);
       var base = wgme_utils.getMetaNode(self, 'interface');
       var new_node = self.createNode(i_name, parent, base);
+      core.setAttribute(new_node, 'source', p_utils.readFileSync(i_json, app_json.notes));
       // TODO: _createFunctionDeclarationsEventsCommands
       top.prototype._createFunctionDeclarationsEventsCommands.call(self, new_node, i_json);
       reg_obj.iwp[i_name] = core.getPath(new_node);
