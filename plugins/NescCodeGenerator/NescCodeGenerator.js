@@ -203,20 +203,20 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
         output_file = "",
         parent_comp_name = self._getNodeName(parent_component);
 
-      debugger;
+      // debugger;
       // If the parent component is an app, generate the Makefile
-      if (self.isMetaTypeOf(parent_component, self.META.App)){
-        var makefile_tmpl = fs.readFileSync(path.resolve(self.plugin_dir, "makefile.tmpl"), 'utf8');
-        var makefile_template = doT.template(makefile_tmpl);
-        tmpl_context = {
-          component: self._createComponent(parent_component),
-        };
-        // Generate Makefile
-        output = makefile_template(tmpl_context);
-        console.log(output);
-        output_file = path.resolve(self.output_dir, "Makefile");
-        fs.writeFileSync(output_file, output);
-      }
+      // if (self.isMetaTypeOf(parent_component, self.META.App)){
+      //   var makefile_tmpl = fs.readFileSync(path.resolve(self.plugin_dir, "makefile.tmpl"), 'utf8');
+      //   var makefile_template = doT.template(makefile_tmpl);
+      //   tmpl_context = {
+      //     component: self._createComponent(parent_component),
+      //   };
+      //   // Generate Makefile
+      //   output = makefile_template(tmpl_context);
+      //   console.log(output);
+      //   output_file = path.resolve(self.output_dir, "Makefile");
+      //   fs.writeFileSync(output_file, output);
+      // }
 
       // For modules and anything that has a path, we just copy the file given by the path attribute (for now)
       var nesc_path = self.core.getAttribute(parent_component, "path");
