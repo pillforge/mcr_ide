@@ -1,0 +1,17 @@
+{
+  "components": {
+    "plugins": {
+      "Magic": {
+        "src": "src/plugins/Magic",
+        "test": "test/plugins/Magic"
+      }
+    },
+    "seeds": {},
+    "visualizers": {}
+  },
+  "dependencies": {
+    "plugins": {},
+    "seeds": {},
+    "visualizers": {}
+  }
+}

@@ -1,4 +1,7 @@
-var config = require('webgme/config/config.default');
+'use strict';
+
+var config = require('./config.webgme');
+var validateConfig = require('webgme/config/validator');
 
 config.server.port = 9091;
 config.mongo.uri = 'mongodb://127.0.0.1:27017/multi';
@@ -12,4 +15,5 @@ config.seedProjects.enable = true;
 config.seedProjects.defaultProject = 'Meta';
 config.seedProjects.basePaths = ['./seeds'];
 
+validateConfig(config);
 module.exports = config;
