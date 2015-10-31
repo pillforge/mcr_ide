@@ -10,7 +10,12 @@
     "visualizers": {}
   },
   "dependencies": {
-    "plugins": {},
+    "plugins": {
+      "DrugDelivery": {
+        "project": "drug.delivery",
+        "path": "node_modules/drug.delivery/src/plugins/DrugDelivery"
+      }
+    },
     "seeds": {},
     "visualizers": {}
   }

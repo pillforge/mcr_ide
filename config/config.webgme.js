@@ -3,18 +3,21 @@
 'use strict';
 
 
-var config = require('webgme/config/config.default');
-var validateConfig = require('webgme/config/validator');
+var config = require('webgme/config/config.default'),
+    validateConfig = require('webgme/config/validator');
 
 
 // The paths can be loaded from the webgme-setup.json
 config.plugin.basePaths.push('src/plugins');
+config.plugin.basePaths.push('node_modules/drug.delivery/src/plugins');
 
 
 // Visualizer descriptors
 
 // Add requirejs paths
-
+config.requirejsPaths = {
+  'DrugDelivery': 'node_modules/drug.delivery/src/plugins/DrugDelivery'
+};
 
 config.mongo.uri = 'mongodb://127.0.0.1:27017/mcr_ide'
 validateConfig(config);
