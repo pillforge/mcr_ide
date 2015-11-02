@@ -6,7 +6,11 @@
         "test": "test/plugins/Magic"
       }
     },
-    "seeds": {},
+    "seeds": {
+      "TOS_DrugDelivery": {
+        "src": "src/seeds/TOS_DrugDelivery"
+      }
+    },
     "visualizers": {}
   },
   "dependencies": {
