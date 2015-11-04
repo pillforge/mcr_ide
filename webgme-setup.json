@@ -7,8 +7,8 @@
       }
     },
     "seeds": {
-      "TOS_DrugDelivery": {
-        "src": "src/seeds/TOS_DrugDelivery"
+      "DrugDelivery": {
+        "src": "src/seeds/DrugDelivery"
       }
     },
     "visualizers": {}
