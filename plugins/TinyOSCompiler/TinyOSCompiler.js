@@ -47,13 +47,13 @@ define(
               if (error) {
                 console.log('err in artifact, fix for a quit code');
                 self.result.setSuccess(false);
-                callback(err, self.result);
+                callback(error, self.result);
               } else {
                 self.blobClient.saveAllArtifacts( function (error, hashes) {
                   if (error) {
-                    console.log('err in artifact saving, fix');
+                    console.log('error in artifact saving, fix');
                     self.result.setSuccess(false);
-                    callback(err, self.result);
+                    callback(error, self.result);
                   } else {
                     for (var j = hashes.length - 1; j >= 0; j--) {
                       self.result.addArtifact(hashes[j]);
@@ -63,7 +63,7 @@ define(
                     });
                     console.log('download_url', self.blobClient.getDownloadURL(hashes[0]));
                     self.result.setSuccess(true);
-                    callback(err, self.result);
+                    callback(null, self.result);
                   }
                 });
               }
