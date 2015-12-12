@@ -190,11 +190,23 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
   }
 
   function create_up () {
+    var cur_pos = {
+      x: 40,
+      y: 120
+    };
+    var y_length = 1;
     for (var i = comp_json.interface_types.length - 1; i >= 0; i--) {
       var ci_json = comp_json.interface_types[i];
       var parent = nodes[c_name];
       var base = wgme_utils.getMetaNode(self, 'up', ci_json);
-      var up_node = self.createNode(ci_json.as, parent, base);
+      var up_node = self.createNode(ci_json.as, parent, base, {x: cur_pos.x, y: cur_pos.y});
+      y_length = Math.max(y_length, app_json.interfacedefs[ci_json.name].functions.length);
+      cur_pos.x += 200;
+      if (cur_pos.x >= 1000) {
+        cur_pos.x = 40;
+        cur_pos.y += 20 * y_length;
+        y_length = app_json.interfacedefs[ci_json.name].functions.length;
+      }
       core.setPointer(up_node, 'interface', nodes[ci_json.name]);
       nodes[[c_name, ci_json.as].join(Constants.DELIMITER)] = up_node;
       // TODO: _createFunctionDeclarationsEventsCommands
@@ -203,6 +215,7 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
         nodes[[c_name, ci_json.as, ec_i].join(Constants.DELIMITER)] = ec[ec_i];
       }
     }
+    core.setRegistry(nodes[c_name], 'last_obj_pos', {x: cur_pos.x, y: cur_pos.y});
   }
 
   function cache_and_register () {
@@ -228,11 +241,15 @@ AppImporter.prototype.joinPath = function () {
   return Array.prototype.join.call(arguments, Constants.DELIMITER);
 };
 
-AppImporter.prototype.createNode = function(name, parent, base) {
+AppImporter.prototype.createNode = function(name, parent, base, pos) {
+  var self = this;
   var new_node = this.core.createNode({
     parent: parent,
     base: base
   });
+  if (pos) {
+    this.core.setRegistry(new_node, 'position', pos);
+  }
   this.core.setAttribute(new_node, 'name', name);
   return new_node;
 };

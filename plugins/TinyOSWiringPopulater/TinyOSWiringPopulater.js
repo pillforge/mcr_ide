@@ -177,6 +177,8 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher, wgme_utils
           parent: node
         });
         self.core.setAttribute(task_node, 'name', tasks[i]);
+        var last_obj_pos = self.core.getRegistry(node, 'last_obj_pos');
+        self.core.setRegistry(task_node, 'position', last_obj_pos);
         created_nodes[[m_name, tasks[i]].join(Constants.DELIMITER)] = task_node;
       }
     }
