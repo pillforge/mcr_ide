@@ -256,6 +256,8 @@ define(
           base: self.META[funct_base],
           parent: parent_node
         });
+        var x = funct_base == 'Event' ? 500 : 20;
+        self.core.setRegistry(funct_dec_node, 'position', {x: x, y: 50});
         self.core.setAttribute(funct_dec_node, 'name', funct.name);
         created_nodes[funct.name] = funct_dec_node;
         // var params = '';
