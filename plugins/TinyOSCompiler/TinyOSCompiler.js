@@ -124,7 +124,8 @@ define(
       var wfp = self.core.getRegistry(self.rootNode, 'folder_paths');
       var include_folders = self.core.getAttribute(node, 'include');
       include_folders = include_folders.trim().split(/\W+/);
-      var parent_name = self.core.getAttribute(self.core.getParent(node), 'name');
+      var parent_node = self.core.getParent(node);
+      var parent_name = self.core.getAttribute(parent_node, 'name');
       include_folders.push(parent_name);
       async.each(include_folders, function (folder_name, callback) {
         var f_path = path.join(self.build_path, folder_name);
@@ -140,7 +141,11 @@ define(
             }
           });
         } else {
-          callback();
+          if (folder_name == parent_name) {
+            self._saveFiles(parent_node, f_path, callback);
+          } else {
+            callback();
+          }
         }
       }, function (err) {
         next();
