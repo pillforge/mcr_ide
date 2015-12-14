@@ -90,6 +90,8 @@ return {
     var file = fs.readFileSync(makefile_path, 'utf8');
 
     var include_paths = file.match(/-I\S+/g);
+    include_paths = include_paths || new Array();
+    include_paths.push('...');
     if (include_paths !== null) {
       include_paths = include_paths.map(function(include_path) {
         return path.normalize(path.join(full_path, include_path.substr(2)));
