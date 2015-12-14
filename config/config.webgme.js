@@ -20,6 +20,7 @@ config.requirejsPaths = {
   'DrugDelivery': 'node_modules/drug.delivery/src/plugins/DrugDelivery'
 };
 
-config.mongo.uri = 'mongodb://127.0.0.1:27017/mcr_ide'
+
+config.mongo.uri = 'mongodb://127.0.0.1:27017/mcr_ide';
 validateConfig(config);
 module.exports = config;
