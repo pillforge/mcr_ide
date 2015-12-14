@@ -8,6 +8,7 @@ config.mongo.uri = 'mongodb://127.0.0.1:27017/multi';
 
 config.plugin.basePaths.push('./plugins');
 config.plugin.allowServerExecution = true;
+config.plugin.allowBrowserExecution = false;
 
 config.visualization.decoratorPaths.unshift("./decorators");
 
