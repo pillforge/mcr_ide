@@ -18,7 +18,7 @@ implementation {
   // Component
   {{~ it.component_refs :cref}} components {{=cref.base }}{{? cref.name }} as {{=cref.name}}{{?}};
   {{~}}
-  {{~ it.generic_component_refs :cref}} components new {{=cref.base }}(){{? cref.name }} as {{=cref.name}}{{?}};
+  {{~ it.generic_component_refs :cref}} components new {{=cref.base }}({{? cref.parameters }}{{=cref.parameters}}{{?}}){{? cref.name }} as {{=cref.name}}{{?}};
   {{~}}
 
   // Wiring {{~ it.link_wirings :wire}} 

@@ -306,8 +306,12 @@ define(['module',  'plugin/PluginBase', 'plugin/PluginConfig'], function (module
   NescCodeGenerator.prototype._createComponent = function(node) {
     var self = this;
     var base = self._getNodeName(self.core.getBase(node));
+    var params = self.core.getAttribute(node, 'parameters');
     var name_as  = self._getNodeName(node);
-    var out = {'base': base};
+    var out = {
+      base: base,
+      parameters: params
+    };
     if (base !== name_as)
       out.name= name_as;
 
