@@ -51,7 +51,9 @@ define([], function () {
 
     var linked_projects = [];
 
-    var lp = self.core.getAttribute(parent, 'linked_projects').trim();
+    var lp = self.core.getAttribute(parent, 'linked_projects');
+    if (lp == undefined) lp = '';
+    lp = lp.trim();
     if (lp !== '') {
       linked_projects.push(lp.split(' '));
     }

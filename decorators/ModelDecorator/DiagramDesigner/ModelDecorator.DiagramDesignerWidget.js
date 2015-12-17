@@ -537,6 +537,15 @@ define(['js/Constants',
     var nodeObj = client.getNode(self._metaInfo[CONSTANTS.GME_ID]);
     var name = nodeObj.getAttribute('name');
     var source = nodeObj.getAttribute('source');
+
+    var eventHandler = function (__client, eventData) {
+        if (eventData.status === self._control._client.CONSTANTS.BRANCH_STATUS.SYNC) {
+          self._control._client.removeEventListener(self._control._client.CONSTANTS.BRANCH_STATUS_CHANGED, eventHandler);
+          self._createObjects();
+        } else {
+          // console.log(eventData);
+        }
+      };
     
     self.logger.warn('__onSourceDblClick');
     self._autocompleteHelper(function (autocompleteData) {
@@ -547,8 +556,8 @@ define(['js/Constants',
         } else if (type === 'save') {
           self._saveSource(data);
         } else if (type === 'gen-vis') {
+          self._control._client.addEventListener(self._control._client.CONSTANTS.BRANCH_STATUS_CHANGED, eventHandler);
           self._saveSource(data);
-          self._createObjects();
         } else if (type === 'compile') {
           self._saveSource(data);
           self._compileTheApp();
