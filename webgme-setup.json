@@ -6,11 +6,7 @@
         "test": "test/plugins/Magic"
       }
     },
-    "seeds": {
-      "DrugDelivery": {
-        "src": "src/seeds/DrugDelivery"
-      }
-    },
+    "seeds": {},
     "visualizers": {}
   },
   "dependencies": {
@@ -20,7 +16,12 @@
         "path": "node_modules/drug.delivery/src/plugins/DrugDelivery"
       }
     },
-    "seeds": {},
+    "seeds": {
+      "DrugDelivery": {
+        "project": "drug.delivery",
+        "path": "node_modules/drug.delivery/src/seeds/DrugDelivery"
+      }
+    },
     "visualizers": {}
   }
 }

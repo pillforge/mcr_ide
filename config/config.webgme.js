@@ -10,13 +10,14 @@ var config = require('webgme/config/config.default'),
 // The paths can be loaded from the webgme-setup.json
 config.plugin.basePaths.push('src/plugins');
 config.plugin.basePaths.push('node_modules/drug.delivery/src/plugins');
-config.seedProjects.basePaths.push('src/seeds/DrugDelivery');
+config.seedProjects.basePaths.push('node_modules/drug.delivery/src/seeds/DrugDelivery');
 
 
 // Visualizer descriptors
 
 // Add requirejs paths
 config.requirejsPaths = {
+  'DrugDelivery': 'node_modules/drug.delivery/src/seeds/DrugDelivery',
   'DrugDelivery': 'node_modules/drug.delivery/src/plugins/DrugDelivery'
 };
 
