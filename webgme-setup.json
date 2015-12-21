@@ -17,9 +17,9 @@
       }
     },
     "seeds": {
-      "DrugDelivery": {
+      "DrugDeliverySeed": {
         "project": "drug.delivery",
-        "path": "node_modules/drug.delivery/src/seeds/DrugDelivery"
+        "path": "node_modules/drug.delivery/src/seeds/DrugDeliverySeed"
       }
     },
     "visualizers": {}
