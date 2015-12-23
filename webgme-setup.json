@@ -6,7 +6,11 @@
         "test": "test/plugins/Magic"
       }
     },
-    "seeds": {},
+    "seeds": {
+      "Meta": {
+        "src": "src/seeds/Meta"
+      }
+    },
     "visualizers": {}
   },
   "dependencies": {

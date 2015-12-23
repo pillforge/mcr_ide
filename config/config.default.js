@@ -14,7 +14,6 @@ config.visualization.decoratorPaths.unshift("./decorators");
 
 config.seedProjects.enable = true;
 config.seedProjects.defaultProject = 'Meta';
-config.seedProjects.basePaths.push('./seeds');
 
 validateConfig(config);
 module.exports = config;
