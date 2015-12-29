@@ -9,11 +9,10 @@ describe('ModuleUtil', function () {
   var storage;
   var projectName = 'ModuleUtilTest';
   var logger = testFixture.logger.fork('plugins/utils/ModuleUtil');
-  var importResult;
+  var context;
   var project;
   var Q = testFixture.Q;
-
-  this.timeout(40000);
+  var expect = testFixture.expect;
 
   before(function (done) {
     testFixture.clearDBAndGetGMEAuth(gmeConfig, null)
@@ -31,7 +30,7 @@ describe('ModuleUtil', function () {
         });
       })
       .then(function (result) {
-        importResult = result;
+        context = result;
         project = result.project;
       })
       .nodeify(done);
@@ -49,5 +48,36 @@ describe('ModuleUtil', function () {
     module_util.should.have.property('generateModule');
     done();
   });
+
+  it('the imported project should have apps, Blink and BlinkC objects', function (done) {
+    Q.nfcall(context.core.loadChildren, context.rootNode)
+      .then(function (children) {
+        expect(children).not.to.equal(null);
+        for (var i = children.length - 1; i >= 0; i--) {
+          if ('apps' == context.core.getAttribute(children[i], 'name'))
+            return Q.nfcall(context.core.loadChildren, children[i]);
+        }
+        return null;
+      })
+      .then(function (children) {
+        expect(children).not.to.equal(null);
+        for (var i = children.length - 1; i >= 0; i--) {
+          if ('Blink' == context.core.getAttribute(children[i], 'name'))
+            return Q.nfcall(context.core.loadChildren, children[i]);
+        }
+        return null;
+      })
+      .then(function (children) {
+        expect(children).not.to.equal(null);
+        var found = false;
+        for (var i = children.length - 1; i >= 0; i--) {
+          if ('BlinkC' == context.core.getAttribute(children[i], 'name'))
+            found = true;
+        }
+        expect(found).to.equal(true);
+      })
+      .nodeify(done);
+  });
+
 
 });
