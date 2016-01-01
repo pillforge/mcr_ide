@@ -49,6 +49,7 @@ describe('ModuleUtil', function () {
   it('should have defined properties', function (done) {
     module_util.should.have.property('generateModule');
     module_util.should.have.property('_saveSource');
+    module_util.should.have.property('_getMetaNodes');
     done();
   });
 
@@ -93,8 +94,16 @@ describe('ModuleUtil', function () {
       .nodeify(done);
   });
 
+  it('should get meta nodes', function (done) {
+    module_util._getMetaNodes(context)
+      .then(function () {
+        expect(context.META).to.be.an('object');
+      })
+      .nodeify(done);
+  });
+
   xit('should generate uses and provides interfaces', function (done) {
-    module_util.generateModule(context.core, blinkC_node)
+    module_util.generateModule(context, blinkC_node)
       .then(function () {
         return Q.nfcall(context.core.loadChildren, blinkC_node);
       })
