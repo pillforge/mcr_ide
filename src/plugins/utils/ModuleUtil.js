@@ -11,6 +11,26 @@ var ModuleUtil = function (context, module_node) {
 };
 
 ModuleUtil.prototype.generateModule = function() {
+  return Q.fcall(function () {
+    this._getMetaNodes();
+    return this._saveSource();
+  }.bind(this))
+  .then(function (file_path) {
+    return Q.nfcall(nesc_utils.getAppJson, file_path);
+  })
+  .then(function (app_json) {
+    this._app_json = app_json;
+    var interfaces = this._app_json.components[this._module_name].interface_types;
+    interfaces.forEach(function (interf) {
+      var base = this._context.META.Uses_Interface;
+      if (interf.provided) base = this._context.META.Provides_Interface;
+      var new_node = this._core.createNode({
+        parent: this._module_node,
+        base: base
+      });
+      this._core.setAttribute(new_node, 'name', interf.as);
+    }.bind(this));
+  }.bind(this));
 };
 
 ModuleUtil.prototype._saveSource = function() {

@@ -10,6 +10,7 @@ describe('ModuleUtil', function () {
   var projectName = 'ModuleUtilTest';
   var project;
   var context;
+  var core;
 
   var Q = testFixture.Q;
 
@@ -38,6 +39,7 @@ describe('ModuleUtil', function () {
       })
       .then(function (result) {
         context = result;
+        core = context.core;
         project = result.project;
       })
       .nodeify(done);
@@ -93,28 +95,22 @@ describe('ModuleUtil', function () {
   });
 
   describe('#generateModule', function () {
-    var nesc_utils = testFixture.requirejs('project_root/plugins/utils/NescUtils');
     var blinkc_json;
+
     before(function (done) {
-      module_util._saveSource(context.core, blinkC_node)
-        .then(function (file_path) {
-          return Q.nfcall(nesc_utils.getAppJson, file_path);
-        })
-        .then(function (app_json) {
-          blinkc_json = app_json;
-        })
-        .nodeify(done);
+      module_util.generateModule().nodeify(done);
     });
 
-    xit('should generate uses and provides interfaces', function (done) {
-      module_util.generateModule(context, blinkC_node)
-        .then(function () {
-          return Q.nfcall(context.core.loadChildren, blinkC_node);
-        })
+    it('should generate uses and provides interfaces', function (done) {
+      var expected_interface_names = ['Boot', 'Timer0', 'Timer1', 'Timer2', 'Leds'];
+      Q.nfcall(context.core.loadChildren, blinkC_node)
         .then(function (children) {
-          for (var i = children.length - 1; i >= 0; i--) {
-            console.log(context.core.getAttribute(children[i], 'name'));
-          }
+          var actual_interface_names = children.filter(function (child) {
+            return core.isTypeOf(child, context.META.Interface_Type);
+          }).map(function (interf) {
+            return core.getAttribute(interf, 'name');
+          });
+          actual_interface_names.sort().should.deep.equal(expected_interface_names.sort());
         })
         .nodeify(done);
     });
