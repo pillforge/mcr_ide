@@ -246,6 +246,7 @@ define(
       self._storeObjectPath(curr_interface, interface_node);
     };
 
+    // Use this version: ModuleUtil.prototype._generateEventsCommands
     TinyOSPopulate.prototype._createFunctionDeclarationsEventsCommands = function (parent_node, interfacedef_json) {
       var self = this;
       var created_nodes = {};

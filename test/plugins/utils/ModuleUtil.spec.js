@@ -95,7 +95,6 @@ describe('ModuleUtil', function () {
   });
 
   describe('#generateModule', function () {
-    var blinkc_json;
 
     before(function (done) {
       module_util.generateModule().nodeify(done);
@@ -111,6 +110,35 @@ describe('ModuleUtil', function () {
             return core.getAttribute(interf, 'name');
           });
           actual_interface_names.sort().should.deep.equal(expected_interface_names.sort());
+        })
+        .nodeify(done);
+    });
+
+    var boot_node;
+    var timer0_node;
+    it('should generate commands and events for interfaces', function (done) {
+      Q.nfcall(context.core.loadChildren, blinkC_node)
+        .then(function (children) {
+          children.forEach(function (child) {
+            switch (core.getAttribute(child, 'name')) {
+              case 'Boot':
+              boot_node = child;
+              break;
+              case 'Timer0':
+              timer0_node = child;
+              break;
+            }
+          });
+        })
+        .then(function () {
+          return Q.nfcall(core.loadChildren, boot_node);
+        })
+        .then(function (children) {
+          children.should.have.length(1);
+          return Q.nfcall(core.loadChildren, timer0_node);
+        })
+        .then(function (children) {
+          children.should.have.length(11);
         })
         .nodeify(done);
     });

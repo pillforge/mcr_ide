@@ -20,6 +20,12 @@ ModuleUtil.prototype.generateModule = function() {
   })
   .then(function (app_json) {
     this._app_json = app_json;
+    this._generateInterfaces();
+  }.bind(this));
+};
+
+ModuleUtil.prototype._generateInterfaces = function() {
+  return Q.fcall(function () {
     var interfaces = this._app_json.components[this._module_name].interface_types;
     interfaces.forEach(function (interf) {
       var base = this._context.META.Uses_Interface;
@@ -29,6 +35,22 @@ ModuleUtil.prototype.generateModule = function() {
         base: base
       });
       this._core.setAttribute(new_node, 'name', interf.as);
+      this._generateEventsCommands(interf.name, new_node);
+    }.bind(this));
+  }.bind(this));
+};
+
+ModuleUtil.prototype._generateEventsCommands = function(interf_name, interf_node) {
+  return Q.fcall(function () {
+    this._app_json.interfacedefs[interf_name].functions.forEach(function (func) {
+      var base = func.event_command = 'event' ? 'Event' : 'Command';
+      var new_node = this._core.createNode({
+        parent: interf_node,
+        base: this._context.META[base]
+      });
+      this._core.setAttribute(new_node, 'name', func.name);
+      var x = base == 'Event' ? 500 : 20;
+      this._core.setRegistry(new_node, 'position', {x: x, y: 50});
     }.bind(this));
   }.bind(this));
 };
