@@ -13,7 +13,7 @@ var path_for_config = path.resolve(
 );
 var root_path = path.resolve(__dirname, '..');
 var wb_path = path.resolve(root_path, 'node_modules/webgme/src/bin/');
-var s_path = path.resolve(root_path, 'src/seeds/Meta.json');
+var s_path = path.resolve(root_path, 'src/seeds/Meta/Meta.json');
 if (!fs.existsSync(s_path)) {
   console.log('Seed not found at ', s_path);
   process.exit();
