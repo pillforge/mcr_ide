@@ -96,8 +96,24 @@ describe('ModuleUtil', function () {
 
   describe('#generateModule', function () {
 
+    var blinkC_children = {
+      calls: []
+    };
     before(function (done) {
-      module_util.generateModule().nodeify(done);
+      module_util.generateModule()
+        .then(function () {
+          return Q.nfcall(context.core.loadChildren, blinkC_node)
+        })
+        .then(function (children) {
+          children.forEach(function (child) {
+            switch (core.getAttribute(core.getMetaType(child), 'name')) {
+              case 'call':
+                blinkC_children.calls.push(child);
+              break;
+            }
+          });
+        })
+        .nodeify(done);
     });
 
     it('should generate uses and provides interfaces', function (done) {
@@ -129,6 +145,8 @@ describe('ModuleUtil', function () {
               break;
             }
           });
+          expect(boot_node).to.be.an('object');
+          expect(timer0_node).to.be.an('object');
         })
         .then(function () {
           return Q.nfcall(core.loadChildren, boot_node);
@@ -141,6 +159,10 @@ describe('ModuleUtil', function () {
           children.should.have.length(11);
         })
         .nodeify(done);
+    });
+
+    xit('should generate calls between events and commands', function (done) {
+      blinkC_children.calls.should.have.length(6);
     });
   });
 

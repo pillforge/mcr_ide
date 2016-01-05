@@ -1,5 +1,5 @@
-define(['Q', 'project_root/plugins/utils/NescUtils', 'project_root/plugins/utils/WebgmeUtils', 'path', 'fs-extra'],
-function (Q, nesc_utils, wgme_utils, path, fs) {
+define(['Q', './NescUtil', 'path', 'fs-extra'],
+function (Q, nesc_util, path, fs) {
 
 'use strict';
 
@@ -16,12 +16,16 @@ ModuleUtil.prototype.generateModule = function() {
     return this._saveSource();
   }.bind(this))
   .then(function (file_path) {
-    return Q.nfcall(nesc_utils.getAppJson, file_path);
+    return nesc_util.getAppJson(file_path, 'exp430');
   })
   .then(function (app_json) {
     this._app_json = app_json;
     this._generateInterfaces();
+    this._generateCallgraph();
   }.bind(this));
+};
+
+ModuleUtil.prototype._generateCallgraph = function() {
 };
 
 ModuleUtil.prototype._generateInterfaces = function() {
