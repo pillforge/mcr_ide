@@ -21,6 +21,7 @@
     "drug.delivery": "pillforge/drug.delivery",
     "fs-extra": "~0.16.3",
     "libxmljs": "^0.16.1",
+    "q": "^1.4.1",
     "webgme": "pillforge/webgme#mcr_master"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-define(['Q', 'path', 'fs-extra', 'project_root/plugins/common/ParseDump'], function (Q, path, fs, pd) {
+define(['q', 'path', 'fs-extra', 'project_root/plugins/common/ParseDump'], function (Q, path, fs, pd) {
 
 'use strict';
 

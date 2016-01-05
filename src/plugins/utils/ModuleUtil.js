@@ -1,4 +1,4 @@
-define(['Q', './NescUtil', 'path', 'fs-extra'],
+define(['q', './NescUtil', 'path', 'fs-extra'],
 function (Q, nesc_util, path, fs) {
 
 'use strict';
