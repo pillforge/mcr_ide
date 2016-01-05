@@ -1,0 +1,31 @@
+{
+  "title": "nesC Dump",
+  "type": "object",
+  "properties": {
+    "components": {
+      "type": "object",
+      "patternProperties": {
+        "\\w+": {
+          "type": "object",
+          "properties": {
+            "interface_types": {
+              "type": "array"
+            },
+            "wiring": {
+              "type": "array"
+            }
+          },
+          "required": ["interface_types"]
+        }
+      }
+    },
+    "interfacedefs": {
+      "type": "object"
+    },
+    "calls": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "required": [ "components", "interfacedefs", "calls"]
+}
