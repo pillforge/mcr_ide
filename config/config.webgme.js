@@ -11,6 +11,7 @@ var config = require('webgme/config/config.default'),
 config.plugin.basePaths.push('src/plugins');
 config.plugin.basePaths.push('node_modules/drug.delivery/src/plugins');
 config.seedProjects.basePaths.push('src/seeds/Meta');
+config.seedProjects.basePaths.push('src/seeds/SenseAndSend');
 config.seedProjects.basePaths.push('node_modules/drug.delivery/src/seeds/DrugDeliverySeed');
 
 

@@ -9,6 +9,9 @@
     "seeds": {
       "Meta": {
         "src": "src/seeds/Meta"
+      },
+      "SenseAndSend": {
+        "src": "src/seeds/SenseAndSend"
       }
     },
     "visualizers": {}
