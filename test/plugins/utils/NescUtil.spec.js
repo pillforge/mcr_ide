@@ -16,7 +16,7 @@ describe('NescUtil', function () {
   describe('#getAppJson', function () {
     var app_json;
     before(function (done) {
-      nesc_util.getAppJson(path.join(__dirname, 'NescUtil/BlinkC.nc'), 'exp430')
+      nesc_util.getAppJson(path.join(__dirname, 'NescUtil/SenseAndSendC.nc'), 'exp430')
         .then(function (ajson) {
           app_json = ajson;
         })
@@ -29,16 +29,13 @@ describe('NescUtil', function () {
       done();
     });
 
-    it('should have BlinkC component', function (done) {
-      app_json.components.should.have.property('BlinkC');
+    it('should have SenseAndSendC component and interfaces', function (done) {
+      app_json.components.should.have.property('SenseAndSendC');
+      var sense_and_sendc_interfaces = app_json.components.SenseAndSendC.interface_types;
+      sense_and_sendc_interfaces.should.have.length(6);
       done();
     });
 
-    it('should have BlinkC interfaces', function (done) {
-      var blinkc_interfaces = app_json.components.BlinkC.interface_types;
-      blinkc_interfaces.should.have.length(5);
-      done();
-    });
   });
 
 });

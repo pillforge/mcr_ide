@@ -19,7 +19,8 @@ return {
         file_path
       ].map(function (e) { return "'" + e + "'"; }).join(' ');
       var xml = execSync(cmd, {
-        encoding: 'utf8'
+        encoding: 'utf8',
+        stdio: 'pipe'
       });
       var app_json = pd.parse(xml);
       app_json.calls = fs.readJsonSync(get_calls_file);
