@@ -5,9 +5,6 @@
 
 var config = require('./config.default');
 
-config.requirejsPaths.project_src = 'src';
-config.requirejsPaths.project_root = '.';
-
 config.server.port = 9001;
 config.mongo.uri = 'mongodb://127.0.0.1:27017/webgme_tests';
 

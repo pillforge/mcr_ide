@@ -1,5 +1,3 @@
-'use strict';
-
 var config = require('./config.webgme');
 var validateConfig = require('webgme/config/validator');
 
@@ -14,6 +12,9 @@ config.visualization.decoratorPaths.unshift("./decorators");
 
 config.seedProjects.enable = true;
 config.seedProjects.defaultProject = 'Meta';
+
+config.requirejsPaths.project_src = 'src';
+config.requirejsPaths.project_root = '.';
 
 validateConfig(config);
 module.exports = config;

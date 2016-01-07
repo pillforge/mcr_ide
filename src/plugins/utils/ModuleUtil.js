@@ -1,4 +1,4 @@
-define(['q', './NescUtil', 'path', 'fs-extra'],
+define(['q', 'project_src/plugins/utils/NescUtil', 'path', 'fs-extra'],
 function (Q, nesc_util, path, fs) {
 
 'use strict';
@@ -28,33 +28,29 @@ ModuleUtil.prototype._generateCallgraph = function() {
 };
 
 ModuleUtil.prototype._generateInterfaces = function() {
-  return Q.fcall(function () {
-    var interfaces = this._app_json.components[this._module_name].interface_types;
-    interfaces.forEach(function (interf) {
-      var base = this._context.META.Uses_Interface;
-      if (interf.provided) base = this._context.META.Provides_Interface;
-      var new_node = this._core.createNode({
-        parent: this._module_node,
-        base: base
-      });
-      this._core.setAttribute(new_node, 'name', interf.as);
-      this._generateEventsCommands(interf.name, new_node);
-    }.bind(this));
+  var interfaces = this._app_json.components[this._module_name].interface_types;
+  interfaces.forEach(function (interf) {
+    var base = this._context.META.Uses_Interface;
+    if (interf.provided) base = this._context.META.Provides_Interface;
+    var new_node = this._core.createNode({
+      parent: this._module_node,
+      base: base
+    });
+    this._core.setAttribute(new_node, 'name', interf.as);
+    this._generateEventsCommands(interf.name, new_node);
   }.bind(this));
 };
 
 ModuleUtil.prototype._generateEventsCommands = function(interf_name, interf_node) {
-  return Q.fcall(function () {
-    this._app_json.interfacedefs[interf_name].functions.forEach(function (func) {
-      var base = func.event_command = 'event' ? 'Event' : 'Command';
-      var new_node = this._core.createNode({
-        parent: interf_node,
-        base: this._context.META[base]
-      });
-      this._core.setAttribute(new_node, 'name', func.name);
-      var x = base == 'Event' ? 500 : 20;
-      this._core.setRegistry(new_node, 'position', {x: x, y: 50});
-    }.bind(this));
+  this._app_json.interfacedefs[interf_name].functions.forEach(function (func) {
+    var base = func.event_command == 'event' ? 'Event' : 'Command';
+    var new_node = this._core.createNode({
+      parent: interf_node,
+      base: this._context.META[base]
+    });
+    this._core.setAttribute(new_node, 'name', func.name);
+    var x = base == 'Event' ? 500 : 20;
+    this._core.setRegistry(new_node, 'position', {x: x, y: 50});
   }.bind(this));
 };
 
