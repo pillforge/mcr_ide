@@ -96,7 +96,9 @@ describe('ModuleUtil', function () {
   describe('#generateModule', function () {
 
     var sense_and_sendc_children = {
-      calls: []
+      tasks: [],
+      calls: [],
+      posts: []
     };
     before(function (done) {
       module_util.generateModule()
@@ -106,9 +108,15 @@ describe('ModuleUtil', function () {
         .then(function (children) {
           children.forEach(function (child) {
             switch (core.getAttribute(core.getMetaType(child), 'name')) {
+              case 'Task':
+                sense_and_sendc_children.tasks.push(child);
+                break;
               case 'call':
                 sense_and_sendc_children.calls.push(child);
-              break;
+                break;
+              case 'post':
+                sense_and_sendc_children.posts.push(child);
+                break;
             }
           });
         })
@@ -164,8 +172,13 @@ describe('ModuleUtil', function () {
         .nodeify(done);
     });
 
-    xit('should generate calls between events and commands', function (done) {
+    xit('should generate tasks', function (done) {
+      sense_and_sendc_children.tasks.should.have.length(1);
+    });
+
+    xit('should generate calls, signals, and posts between events and commands', function (done) {
       sense_and_sendc_children.calls.should.have.length(6);
+      sense_and_sendc_children.posts.should.have.length(1);
     });
   });
 

@@ -23,7 +23,19 @@
       "type": "object"
     },
     "calls": {
-      "type": "object"
+      "type": "object",
+      "patternProperties": {
+        "\\w+": {
+          "type": "object",
+          "properties": {
+            "evcmd": {},
+            "tasks": {},
+            "variables": {},
+            "t_variables": {}
+          },
+          "required": ["evcmd", "tasks", "variables", "t_variables"]
+        }
+      }
     }
   },
   "additionalProperties": true,

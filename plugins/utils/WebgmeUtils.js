@@ -147,6 +147,7 @@ return {
   //         "Timer0",
   //         "startPeriodic"
   //       ],
+  // TOBEREMOVED, check: > src > plugins > utils > NescUtil
   convertJsonPassiveToActive: function (from) {
     var to = {
       evcmd: {},
