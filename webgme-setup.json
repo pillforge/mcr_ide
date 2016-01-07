@@ -1,9 +1,9 @@
 {
   "components": {
     "plugins": {
-      "Magic": {
-        "src": "src/plugins/Magic",
-        "test": "test/plugins/Magic"
+      "Main": {
+        "src": "src/plugins/Main",
+        "test": "test/plugins/Main"
       }
     },
     "seeds": {
@@ -14,7 +14,10 @@
         "src": "src/seeds/SenseAndSend"
       }
     },
-    "visualizers": {}
+    "visualizers": {},
+    "addons": {},
+    "decorators": {},
+    "layouts": {}
   },
   "dependencies": {
     "plugins": {
@@ -29,6 +32,9 @@
         "path": "node_modules/drug.delivery/src/seeds/DrugDeliverySeed"
       }
     },
-    "visualizers": {}
+    "visualizers": {},
+    "addons": {},
+    "decorators": {},
+    "layouts": {}
   }
 }
