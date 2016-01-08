@@ -54,7 +54,7 @@ describe('Main', function () {
       project: project,
       commitHash: commitHash,
       branchName: 'test',
-      activeNode: '/2002062646/513963248/1858031154',
+      activeNode: '/1915602411/1141766090/2066943656',
     };
     manager.executePlugin(pluginName, pluginConfig, context, function (err, pluginResult) {
       expect(err).to.equal(null);
