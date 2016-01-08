@@ -165,6 +165,7 @@ function (PluginBase, PluginConfig, Constants, path_utils, Refresher, wgme_utils
     }
   };
 
+  // TOBEREMOVED, check: > src > plugins > utils > ModuleUtil
   TinyOSWiringPopulater.prototype.createTasks = function(m_wgme_paths) {
     var self = this;
     var created_nodes = {};

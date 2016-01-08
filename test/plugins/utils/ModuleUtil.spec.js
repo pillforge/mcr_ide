@@ -131,7 +131,6 @@ describe('ModuleUtil', function () {
       var expected_interface_names = ['Boot', 'Timer', 'AccelRead', 'Packet', 'RadioControl', 'AMSend'];
       Q.nfcall(context.core.loadChildren, sense_and_sendc_node)
         .then(function (children) {
-          children.should.have.length(6);
           var actual_interface_names = children.filter(function (child) {
             return core.isTypeOf(child, context.META.Interface_Type);
           }).map(function (interf) {
@@ -174,8 +173,9 @@ describe('ModuleUtil', function () {
         .nodeify(done);
     });
 
-    xit('should generate tasks', function (done) {
+    it('should generate tasks', function (done) {
       sense_and_sendc_children.tasks.should.have.length(1);
+      done();
     });
 
     xit('should generate calls, signals, and posts between events and commands', function (done) {

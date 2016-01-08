@@ -39,6 +39,14 @@ ModuleUtil.prototype._generateInterfaces = function() {
     this._core.setAttribute(new_node, 'name', interf.as);
     this._generateEventsCommands(interf.name, new_node);
   }.bind(this));
+  var tasks = this._app_json.calls[this._module_name].t_variables;
+  tasks.forEach(function (task) {
+    var task_node = this._core.createNode({
+      parent: this._module_node,
+      base: this._context.META.Task
+    });
+    this._core.setAttribute(task_node, 'name', task);
+  }.bind(this));
 };
 
 ModuleUtil.prototype._generateEventsCommands = function(interf_name, interf_node) {
