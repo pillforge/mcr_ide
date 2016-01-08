@@ -19,15 +19,50 @@ ModuleUtil.prototype.generateModule = function() {
     }.bind(this))
     .then(function (app_json) {
       this._app_json = app_json;
-      this._generateInterfaces();
-      this._generateCallgraph();
+      var created_interfaces = this._generateInterfaces();
+      this._generateCallgraph(created_interfaces);
     }.bind(this));
 };
 
-ModuleUtil.prototype._generateCallgraph = function() {
+ModuleUtil.prototype._generateCallgraph = function(created_interfaces) {
+  var module_calls = this._app_json.calls[this._module_name];
+  var calls, from_node, i;
+  for (var interf_name in module_calls.evcmd) {
+    var interface_events = module_calls.evcmd[interf_name];
+    for (var evnt in interface_events) {
+      calls = interface_events[evnt];
+      from_node = created_interfaces[interf_name].childr[evnt];
+      for (i = calls.length - 1; i >= 0; i--) {
+        this._generateConnection(from_node, calls[i], created_interfaces);
+      }
+    }
+  }
+  for (var task_name in module_calls.tasks) {
+    calls = module_calls.tasks[task_name];
+    from_node = created_interfaces[task_name];
+    for (i = calls.length - 1; i >= 0; i--) {
+      this._generateConnection(from_node, calls[i], created_interfaces);
+    }
+  }
+};
+
+ModuleUtil.prototype._generateConnection = function(from_node, call_data, created_interfaces) {
+  var to_node;
+  if (call_data[0] == 'post') {
+    to_node = created_interfaces[call_data[1]];
+  } else {
+    to_node = created_interfaces[call_data[1]].childr[call_data[2]];
+  }
+  var conn_node = this._core.createNode({
+    base: this._context.META[call_data[0]],
+    parent: this._module_node
+  });
+  this._core.setPointer(conn_node, 'src', from_node);
+  this._core.setPointer(conn_node, 'dst', to_node);
 };
 
 ModuleUtil.prototype._generateInterfaces = function() {
+  var created_interfaces = {};
   var interfaces = this._app_json.components[this._module_name].interface_types;
   interfaces.forEach(function (interf) {
     var base = this._context.META.Uses_Interface;
@@ -37,7 +72,11 @@ ModuleUtil.prototype._generateInterfaces = function() {
       base: base
     });
     this._core.setAttribute(new_node, 'name', interf.as);
-    this._generateEventsCommands(interf.name, new_node);
+    var created_evcmd = this._generateEventsCommands(interf.name, new_node);
+    created_interfaces[interf.as] = {
+      itself: new_node,
+      childr: created_evcmd
+    };
   }.bind(this));
   var tasks = this._app_json.calls[this._module_name].t_variables;
   tasks.forEach(function (task) {
@@ -46,10 +85,13 @@ ModuleUtil.prototype._generateInterfaces = function() {
       base: this._context.META.Task
     });
     this._core.setAttribute(task_node, 'name', task);
+    created_interfaces[task] = task_node;
   }.bind(this));
+  return created_interfaces;
 };
 
 ModuleUtil.prototype._generateEventsCommands = function(interf_name, interf_node) {
+  var created_nodes = {};
   this._app_json.interfacedefs[interf_name].functions.forEach(function (func) {
     var base = func.event_command == 'event' ? 'Event' : 'Command';
     var new_node = this._core.createNode({
@@ -59,7 +101,9 @@ ModuleUtil.prototype._generateEventsCommands = function(interf_name, interf_node
     this._core.setAttribute(new_node, 'name', func.name);
     var x = base == 'Event' ? 500 : 20;
     this._core.setRegistry(new_node, 'position', {x: x, y: 50});
+    created_nodes[func.name] = new_node;
   }.bind(this));
+  return created_nodes;
 };
 
 ModuleUtil.prototype._saveSourceAndDependencies = function() {

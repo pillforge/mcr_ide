@@ -36,6 +36,7 @@ define(['../TinyOSPopulate/TinyOSPopulate', '../utils/ModuleCalls'], function (T
   };
 
   // Creates calls and variables
+  // TOBEREMOVED, check: > src > plugins > utils > ModuleUtil
   Refresher.prototype.createCallConnectionsModule = function (node, all_calls, get_node) {
     var self = this;
     // calls, posts, signals from events and commands

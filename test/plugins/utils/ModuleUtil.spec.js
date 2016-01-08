@@ -178,9 +178,10 @@ describe('ModuleUtil', function () {
       done();
     });
 
-    xit('should generate calls, signals, and posts between events and commands', function (done) {
+    it('should generate calls, signals, and posts between events, commands, and tasks', function (done) {
       sense_and_sendc_children.calls.should.have.length(6);
       sense_and_sendc_children.posts.should.have.length(1);
+      done();
     });
   });
 
