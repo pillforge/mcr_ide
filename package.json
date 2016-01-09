@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "chai": "^3.0.0",
+    "chai3-json-schema": "^1.2.1",
     "gulp": "^3.8.11",
     "gulp-jshint": "^1.10.0",
     "mocha": "^2.2.5",
