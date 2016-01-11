@@ -21,7 +21,44 @@ ModuleUtil.prototype.generateModule = function() {
       this._app_json = app_json;
       var created_interfaces = this._generateInterfaces();
       this._generateCallgraph(created_interfaces);
+      this._generateVariables(created_interfaces);
     }.bind(this));
+};
+
+ModuleUtil.prototype._generateVariables = function(created_interfaces) {
+  var module_calls = this._app_json.calls[this._module_name];
+  for (var variable in module_calls.variables) {
+    if (variable.indexOf('__nesc_sillytask') > -1 ) continue;
+    if (module_calls.t_variables.indexOf(variable) > -1 ) continue;
+    var var_node = this._core.createNode({
+      base: this._context.META.variable,
+      parent: this._module_node
+    });
+    this._core.setAttribute(var_node, 'name', variable);
+    var access_list = module_calls.variables[variable];
+    var new_list = {};
+    var access, key;
+    for (var access_key in access_list) {
+      access = access_list[access_key];
+      key = [access[0], access[1]].join('__');
+      new_list[key] = new_list[key] || access[2];
+      if (new_list[key].indexOf(access[2]) < 0)
+        new_list[key] = 'readwrite';
+    }
+    var from_node;
+    for (key in new_list) {
+      access = key.split('__').concat(new_list[key]);
+      if (access[1] === 'runTask')
+        from_node = created_interfaces[access[0]];
+      else from_node = created_interfaces[access[0]].childr[access[1]];
+      var access_node = this._core.createNode({
+        base: this._context.META[access[2]] || this._context.META.read, // when a variable is accessed via its address, the access returns empty
+        parent: this._module_node
+      });
+      this._core.setPointer(access_node, 'src', from_node);
+      this._core.setPointer(access_node, 'dst', var_node);
+    }
+  }
 };
 
 ModuleUtil.prototype._generateCallgraph = function(created_interfaces) {

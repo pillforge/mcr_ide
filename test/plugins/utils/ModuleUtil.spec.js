@@ -98,7 +98,10 @@ describe('ModuleUtil', function () {
     var sense_and_sendc_children = {
       tasks: [],
       calls: [],
-      posts: []
+      posts: [],
+      variables: [],
+      reads: [],
+      writes: []
     };
     before(function (done) {
       module_util.generateModule()
@@ -116,6 +119,15 @@ describe('ModuleUtil', function () {
                 break;
               case 'post':
                 sense_and_sendc_children.posts.push(child);
+                break;
+              case 'variable':
+                sense_and_sendc_children.variables.push(child);
+                break;
+              case 'read':
+                sense_and_sendc_children.reads.push(child);
+                break;
+              case 'write':
+                sense_and_sendc_children.writes.push(child);
                 break;
             }
           });
@@ -181,6 +193,13 @@ describe('ModuleUtil', function () {
     it('should generate calls, signals, and posts between events, commands, and tasks', function (done) {
       sense_and_sendc_children.calls.should.have.length(6);
       sense_and_sendc_children.posts.should.have.length(1);
+      done();
+    });
+
+    it('should create variables and their access patterns', function (done) {
+      sense_and_sendc_children.variables.should.have.length(4);
+      sense_and_sendc_children.writes.should.have.length(1);
+      sense_and_sendc_children.reads.should.have.length(4);
       done();
     });
   });
