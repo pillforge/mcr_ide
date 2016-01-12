@@ -19,9 +19,21 @@ ModuleUtil.prototype.generateModule = function() {
     }.bind(this))
     .then(function (app_json) {
       this._app_json = app_json;
+      return this._deleteExistingObjects();
+    }.bind(this))
+    .then(function () {
       var created_interfaces = this._generateInterfaces();
       this._generateCallgraph(created_interfaces);
       this._generateVariables(created_interfaces);
+    }.bind(this));
+};
+
+ModuleUtil.prototype._deleteExistingObjects = function() {
+  return Q.nfcall(this._core.loadChildren, this._module_node)
+    .then(function (children) {
+      children.forEach(function (child) {
+        this._core.deleteNode(child);
+      }.bind(this));
     }.bind(this));
 };
 

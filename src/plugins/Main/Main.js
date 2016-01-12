@@ -39,6 +39,7 @@ function (PluginConfig, PluginBase, ModuleUtil) {
     var self = this;
     var node = self.activeNode;
     if (self.core.isTypeOf(node, self.META.Module)) {
+      self.logger.info('Running #generateModule');
       var module_util = new ModuleUtil(self, node);
       module_util.generateModule()
         .then (function () {
