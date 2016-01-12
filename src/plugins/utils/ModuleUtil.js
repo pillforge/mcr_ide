@@ -9,6 +9,11 @@ var ModuleUtil = function (context, module_node) {
   this._module_node = module_node;
   this._module_name = context.core.getAttribute(module_node, 'name');
   this._getMetaNodes();
+  this._cur_pos = {
+    x: 40,
+    y: 120,
+    y_length: 5
+  };
 };
 
 ModuleUtil.prototype.generateModule = function() {
@@ -39,6 +44,8 @@ ModuleUtil.prototype._deleteExistingObjects = function() {
 
 ModuleUtil.prototype._generateVariables = function(created_interfaces) {
   var module_calls = this._app_json.calls[this._module_name];
+  this._cur_pos.x += 60;
+  this._cur_pos.y += 60;
   for (var variable in module_calls.variables) {
     if (variable.indexOf('__nesc_sillytask') > -1 ) continue;
     if (module_calls.t_variables.indexOf(variable) > -1 ) continue;
@@ -47,6 +54,8 @@ ModuleUtil.prototype._generateVariables = function(created_interfaces) {
       parent: this._module_node
     });
     this._core.setAttribute(var_node, 'name', variable);
+    this._core.setRegistry(var_node, 'position', {x: this._cur_pos.x, y: this._cur_pos.y});
+    this._cur_pos.y += 60;
     var access_list = module_calls.variables[variable];
     var new_list = {};
     var access, key;
@@ -121,6 +130,8 @@ ModuleUtil.prototype._generateInterfaces = function() {
       base: base
     });
     this._core.setAttribute(new_node, 'name', interf.as);
+    this._core.setRegistry(new_node, 'position', {x: this._cur_pos.x, y: this._cur_pos.y});
+    this.updateCurPos(this._app_json.interfacedefs[interf.name].functions.length);
     var created_evcmd = this._generateEventsCommands(interf.name, new_node);
     created_interfaces[interf.as] = {
       itself: new_node,
@@ -134,9 +145,21 @@ ModuleUtil.prototype._generateInterfaces = function() {
       base: this._context.META.Task
     });
     this._core.setAttribute(task_node, 'name', task);
+    this._core.setRegistry(task_node, 'position', {x: this._cur_pos.x, y: this._cur_pos.y});
+    this.updateCurPos(5);
     created_interfaces[task] = task_node;
   }.bind(this));
   return created_interfaces;
+};
+
+ModuleUtil.prototype.updateCurPos = function(object_length) {
+  this._cur_pos.x += 200;
+  this._cur_pos.y_length = Math.max(this._cur_pos.y_length, object_length);
+  if (this._cur_pos.x >= 1000) {
+    this._cur_pos.x = 40;
+    this._cur_pos.y += 30 * this._cur_pos.y_length;
+    this._cur_pos.y_length = 5;
+  }
 };
 
 ModuleUtil.prototype._generateEventsCommands = function(interf_name, interf_node) {

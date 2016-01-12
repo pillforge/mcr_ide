@@ -103,12 +103,14 @@ describe('ModuleUtil', function () {
       reads: [],
       writes: []
     };
+    var all_children;
     before(function (done) {
       module_util.generateModule()
         .then(function () {
           return Q.nfcall(context.core.loadChildren, sense_and_sendc_node);
         })
         .then(function (children) {
+          all_children = children;
           children.forEach(function (child) {
             switch (core.getAttribute(core.getMetaType(child), 'name')) {
               case 'Task':
@@ -200,6 +202,26 @@ describe('ModuleUtil', function () {
       sense_and_sendc_children.variables.should.have.length(4);
       sense_and_sendc_children.writes.should.have.length(1);
       sense_and_sendc_children.reads.should.have.length(4);
+      done();
+    });
+
+    it('should create each element in a different position', function (done) {
+      var hasDuplicates = false;
+      var a_name, b_name;
+      all_children.filter(function (child) {
+        return !core.isConnection(child);
+      }).sort(function (a, b) {
+        if (hasDuplicates) return 1;
+        var p_a = core.getRegistry(a, 'position');
+        var p_b = core.getRegistry(b, 'position');
+        if (p_a.x == p_b.x && p_a.y == p_b.y) {
+          hasDuplicates = true;
+          a_name = core.getAttribute(a, 'name');
+          b_name = core.getAttribute(b, 'name');
+        }
+        return 1;
+      });
+      hasDuplicates.should.equal(false, a_name + ' : ' + b_name);
       done();
     });
   });
