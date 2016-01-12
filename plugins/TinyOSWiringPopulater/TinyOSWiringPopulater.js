@@ -1,5 +1,5 @@
 define(['plugin/PluginBase', 'plugin/PluginConfig', '../utils/Constants', '../utils/PathUtils',
-       '../ModelGenerator/Refresher', '../utils/WebgmeUtils'],
+       './Refresher', '../utils/WebgmeUtils'],
 function (PluginBase, PluginConfig, Constants, path_utils, Refresher, wgme_utils) {
 
   'use strict';

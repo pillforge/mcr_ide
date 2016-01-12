@@ -633,7 +633,7 @@ define(['js/Constants',
       // }
     };
 
-    client.runServerPlugin('ModelGenerator', context, function (err, result, msg) {
+    client.runServerPlugin('Main', context, function (err, result, msg) {
       if (result.success) {
         console.log('Model created');
       } else {
