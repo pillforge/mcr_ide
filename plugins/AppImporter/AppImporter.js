@@ -2,8 +2,11 @@ define(['plugin/PluginBase', 'plugin/PluginConfig', 'path',
        '../utils/WebgmeUtils', '../utils/NescUtils', '../utils/PathUtils',
        '../utils/Constants',
        '../TinyOSWiringPopulater/TinyOSWiringPopulater',
-       '../TinyOSPopulate/TinyOSPopulate'],
-function (PluginBase, PluginConfig, path, wgme_utils, nesc_utils, p_utils, Constants, twp, top) {
+       '../TinyOSPopulate/TinyOSPopulate',
+       'project_src/plugins/utils/ModuleUtil',
+       'project_src/plugins/utils/NescUtil',
+       'q'],
+function (PluginBase, PluginConfig, path, wgme_utils, nesc_utils, p_utils, Constants, twp, top, ModuleUtil, NescUtil, Q) {
 
 'use strict';
 
@@ -89,6 +92,7 @@ AppImporter.prototype.importApp = function (reg_obj, a_path, paths_arr, next) {
       var calls_json_path = path.join(process.cwd(), 'calls.json');
       var app_json = nesc_utils.getAppJsonFromMakeSync(a_path, 'exp430', calls_json_path);
       var calls = fse.readJsonSync(calls_json_path);
+      app_json.calls = NescUtil.convertCalls(calls);
       fse.removeSync(calls_json_path);
       wgme_utils.loadObjects(self, paths_arr, function (err, nodes) {
         self.run(app_json, nodes, reg_obj, paths_arr, calls, include_paths, function () {
@@ -108,14 +112,15 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
   var core = self.core;
   var async = require('async');
 
+  var parent, base, new_node;
   // Create interfaces
   var interfacedefs = app_json.interfacedefs;
   for (var i_name in interfacedefs) {
     if ( nodes[i_name] === undefined ) {
       var i_json = interfacedefs[i_name];
-      var parent = wgme_utils.mkdirp(self, i_json.file_path, nodes, reg_obj.fwp, app_json.notes);
-      var base = wgme_utils.getMetaNode(self, 'interface');
-      var new_node = self.createNode(i_name, parent, base);
+      parent = wgme_utils.mkdirp(self, i_json.file_path, nodes, reg_obj.fwp, app_json.notes);
+      base = wgme_utils.getMetaNode(self, 'interface');
+      new_node = self.createNode(i_name, parent, base);
       if (i_json.file_path.indexOf('tos/') !== 0)
         core.setAttribute(new_node, 'source', p_utils.readFileSync(i_json, app_json.notes));
       // TODO: _createFunctionDeclarationsEventsCommands
@@ -133,14 +138,26 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
   for (var c_name in components) {
     if ( nodes[c_name] === undefined ) {
       var comp_json = components[c_name];
-      var parent = wgme_utils.mkdirp(self, comp_json.file_path, nodes, reg_obj.fwp, app_json.notes);
-      var base = wgme_utils.getMetaNode(self, 'component', comp_json);
-      var new_node = self.createNode(c_name, parent, base);
+      parent = wgme_utils.mkdirp(self, comp_json.file_path, nodes, reg_obj.fwp, app_json.notes);
+      base = wgme_utils.getMetaNode(self, 'component', comp_json);
+      new_node = self.createNode(c_name, parent, base);
       core.setAttribute(new_node, 'safe', comp_json.safe);
       if (comp_json.file_path.indexOf('tos/') !== 0)
         core.setAttribute(new_node, 'source', p_utils.readFileSync(comp_json, app_json.notes));
       cache_and_register();
-      create_up();
+      var module_util = new ModuleUtil(self, new_node, app_json);
+      var created_interfaces = module_util._generateInterfaces();
+      for (var name in created_interfaces) {
+        var created_interface = created_interfaces[name];
+        if (created_interface.itself) {
+          nodes[[c_name, name].join(Constants.DELIMITER)] = created_interface.itself;
+        }
+        if (created_interface.childr) {
+          for (var child_name in created_interface.childr) {
+            nodes[[c_name, name, child_name].join(Constants.DELIMITER)] = created_interface.childr[child_name];
+          }
+        }
+      }
       if (c_name === include_paths.component) {
         def_parent = parent;
       }
@@ -172,12 +189,6 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
     }
   }, function (err) {
 
-    // Create tasks for modules
-    var tn = twp.prototype.createTasks.call(self, new_mwp);
-    for (var tn_i in tn) {
-      nodes[tn_i] = tn[tn_i];
-    }
-
     // Create module calls
     self._nodes = nodes;
     twp.prototype.createModuleCalls.call(self, new_mwp);
@@ -189,35 +200,6 @@ AppImporter.prototype.run = function (app_json, nodes, reg_obj, paths_arr, calls
   function create_wire_configuration (c_name, node, wirings) {
     self._nodes = nodes;
     twp.prototype.wireConfiguration.call(self, c_name, node, wirings);
-  }
-
-  function create_up () {
-    var cur_pos = {
-      x: 40,
-      y: 120
-    };
-    var y_length = 1;
-    for (var i = comp_json.interface_types.length - 1; i >= 0; i--) {
-      var ci_json = comp_json.interface_types[i];
-      var parent = nodes[c_name];
-      var base = wgme_utils.getMetaNode(self, 'up', ci_json);
-      var up_node = self.createNode(ci_json.as, parent, base, {x: cur_pos.x, y: cur_pos.y});
-      y_length = Math.max(y_length, app_json.interfacedefs[ci_json.name].functions.length);
-      cur_pos.x += 200;
-      if (cur_pos.x >= 1000) {
-        cur_pos.x = 40;
-        cur_pos.y += 20 * y_length;
-        y_length = app_json.interfacedefs[ci_json.name].functions.length;
-      }
-      core.setPointer(up_node, 'interface', nodes[ci_json.name]);
-      nodes[[c_name, ci_json.as].join(Constants.DELIMITER)] = up_node;
-      // TODO: _createFunctionDeclarationsEventsCommands
-      var ec = top.prototype._createFunctionDeclarationsEventsCommands.call(self, up_node, app_json.interfacedefs[ci_json.name]);
-      for (var ec_i in ec) {
-        nodes[[c_name, ci_json.as, ec_i].join(Constants.DELIMITER)] = ec[ec_i];
-      }
-    }
-    core.setRegistry(nodes[c_name], 'last_obj_pos', {x: cur_pos.x, y: cur_pos.y});
   }
 
   function cache_and_register () {

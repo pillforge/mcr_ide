@@ -17,16 +17,17 @@
 // - Add components and their wiring withing a component
 // - Process interface defs
 
-define(['libxmljs', 'fs', 'path'],
-function (libxmljs, fs, path) {
+(function (global) {
   'use strict';
 
   // This is based on archive.py found in the tools/tinyos/ncc/nesdoc-py
   // of a tinyos installation
 
-  return {
+  var obj = {
     parse: function (xml) {
-
+      var libxmljs = require('libxmljs');
+      var fs = require('fs');
+      var path = require('path');
       var xml_doc = libxmljs.parseXml(xml, { noblanks: true });
 
       // The namespace has to be defined and
@@ -301,4 +302,12 @@ function (libxmljs, fs, path) {
     }
   };
 
-});
+  if (typeof define == 'function' && define.amd) {
+    define([], function() {
+      return obj;
+    });
+  } else {
+    module.exports = obj;
+  }
+
+}(this));

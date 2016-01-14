@@ -1,5 +1,5 @@
-define(['q', 'path', 'fs-extra', 'project_root/plugins/common/ParseDump'],
-function (Q, path, fs, pd) {
+define(['q', 'path', 'fs-extra', 'module'],
+function (Q, path, fs, module) {
 
 'use strict';
 
@@ -22,11 +22,14 @@ return {
         encoding: 'utf8',
         stdio: 'pipe'
       });
+      var parser_path = path.join(module.uri, '../../../../plugins/common/ParseDump');
+      var pd = require(parser_path);
       var app_json = pd.parse(xml);
       app_json.calls = convertCalls(fs.readJsonSync(get_calls_file));
       return app_json;
     });
-  }
+  },
+  convertCalls: convertCalls
 };
 
 function convertCalls (calls) {

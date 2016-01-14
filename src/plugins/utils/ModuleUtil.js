@@ -3,7 +3,7 @@ function (Q, nesc_util, path, fs) {
 
 'use strict';
 
-var ModuleUtil = function (context, module_node) {
+var ModuleUtil = function (context, module_node, app_json) {
   this._context = context;
   this._core = context.core;
   this._module_node = module_node;
@@ -14,6 +14,8 @@ var ModuleUtil = function (context, module_node) {
     y: 120,
     y_length: 5
   };
+  if (app_json)
+    this._app_json = app_json;
 };
 
 ModuleUtil.prototype.generateModule = function() {
@@ -138,7 +140,9 @@ ModuleUtil.prototype._generateInterfaces = function() {
       childr: created_evcmd
     };
   }.bind(this));
-  var tasks = this._app_json.calls[this._module_name].t_variables;
+  var tasks = [];
+  if (this._app_json.calls[this._module_name])
+    tasks = this._app_json.calls[this._module_name].t_variables;
   tasks.forEach(function (task) {
     var task_node = this._core.createNode({
       parent: this._module_node,
