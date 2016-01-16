@@ -8,7 +8,7 @@ var ModuleUtil = function (context, module_node, app_json) {
   this._core = context.core;
   this._module_node = module_node;
   this._module_name = context.core.getAttribute(module_node, 'name');
-  this._getMetaNodes();
+  nesc_util.getMetaNodes(context);
   this._cur_pos = {
     x: 40,
     y: 120,
@@ -213,19 +213,6 @@ ModuleUtil.prototype._saveParentsHeaders = function(tmp_path) {
       return deferred.reject(error);
     });
   return deferred.promise;
-};
-
-ModuleUtil.prototype._getMetaNodes = function() {
-  return Q.fcall(function () {
-    if (!this._context.META) {
-      this._context.META = {};
-      var metanodes = this._core.getAllMetaNodes(this._context.rootNode);
-      Object.keys(metanodes).forEach(function (key) {
-        var name = this._core.getAttribute(metanodes[key], 'name');
-        this._context.META[name] = metanodes[key];
-      }.bind(this));
-    }
-  }.bind(this));
 };
 
 return ModuleUtil;

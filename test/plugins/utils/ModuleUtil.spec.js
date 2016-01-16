@@ -89,7 +89,6 @@ describe('ModuleUtil', function () {
     expect(module_util).to.be.an('object');
     module_util.should.have.property('generateModule');
     module_util.should.have.property('_saveSourceAndDependencies');
-    module_util.should.have.property('_getMetaNodes');
     done();
   });
 
@@ -239,16 +238,6 @@ describe('ModuleUtil', function () {
           }).forEach (function (file_path) {
             expect(fs.existsSync(file_path)).to.equal(true, file_path);
           });
-        })
-        .nodeify(done);
-    });
-  });
-
-  describe('#_getMetaNodes', function () {
-    it('should get meta nodes', function (done) {
-      module_util._getMetaNodes(context)
-        .then(function () {
-          expect(context.META).to.be.an('object');
         })
         .nodeify(done);
     });
