@@ -7,6 +7,7 @@ describe('NescUtil', function () {
   var path = require('path');
   var fs = require('fs-extra');
   require('chai').use(require('chai3-json-schema'));
+  var rimraf = testFixture.rimraf;
 
   var gmeConfig = testFixture.getGmeConfig();
   var gmeAuth;
@@ -47,6 +48,9 @@ describe('NescUtil', function () {
       storage.closeDatabase(),
       gmeAuth.unload()
     ])
+    .then(function () {
+      return Q.nfcall(rimraf, './test-tmp');
+    })
     .nodeify(done);
   });
   it('should import a project with apps, SenseAndSend and SenseAndSendAppC objects', function (done) {
@@ -87,6 +91,7 @@ describe('NescUtil', function () {
     nesc_util.should.have.property('getMetaNodes');
     nesc_util.should.have.property('saveSourceAndDependencies');
     nesc_util.should.have.property('compileApp');
+    nesc_util.should.have.property('addBlobs');
     done();
   });
 
@@ -159,6 +164,37 @@ describe('NescUtil', function () {
           expect(fs.existsSync(appc_path)).to.equal(true, appc_path + ' should exist');
         })
         .nodeify(done);
+    });
+  });
+
+  describe('#addBlobs', function () {
+    var server;
+    var http = require('http');
+    before(function (done) {
+      server = testFixture.WebGME.standaloneServer(gmeConfig);
+      server.start(function () {
+        done();
+      });
+    });
+    after(function (done) {
+      server.stop(done);
+    });
+    var BlobClient = testFixture.requirejs('blob/BlobClient');
+    it('should add blobs', function (done) {
+      expect(BlobClient).to.be.an('function');
+      context.blobClient = new BlobClient({
+        logger: logger,
+        server: '127.0.0.1',
+        serverPort: gmeConfig.server.port,
+        httpsecure: false
+      });
+      nesc_util.addBlobs(context, path.join(__dirname, 'NescUtil'), 'NescUtil')
+        .then(function (url) {
+          http.get(url, function (res) {
+            expect(res.statusCode).to.equal(200);
+            done();
+          });
+        });
     });
   });
 

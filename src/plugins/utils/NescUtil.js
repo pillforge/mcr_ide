@@ -8,6 +8,7 @@ return {
   getMetaNodes: getMetaNodes,
   saveSourceAndDependencies: saveSourceAndDependencies,
   compileApp: compileApp,
+  addBlobs: addBlobs,
   convertCalls: convertCalls
 };
 
@@ -92,6 +93,22 @@ function _createMakefile (tmp_path, node_name) {
   var makefile_dot_path = path.join(module.uri, '../NescUtil/Makefile.dot');
   var makefile_dot = dot.template(fs.readFileSync(makefile_dot_path));
   fs.outputFileSync(path.join(tmp_path, 'Makefile'), makefile_dot({name: node_name}));
+}
+
+function addBlobs (context, directory, name) {
+  var bc = context.blobClient;
+  var artifact = bc.createArtifact(name);
+  var files = {};
+  fs.readdirSync(directory).forEach(function (file) {
+    files[file] = fs.readFileSync(path.join(directory, file));
+  });
+  return artifact.addFiles(files)
+    .then(function (hashes) {
+      return bc.saveAllArtifacts();
+    })
+    .then(function (hashes) {
+      return bc.getDownloadURL(hashes[0]);
+    });
 }
 
 function convertCalls (calls) {
