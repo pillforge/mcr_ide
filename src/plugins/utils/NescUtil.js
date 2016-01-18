@@ -9,6 +9,7 @@ return {
   saveSourceAndDependencies: saveSourceAndDependencies,
   compileApp: compileApp,
   addBlobs: addBlobs,
+  generateNescCode: generateNescCode,
   convertCalls: convertCalls
 };
 
@@ -88,10 +89,7 @@ function compileApp (context, node, target) {
 }
 
 function _createMakefile (tmp_path, node_name) {
-  var dot = require('dot');
-  dot.templateSettings.strip = false;
-  var makefile_dot_path = path.join(module.uri, '../NescUtil/Makefile.dot');
-  var makefile_dot = dot.template(fs.readFileSync(makefile_dot_path));
+  var makefile_dot = _getDotTemplate('../NescUtil/Makefile.dot');
   fs.outputFileSync(path.join(tmp_path, 'Makefile'), makefile_dot({name: node_name}));
 }
 
@@ -109,6 +107,39 @@ function addBlobs (context, directory, name) {
     .then(function (hashes) {
       return bc.getDownloadURL(hashes[0]);
     });
+}
+
+function generateNescCode (context, node) {
+  var core = context.core;
+  var configuration_dot = _getDotTemplate('../NescUtil/Configuration.dot');
+  return Q.nfcall(core.loadChildren, node)
+    .then(function (children) {
+      var obj = {
+        components: [],
+        generic_components: []
+      };
+      children.forEach(function (child) {
+        var name = core.getAttribute(child, 'name');
+        var meta = core.getAttribute(core.getMetaType(child), 'name');
+        if (['Configuration', 'Module'].indexOf(meta) > -1) {
+          obj.components.push(name);
+        } else if (['Generic_Configuration', 'Generic_Module'].indexOf(meta) > -1) {
+          obj.generic_components.push({
+            type: core.getAttribute(core.getBase(child), 'name'),
+            parameters: core.getAttribute(child, 'parameters'),
+            name: name
+          });
+        }
+      });
+      return configuration_dot(obj);
+    });
+}
+
+function _getDotTemplate (template_path) {
+  var dot = require('dot');
+  dot.templateSettings.strip = false;
+  template_path = path.join(module.uri, template_path);
+  return dot.template(fs.readFileSync(template_path));
 }
 
 function convertCalls (calls) {

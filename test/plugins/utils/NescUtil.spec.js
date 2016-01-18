@@ -92,6 +92,7 @@ describe('NescUtil', function () {
     nesc_util.should.have.property('saveSourceAndDependencies');
     nesc_util.should.have.property('compileApp');
     nesc_util.should.have.property('addBlobs');
+    nesc_util.should.have.property('generateNescCode');
     done();
   });
 
@@ -117,7 +118,6 @@ describe('NescUtil', function () {
       sense_and_sendc_interfaces.should.have.length(6);
       done();
     });
-
   });
 
   describe('#getMetaNodes', function () {
@@ -195,6 +195,20 @@ describe('NescUtil', function () {
             done();
           });
         });
+    });
+  });
+
+  describe('#generateNescCode', function () {
+    it('should generate configuration source code', function (done) {
+      nesc_util.generateNescCode(context, sense_and_send_appc_node)
+        .then(function (result) {
+          expect(result).to.contain('Automatically generated file');
+          expect(result).to.contain('components SenseAndSendC');
+          expect(result).to.contain('Lsm330dlcC');
+          expect(result).to.contain('components new TimerMilliC() as Timer0;');
+          expect(result).to.contain('components new AMSenderC(AM_SENSORDATAMSG)');
+        })
+        .nodeify(done);
     });
   });
 

@@ -1,0 +1,16 @@
+/**
+ * Automatically generated file
+ *
+ * Created on: {{=new Date()}}
+ */
+
+configuration {
+
+}
+
+implementation {
+{{~it.components :v}}
+  components {{=v}}; {{~}}
+{{~it.generic_components :v}}
+  components new {{=v.type}}({{=v.parameters}}) as {{=v.name}}; {{~}}
+}

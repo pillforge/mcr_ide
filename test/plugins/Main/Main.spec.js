@@ -54,7 +54,7 @@ describe('Main', function () {
       project: project,
       commitHash: commitHash,
       branchName: 'test',
-      activeNode: '/1915602411/1141766090/2066943656',
+      activeNode: '/1099264238/1545382877/363594780',
     };
     manager.executePlugin(pluginName, pluginConfig, context, function (err, result) {
       expect(err).to.equal(null);
@@ -73,13 +73,13 @@ describe('Main', function () {
       project: project,
       commitHash: commitHash,
       branchName: 'test',
-      activeNode: '/1915602411/1141766090/1545383428',
+      activeNode: '/1099264238/1545382877/271569062',
     };
     manager.executePlugin(pluginName, pluginConfig, context, function (err, result) {
       expect(err).to.equal(null);
       expect(typeof result).to.equal('object');
       expect(result.success).to.equal(true);
-      expect(result.messages).to.have.length.above(-1);
+      expect(result.messages).to.have.length.above(0);
       project.getBranchHash('test')
         .then(function (branchHash) {
           expect(branchHash).to.equal(commitHash);
