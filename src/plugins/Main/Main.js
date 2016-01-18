@@ -1,5 +1,8 @@
-define(['plugin/PluginConfig', 'plugin/PluginBase', 'project_src/plugins/utils/ModuleUtil'],
-function (PluginConfig, PluginBase, ModuleUtil) {
+define([ 'plugin/PluginConfig',
+         'plugin/PluginBase',
+         'project_src/plugins/utils/ModuleUtil',
+         'project_src/plugins/utils/NescUtil'
+], function (PluginConfig, PluginBase, ModuleUtil, NescUtil) {
   'use strict';
 
   /**
@@ -37,23 +40,43 @@ function (PluginConfig, PluginBase, ModuleUtil) {
    */
   Main.prototype.main = function (callback) {
     var self = this;
-    var node = self.activeNode;
-    if (self.core.isTypeOf(node, self.META.Module)) {
+    var path = require('path');
+    if (self.core.isTypeOf(self.activeNode, self.META.Module)) {
       self.logger.info('Running #generateModule');
-      var module_util = new ModuleUtil(self, node);
+      var module_util = new ModuleUtil(self, self.activeNode);
       module_util.generateModule()
         .then (function () {
           self.save('Internal structure of a module is generated', function (err) {
             if (err) {
               return callback(err, self.result);
             }
-            self.result.setSuccess(true);
-            callback(null, self.result);
+            callCallback(null, true);
           });
         });
+    } else if (self.core.isTypeOf(self.activeNode, self.META.Configuration)){
+      self.logger.info('Running #compileApp');
+      NescUtil.compileApp(self, self.activeNode, 'exp430')
+        .then(function (tmp_path) {
+          var name = self.core.getAttribute(self.activeNode, 'name');
+          return NescUtil.addBlobs(self, path.join(tmp_path, 'build/exp430'), name);
+        })
+        .then(function (download_url) {
+          self.createMessage(self.activeNode, {
+            download_url: download_url
+          });
+          callCallback(null, true);
+        })
+        .catch(function (error) {
+          self.logger.error(error);
+          callCallback(error, false);
+        });
     } else {
-      self.result.setSuccess(true);
-      callback(null, self.result);
+      callCallback(null, true);
+    }
+
+    function callCallback (err, success) {
+      self.result.setSuccess(success);
+      callback(err, self.result);
     }
 
   };

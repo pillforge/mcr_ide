@@ -1,4 +1,4 @@
-"use strict";
+/*jshint browser: true, node:true*/
 
 define(['js/Constants',
   'js/NodePropertyNames',
@@ -23,6 +23,7 @@ define(['js/Constants',
                               ContextMenu,
                               SourceDetailsDialog) {
 
+  'use strict';
   var ModelDecoratorDiagramDesignerWidget,
     DECORATOR_ID = "ModelDecoratorDiagramDesignerWidget",
     PORT_CONTAINER_OFFSET_Y = 15,
@@ -573,7 +574,7 @@ define(['js/Constants',
       }
     };
 
-    client.runServerPlugin('TinyOSCompiler', context, function (err, result, msg) {
+    client.runServerPlugin('Main', context, function (err, result, msg) {
       if (result.success) {
         console.log('The app is compiled');
         var s = result.messages[0].message.download_url;
