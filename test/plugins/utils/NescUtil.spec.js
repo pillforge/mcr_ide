@@ -216,6 +216,19 @@ describe('NescUtil', function () {
         })
         .nodeify(done);
     });
+    it('should generate uses/provides interfaces and equate wires', function (done) {
+      Q.nfcall(context.core.loadByPath, context.rootNode, '/1117823861/146569445/1943146269')
+        .then(function (mainc_node) {
+          return nesc_util.generateNescCode(context, mainc_node);
+        })
+        .then(function (result) {
+          expect(result).to.contain('provides interface Boot');
+          expect(result).to.contain('uses interface Init as SoftwareInit');
+          expect(result).to.contain('RealMainP.Boot');
+          expect(result).to.contain(' = ');
+        })
+        .nodeify(done);
+    });
   });
 
 });

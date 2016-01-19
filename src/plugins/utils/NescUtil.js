@@ -115,16 +115,31 @@ function generateNescCode (context, node) {
   return Q.nfcall(core.loadChildren, node)
     .then(function (children) {
       var obj = {
+        provides_interfaces: [],
+        uses_interfaces: [],
         components: [],
         generic_components: [],
         equate_wires: [],
         link_wires: []
       };
+      function putInterfaceToObj(type, child) {
+        return Q.nfcall(core.loadPointer, child, 'interface')
+          .then(function (interf_node) {
+            obj[type].push({
+              name: core.getAttribute(child, 'name'),
+              type: core.getAttribute(interf_node, 'name')
+            });
+          });
+      }
       return Q.all(children.map(function (child) {
         return Q.fcall(function () {
           var name = core.getAttribute(child, 'name');
           var meta = core.getAttribute(core.getMetaType(child), 'name');
-          if (['Configuration', 'Module'].indexOf(meta) > -1) {
+          if (['Provides_Interface'].indexOf(meta) > -1) {
+            return putInterfaceToObj('provides_interfaces', child);
+          } else if (['Uses_Interface'].indexOf(meta) > -1) {
+            return putInterfaceToObj('uses_interfaces', child);
+          } else if (['Configuration', 'Module'].indexOf(meta) > -1) {
             obj.components.push(name);
           } else if (['Generic_Configuration', 'Generic_Module'].indexOf(meta) > -1) {
             obj.generic_components.push({

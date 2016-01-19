@@ -5,7 +5,10 @@
  */
 
 configuration {
-
+{{~it.provides_interfaces :v}}
+  provides interface {{=v.type}} as {{=v.name}}; {{~}}
+{{~it.uses_interfaces :v}}
+  uses interface {{=v.type}} as {{=v.name}}; {{~}}
 }
 
 implementation {
