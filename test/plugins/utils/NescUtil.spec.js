@@ -207,6 +207,12 @@ describe('NescUtil', function () {
           expect(result).to.contain('Lsm330dlcC');
           expect(result).to.contain('components new TimerMilliC() as Timer0;');
           expect(result).to.contain('components new AMSenderC(AM_SENSORDATAMSG)');
+          expect(result).to.contain('SenseAndSendC.Boot -> MainC.Boot;');
+          expect(result).to.contain('SenseAndSendC.AccelRead -> Lsm330dlcC.AccelRead;');
+          expect(result).to.contain('SenseAndSendC.AMSend -> AMSenderC.AMSend;');
+          expect(result).to.contain('SenseAndSendC.Packet -> ActiveMessageC.Packet;');
+          expect(result).to.contain('SenseAndSendC.RadioControl -> ActiveMessageC.RadioControl;');
+          expect(result).to.contain('SenseAndSendC.Timer -> Timer0.Timer;');
         })
         .nodeify(done);
     });

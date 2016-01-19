@@ -116,22 +116,63 @@ function generateNescCode (context, node) {
     .then(function (children) {
       var obj = {
         components: [],
-        generic_components: []
+        generic_components: [],
+        equate_wires: [],
+        link_wires: []
       };
-      children.forEach(function (child) {
-        var name = core.getAttribute(child, 'name');
-        var meta = core.getAttribute(core.getMetaType(child), 'name');
-        if (['Configuration', 'Module'].indexOf(meta) > -1) {
-          obj.components.push(name);
-        } else if (['Generic_Configuration', 'Generic_Module'].indexOf(meta) > -1) {
-          obj.generic_components.push({
-            type: core.getAttribute(core.getBase(child), 'name'),
-            parameters: core.getAttribute(child, 'parameters'),
-            name: name
-          });
-        }
-      });
-      return configuration_dot(obj);
+      return Q.all(children.map(function (child) {
+        return Q.fcall(function () {
+          var name = core.getAttribute(child, 'name');
+          var meta = core.getAttribute(core.getMetaType(child), 'name');
+          if (['Configuration', 'Module'].indexOf(meta) > -1) {
+            obj.components.push(name);
+          } else if (['Generic_Configuration', 'Generic_Module'].indexOf(meta) > -1) {
+            obj.generic_components.push({
+              type: core.getAttribute(core.getBase(child), 'name'),
+              parameters: core.getAttribute(child, 'parameters'),
+              name: name
+            });
+          } else if (['Equate_Interface'].indexOf(meta) > -1) {
+            return Q.all([
+              core.loadPointer(child, 'src'),
+              core.loadPointer(child, 'dst'),
+            ]).then(function (nodes) {
+              var parent_names = nodes.map(function (node) {
+                return core.getParent(node);
+              }).map(function (parent) {
+                return core.getAttribute(parent, 'name');
+              });
+              var node_names = nodes.map(function (node) {
+                return core.getAttribute(node, 'name');
+              });
+              var parent_name = core.getAttribute(core.getParent(child), 'name');
+              obj.equate_wires.push({
+                from: (parent_name === parent_names[0] ? '' : parent_names[0] + '.') + node_names[0],
+                to: (parent_name === parent_names[1] ? '' : parent_names[1] + '.') + node_names[1]
+              });
+            });
+          } else if (['Link_Interface'].indexOf(meta) > -1) {
+            return Q.all([
+              core.loadPointer(child, 'src'),
+              core.loadPointer(child, 'dst'),
+            ]).then(function (nodes) {
+              var names = nodes.map(function (node) {
+                return core.getParent(node);
+              }).map(function (parent) {
+                return core.getAttribute(parent, 'name');
+              });
+              obj.link_wires.push({
+                from: names[0],
+                to: names[1],
+                interf: core.getAttribute(nodes[0], 'name')
+              });
+            });
+          }
+        });
+      }))
+        .then(function () {
+          return configuration_dot(obj);
+        });
     });
 }
 

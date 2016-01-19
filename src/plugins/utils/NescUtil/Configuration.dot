@@ -13,4 +13,8 @@ implementation {
   components {{=v}}; {{~}}
 {{~it.generic_components :v}}
   components new {{=v.type}}({{=v.parameters}}) as {{=v.name}}; {{~}}
+{{~it.equate_wires :v}}
+  {{=v.from}} = {{=v.to}}; {{~}}
+{{~it.link_wires :v}}
+  {{=v.from}}.{{=v.interf}} -> {{=v.to}}.{{=v.interf}}; {{~}}
 }
