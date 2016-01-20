@@ -56,6 +56,9 @@ describe('Main', function () {
       branchName: 'test',
       activeNode: '/1099264238/1545382877/363594780',
     };
+    pluginConfig = {
+      goal: 'generateModule'
+    };
     manager.executePlugin(pluginName, pluginConfig, context, function (err, result) {
       expect(err).to.equal(null);
       expect(typeof result).to.equal('object');
@@ -74,6 +77,9 @@ describe('Main', function () {
       commitHash: commitHash,
       branchName: 'test',
       activeNode: '/1099264238/1545382877/271569062',
+    };
+    pluginConfig = {
+      goal: 'compileApp'
     };
     manager.executePlugin(pluginName, pluginConfig, context, function (err, result) {
       expect(err).to.equal(null);
