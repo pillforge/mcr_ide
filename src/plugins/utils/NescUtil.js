@@ -176,10 +176,14 @@ function generateNescCode (context, node) {
               }).map(function (parent) {
                 return core.getAttribute(parent, 'name');
               });
+              console.log('names', names);
+              console.log(nodes.length);
+              console.log(core.getAttribute(nodes[0], 'name'));
+              console.log(core.getAttribute(nodes[1], 'name'));
               obj.link_wires.push({
                 from: names[0],
                 to: names[1],
-                interf: core.getAttribute(nodes[0], 'name')
+                interf: 'wolo'// core.getAttribute(nodes[0], 'name')
               });
             });
           }

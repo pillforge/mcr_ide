@@ -601,11 +601,12 @@ define(['js/Constants',
         "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
         "commit": client.getActiveCommitHash(),
         "branchName": client.getActiveBranchName()
+      },
+      pluginConfig: {
+        goal: 'generateNescCode'
       }
     };
-    console.log('NescCodeGenerator plugin');
-    client.runServerPlugin('NescCodeGenerator', context, function (err, result, msg) {
-      console.log('NescCodeGenerator plugin finishes');
+    client.runServerPlugin('Main', context, function (err, result, msg) {
       if (result.success) {
         var generatedSourceCode = result.messages[0].message.src;
         self._dialog.updateEditorText(generatedSourceCode);
@@ -626,12 +627,10 @@ define(['js/Constants',
         "activeSelection": WebGMEGlobal.State.getActiveSelection() || [],
         "commit": client.getActiveCommitHash(),
         "branchName": client.getActiveBranchName()
+      },
+      pluginConfig: {
+        goal: 'createObjects'
       }
-      // ,pluginConfigs: {
-      //   TinyOSCompiler:{
-      //     "source_code": val
-      //   }
-      // }
     };
 
     client.runServerPlugin('Main', context, function (err, result, msg) {

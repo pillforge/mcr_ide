@@ -41,38 +41,56 @@ define([ 'plugin/PluginConfig',
   Main.prototype.main = function (callback) {
     var self = this;
     var path = require('path');
-    if (self.core.isTypeOf(self.activeNode, self.META.Module)) {
-      self.logger.info('Running #generateModule');
-      var module_util = new ModuleUtil(self, self.activeNode);
-      module_util.generateModule()
-        .then (function () {
-          self.save('Internal structure of a module is generated', function (err) {
-            if (err) {
-              return callback(err, self.result);
-            }
-            callCallback(null, true);
+
+    // if (!self._currentConfig) self._currentConfig = {};
+
+    switch (self._currentConfig.goal) {
+      case 'generateNescCode':
+        self.logger.info('generateNescCode');
+        NescUtil.generateNescCode(self, self.activeNode)
+          .then(function (result) {
+            self.createMessage(self.activeNode, {
+              src: result
+            });
+            return callCallback(null, true);
           });
-        });
-    } else if (self.core.isTypeOf(self.activeNode, self.META.Configuration)){
-      self.logger.info('Running #compileApp');
-      NescUtil.compileApp(self, self.activeNode, 'exp430')
-        .then(function (tmp_path) {
-          var name = self.core.getAttribute(self.activeNode, 'name');
-          return NescUtil.addBlobs(self, path.join(tmp_path, 'build/exp430'), name);
-        })
-        .then(function (download_url) {
-          self.createMessage(self.activeNode, {
-            download_url: download_url
-          });
-          callCallback(null, true);
-        })
-        .catch(function (error) {
-          self.logger.error(error);
-          callCallback(error, false);
-        });
-    } else {
-      callCallback(null, true);
+        break;
+      default:
+        return callCallback(null, true);
     }
+
+    // if (self.core.isTypeOf(self.activeNode, self.META.Module)) {
+    //   self.logger.info('Running #generateModule');
+    //   var module_util = new ModuleUtil(self, self.activeNode);
+    //   module_util.generateModule()
+    //     .then (function () {
+    //       self.save('Internal structure of a module is generated', function (err) {
+    //         if (err) {
+    //           return callback(err, self.result);
+    //         }
+    //         callCallback(null, true);
+    //       });
+    //     });
+    // } else if (self.core.isTypeOf(self.activeNode, self.META.Configuration)){
+    //   self.logger.info('Running #compileApp');
+    //   NescUtil.compileApp(self, self.activeNode, 'exp430')
+    //     .then(function (tmp_path) {
+    //       var name = self.core.getAttribute(self.activeNode, 'name');
+    //       return NescUtil.addBlobs(self, path.join(tmp_path, 'build/exp430'), name);
+    //     })
+    //     .then(function (download_url) {
+    //       self.createMessage(self.activeNode, {
+    //         download_url: download_url
+    //       });
+    //       callCallback(null, true);
+    //     })
+    //     .catch(function (error) {
+    //       self.logger.error(error);
+    //       callCallback(error, false);
+    //     });
+    // } else {
+    //   callCallback(null, true);
+    // }
 
     function callCallback (err, success) {
       self.result.setSuccess(success);
