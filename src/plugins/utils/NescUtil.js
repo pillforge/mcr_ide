@@ -28,6 +28,7 @@ function getAppJson (file_path, target) {
       file_path
     ].map(function (e) { return "'" + e + "'"; }).join(' ');
     var xml = execSync(cmd, {
+      cwd: path.dirname(file_path),
       encoding: 'utf8',
       stdio: 'pipe'
     });

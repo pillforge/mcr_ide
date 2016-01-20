@@ -88,7 +88,6 @@ describe('ModuleUtil', function () {
   it('should have defined properties', function (done) {
     expect(module_util).to.be.an('object');
     module_util.should.have.property('generateModule');
-    module_util.should.have.property('_saveSourceAndDependencies');
     done();
   });
 
@@ -222,24 +221,6 @@ describe('ModuleUtil', function () {
       });
       hasDuplicates.should.equal(false, a_name + ' : ' + b_name);
       done();
-    });
-  });
-
-  describe('#_saveSourceAndDependencies', function () {
-    it('should save source to a temp folder', function (done) {
-      module_util._saveSourceAndDependencies()
-        .then(function (tmp_path) {
-          expect(tmp_path).to.contain('tmp');
-          [ 'SenseAndSendC.nc',
-            'SenseAndSend.h',
-            'Lsm330dlc.h'
-          ].map(function (file) {
-            return path.join(tmp_path, file);
-          }).forEach (function (file_path) {
-            expect(fs.existsSync(file_path)).to.equal(true, file_path);
-          });
-        })
-        .nodeify(done);
     });
   });
 
