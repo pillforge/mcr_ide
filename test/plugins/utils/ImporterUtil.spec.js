@@ -81,6 +81,11 @@ describe('ImporterUtil', function () {
         .then(function (boot_node) {
           expect(core.getAttribute(boot_node, 'name')).to.be.equal('Boot');
           expect(core.getAttribute(core.getMetaType(boot_node), 'name'), 'Interface_Definition');
+          return core.loadChildren(boot_node);
+        })
+        .then(function (children) {
+          children.should.have.length(1);
+          expect(core.getAttribute(children[0], 'name')).to.be.equal('booted');
         })
         .catch(function (error) {
           logger.error('err', error);

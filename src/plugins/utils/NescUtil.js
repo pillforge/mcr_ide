@@ -10,6 +10,7 @@ return {
   compileApp: compileApp,
   addBlobs: addBlobs,
   generateNescCode: generateNescCode,
+  generateEventsCommands: generateEventsCommands,
   convertCalls: convertCalls
 };
 
@@ -195,6 +196,22 @@ function _getDotTemplate (template_path) {
   dot.templateSettings.strip = false;
   template_path = path.join(module.uri, template_path);
   return dot.template(fs.readFileSync(template_path));
+}
+
+function generateEventsCommands (context, functions_array, interf_node) {
+  var created_nodes = {};
+  functions_array.forEach(function (func) {
+    var base = func.event_command == 'event' ? 'Event' : 'Command';
+    var new_node = context.core.createNode({
+      parent: interf_node,
+      base: context.META[base]
+    });
+    context.core.setAttribute(new_node, 'name', func.name);
+    var x = base == 'Event' ? 500 : 20;
+    context.core.setRegistry(new_node, 'position', {x: x, y: 50});
+    created_nodes[func.name] = new_node;
+  });
+  return created_nodes;
 }
 
 function convertCalls (calls) {

@@ -31,6 +31,7 @@ ImporterUtil.prototype._importInterfacedefs = function (interfacedefs_json) {
         base: base
       });
       this._core.setAttribute(new_node, 'name', interf_name);
+      nesc_util.generateEventsCommands(this._context, interf_json.functions, new_node);
       this._registry_paths.interfacedefs[interf_name] = this._core.getPath(new_node);
     }
   }

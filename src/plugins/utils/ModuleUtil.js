@@ -134,7 +134,7 @@ ModuleUtil.prototype._generateInterfaces = function() {
     this._core.setAttribute(new_node, 'name', interf.as);
     this._core.setRegistry(new_node, 'position', {x: this._cur_pos.x, y: this._cur_pos.y});
     this.updateCurPos(this._app_json.interfacedefs[interf.name].functions.length);
-    var created_evcmd = this._generateEventsCommands(interf.name, new_node);
+    var created_evcmd = nesc_util.generateEventsCommands(this._context, this._app_json.interfacedefs[interf.name].functions, new_node);
     created_interfaces[interf.as] = {
       itself: new_node,
       childr: created_evcmd
@@ -164,22 +164,6 @@ ModuleUtil.prototype.updateCurPos = function(object_length) {
     this._cur_pos.y += 30 * this._cur_pos.y_length;
     this._cur_pos.y_length = 5;
   }
-};
-
-ModuleUtil.prototype._generateEventsCommands = function(interf_name, interf_node) {
-  var created_nodes = {};
-  this._app_json.interfacedefs[interf_name].functions.forEach(function (func) {
-    var base = func.event_command == 'event' ? 'Event' : 'Command';
-    var new_node = this._core.createNode({
-      parent: interf_node,
-      base: this._context.META[base]
-    });
-    this._core.setAttribute(new_node, 'name', func.name);
-    var x = base == 'Event' ? 500 : 20;
-    this._core.setRegistry(new_node, 'position', {x: x, y: 50});
-    created_nodes[func.name] = new_node;
-  }.bind(this));
-  return created_nodes;
 };
 
 return ModuleUtil;
