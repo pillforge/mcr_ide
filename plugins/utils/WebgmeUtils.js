@@ -33,6 +33,7 @@ return {
   // the first argument should be plugin's this object
   // caches the created object in nodes and add its path in fwp
   // returns the existing or created WebGME object
+  // Use ImporterUtil
   mkdirp: function (client, file_path, nodes, fwp, notes) {
     var path = require('path');
     var dirs = path.dirname(file_path).split(path.sep);

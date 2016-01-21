@@ -99,11 +99,8 @@ describe('NescUtil', function () {
   describe('#getAppJson', function () {
     var app_json;
     before(function (done) {
-      nesc_util.getAppJson(path.join(__dirname, 'NescUtil/SenseAndSendC.nc'), 'exp430')
-        .then(function (ajson) {
-          app_json = ajson;
-        })
-        .nodeify(done);
+      app_json = nesc_util.getAppJson(path.join(__dirname, 'NescUtil/SenseAndSendC.nc'), 'exp430');
+      done();
     });
 
     it('should comply with the schema', function (done) {

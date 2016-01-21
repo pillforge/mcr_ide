@@ -22,10 +22,7 @@ ModuleUtil.prototype.generateModule = function() {
   return nesc_util.saveSourceAndDependencies(this._context, this._module_node)
     .then(function (tmp_path) {
       var file_path = path.join(tmp_path, this._module_name + '.nc');
-      return nesc_util.getAppJson(file_path, 'exp430');
-    }.bind(this))
-    .then(function (app_json) {
-      this._app_json = app_json;
+      this._app_json = nesc_util.getAppJson(file_path, 'exp430');
       return this._deleteExistingObjects();
     }.bind(this))
     .then(function () {

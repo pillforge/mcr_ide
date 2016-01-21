@@ -14,30 +14,28 @@ return {
 };
 
 function getAppJson (file_path, target) {
-  return Q.fcall(function () {
-    var execSync = require('child_process').execSync;
-    var get_calls_file = '/tmp/' + Math.random().toString(36).substring(7) + '.json';
-    var cmd = [
-      'ncc',
-      '-target=' + target,
-      '-fnesc-dump=components',
-      '-fnesc-dump=interfacedefs',
-      '-fnesc-dump=interfaces',
-      '-fsyntax-only',
-      '-get-calls=' + get_calls_file,
-      file_path
-    ].map(function (e) { return "'" + e + "'"; }).join(' ');
-    var xml = execSync(cmd, {
-      cwd: path.dirname(file_path),
-      encoding: 'utf8',
-      stdio: 'pipe'
-    });
-    var parser_path = path.join(module.uri, '../../../../plugins/common/ParseDump');
-    var pd = require(parser_path);
-    var app_json = pd.parse(xml);
-    app_json.calls = convertCalls(fs.readJsonSync(get_calls_file));
-    return app_json;
+  var execSync = require('child_process').execSync;
+  var get_calls_file = '/tmp/' + Math.random().toString(36).substring(7) + '.json';
+  var cmd = [
+    'ncc',
+    '-target=' + target,
+    '-fnesc-dump=components',
+    '-fnesc-dump=interfacedefs',
+    '-fnesc-dump=interfaces',
+    '-fsyntax-only',
+    '-get-calls=' + get_calls_file,
+    file_path
+  ].map(function (e) { return "'" + e + "'"; }).join(' ');
+  var xml = execSync(cmd, {
+    // cwd: path.dirname(file_path),
+    encoding: 'utf8',
+    stdio: 'pipe'
   });
+  var parser_path = path.join(module.uri, '../../../../plugins/common/ParseDump');
+  var pd = require(parser_path);
+  var app_json = pd.parse(xml);
+  app_json.calls = convertCalls(fs.readJsonSync(get_calls_file));
+  return app_json;
 }
 
 function getMetaNodes (context) {
