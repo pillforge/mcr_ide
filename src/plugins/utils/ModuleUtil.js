@@ -34,11 +34,14 @@ ModuleUtil.prototype._generateModuleHelper = function() {
   return this._deleteExistingObjects()
     .then(function () {
       var created_interfaces = this._generateInterfaces();
-      this._generateCallgraph(created_interfaces);
-      this._generateVariables(created_interfaces);
+      if (this._app_json.components[this._module_name].comp_type === 'Module' &&
+          !this._app_json.components[this._module_name].generic) { // TODO
+        this._generateCallgraph(created_interfaces);
+        this._generateVariables(created_interfaces);
+      }
     }.bind(this))
     .catch(function (error) {
-      console.log('error', error);
+      console.log('_generateModuleHelper error', this._module_name, error);
     }.bind(this));
 };
 
@@ -118,6 +121,7 @@ ModuleUtil.prototype._generateConnection = function(from_node, call_data, create
   if (call_data[0] == 'post') {
     to_node = created_interfaces[call_data[1]];
   } else {
+    if (call_data[1] === 'TaskBasic') return; // TODO
     to_node = created_interfaces[call_data[1]].childr[call_data[2]];
   }
   var conn_node = this._core.createNode({

@@ -93,6 +93,18 @@ describe('ImporterUtil', function () {
         })
         .nodeify(done);
     });
+    it('should import components', function (done) {
+      core.loadByPath(context.rootNode, registry_paths.components.MainC)
+        .then(function (mainc_node) {
+          expect(mainc_node).to.be.an('object');
+          expect(core.getAttribute(mainc_node, 'name')).to.be.equal('MainC');
+          return core.loadChildren(mainc_node);
+        })
+        .then(function (children) {
+          children.should.have.length(2);
+        })
+        .nodeify(done);
+    });
     it('should import only once', function (done) {
       var number_of_children = core.getChildrenRelids(context.rootNode).length;
       importer_util = new ImporterUtil(context, target);

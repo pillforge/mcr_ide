@@ -1,5 +1,7 @@
-define(['project_src/plugins/utils/NescUtil', 'q', 'path', 'fs-extra'],
-function (nesc_util, Q, path, fs) {
+define([ 'project_src/plugins/utils/NescUtil',
+         'project_src/plugins/utils/ModuleUtil',
+         'q', 'path', 'fs-extra'],
+function (nesc_util, ModuleUtil, Q, path, fs) {
 
 'use strict';
 
@@ -11,19 +13,21 @@ var ImporterUtil = function (context, target) {
   this._registry_paths = context.core.getRegistry(context.rootNode, 'paths') || {};
   this._registry_paths.interfacedefs = this._registry_paths.interfacedefs || {};
   this._registry_paths.folders = this._registry_paths.folders || {};
+  this._registry_paths.components = this._registry_paths.components || {};
   nesc_util.getMetaNodes(context);
 };
 
 ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
-  var app_json = nesc_util.getAppJson(comp_path, this._target);
-  this._importInterfacedefs(app_json.interfacedefs);
+  this._app_json = nesc_util.getAppJson(comp_path, this._target);
+  this._importInterfacedefs();
+  this._importComponents();
   this._core.setRegistry(this._context.rootNode, 'paths', this._registry_paths);
 };
 
-ImporterUtil.prototype._importInterfacedefs = function (interfacedefs_json) {
-  for (var interf_name in interfacedefs_json) {
+ImporterUtil.prototype._importInterfacedefs = function () {
+  for (var interf_name in this._app_json.interfacedefs) {
     if (!this._registry_paths.interfacedefs[interf_name]) {
-      var interf_json = interfacedefs_json[interf_name];
+      var interf_json = this._app_json.interfacedefs[interf_name];
       var parent_node = this._mkdirp(interf_json.file_path);
       var base = this._context.META.Interface_Definition;
       var new_node = this._core.createNode({
@@ -35,6 +39,29 @@ ImporterUtil.prototype._importInterfacedefs = function (interfacedefs_json) {
       this._registry_paths.interfacedefs[interf_name] = this._core.getPath(new_node);
     }
   }
+};
+
+ImporterUtil.prototype._importComponents = function() {
+  var self = this;
+  return Q.all(Object.keys(this._app_json.components).map(function (c_name) {
+    if (!self._registry_paths.components[c_name]) {
+      var module_util = new ModuleUtil(self._context);
+      var comp_json = self._app_json.components[c_name];
+      var parent_node = self._mkdirp(comp_json.file_path);
+      var base = self._context.META.Configuration; //TODO
+      var new_node = self._core.createNode({
+        parent: parent_node,
+        base: base
+      });
+      self._core.setAttribute(new_node, 'name', c_name);
+      // TODO: set attributes
+      self._registry_paths.components[c_name] = self._core.getPath(new_node);
+      return module_util.generateModule(new_node, self._app_json);
+    } else {
+      return Q.fcall(function () {});
+    }
+  }));
+
 };
 
 ImporterUtil.prototype._mkdirp = function (file_path) {
