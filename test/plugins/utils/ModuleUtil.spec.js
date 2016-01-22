@@ -77,7 +77,7 @@ describe('ModuleUtil', function () {
           if (!found && 'SenseAndSendC' == context.core.getAttribute(children[i], 'name')) {
             found = true;
             sense_and_sendc_node = children[i];
-            module_util = new ModuleUtil(context, sense_and_sendc_node);
+            module_util = new ModuleUtil(context);
           }
         }
         expect(found).to.equal(true);
@@ -103,7 +103,7 @@ describe('ModuleUtil', function () {
     };
     var all_children;
     before(function (done) {
-      module_util.generateModule()
+      module_util.generateModule(sense_and_sendc_node)
         .then(function () {
           return Q.nfcall(context.core.loadChildren, sense_and_sendc_node);
         })

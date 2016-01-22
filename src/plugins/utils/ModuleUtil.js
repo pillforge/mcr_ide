@@ -3,28 +3,35 @@ function (Q, nesc_util, path, fs) {
 
 'use strict';
 
-var ModuleUtil = function (context, module_node, app_json) {
+var ModuleUtil = function (context) {
   this._context = context;
   this._core = context.core;
-  this._module_node = module_node;
-  this._module_name = context.core.getAttribute(module_node, 'name');
   nesc_util.getMetaNodes(context);
+};
+
+ModuleUtil.prototype.generateModule = function(module_node, app_json) {
+  this._module_node = module_node;
+  this._module_name = this._core.getAttribute(module_node, 'name');
   this._cur_pos = {
     x: 40,
     y: 120,
     y_length: 5
   };
-  if (app_json)
+  if (!app_json) {
+    return nesc_util.saveSourceAndDependencies(this._context, this._module_node)
+      .then(function (tmp_path) {
+        var file_path = path.join(tmp_path, this._module_name + '.nc');
+        this._app_json = nesc_util.getAppJson(file_path, 'exp430');
+        return this._generateModuleHelper();
+      }.bind(this));
+  } else {
     this._app_json = app_json;
+    return this._generateModuleHelper();
+  }
 };
 
-ModuleUtil.prototype.generateModule = function() {
-  return nesc_util.saveSourceAndDependencies(this._context, this._module_node)
-    .then(function (tmp_path) {
-      var file_path = path.join(tmp_path, this._module_name + '.nc');
-      this._app_json = nesc_util.getAppJson(file_path, 'exp430');
-      return this._deleteExistingObjects();
-    }.bind(this))
+ModuleUtil.prototype._generateModuleHelper = function() {
+  return this._deleteExistingObjects()
     .then(function () {
       var created_interfaces = this._generateInterfaces();
       this._generateCallgraph(created_interfaces);
