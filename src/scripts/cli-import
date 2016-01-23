@@ -11,7 +11,7 @@ var path_for_config = path.resolve(
   __dirname,
   'config_' + new Date().getTime().toString() + '.json'
 );
-var root_path = path.resolve(__dirname, '..');
+var root_path = path.resolve(__dirname, '../..');
 var wb_path = path.resolve(root_path, 'node_modules/webgme/src/bin/');
 var s_path = path.resolve(root_path, 'src/seeds/Meta/Meta.json');
 if (!fs.existsSync(s_path)) {
@@ -50,16 +50,17 @@ if (program.new) {
 }
 
 var app_path = path.resolve(process.cwd(), program.args[0]);
+console.log(app_path);
 fs.writeJsonSync(path_for_config, {
-  app_path: app_path,
-  recursive: program.recursive
+  goal: 'importApp',
+  app_path: app_path
 });
 
 var rpp = path.resolve(wb_path, 'run_plugin.js');
 var cmd = ['node', rpp,
   '-b', program.branch,
   '-j', path_for_config,
-  'AppImporter', program.project
+  'Main', program.project
 ].join(' ');
 
 execSync(cmd, {

@@ -1,8 +1,9 @@
 define([ 'plugin/PluginConfig',
          'plugin/PluginBase',
          'project_src/plugins/utils/ModuleUtil',
-         'project_src/plugins/utils/NescUtil'
-], function (PluginConfig, PluginBase, ModuleUtil, NescUtil) {
+         'project_src/plugins/utils/NescUtil',
+         'project_src/plugins/utils/ImporterUtil'
+], function (PluginConfig, PluginBase, ModuleUtil, NescUtil, ImporterUtil) {
   'use strict';
 
   /**
@@ -80,6 +81,17 @@ define([ 'plugin/PluginConfig',
           .catch(function (error) {
             self.logger.error(error);
             callCallback(error, false);
+          });
+        break;
+      case 'importApp':
+        self.logger.info('importApp for', self._currentConfig.app_path);
+        var importer_util = new ImporterUtil(self, 'exp430');
+        importer_util.importAComponentFromPath(self._currentConfig.app_path)
+          .then(function () {
+            return self.save(self._currentConfig.app_path + ' ..imported');
+          })
+          .then(function () {
+            callCallback(null, true);
           });
         break;
       default:

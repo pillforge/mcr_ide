@@ -20,8 +20,10 @@ var ImporterUtil = function (context, target) {
 ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
   this._app_json = nesc_util.getAppJson(comp_path, this._target);
   this._importInterfacedefs();
-  this._importComponents();
-  this._core.setRegistry(this._context.rootNode, 'paths', this._registry_paths);
+  return this._importComponents()
+    .then(function () {
+      this._core.setRegistry(this._context.rootNode, 'paths', this._registry_paths);
+    }.bind(this));
 };
 
 ImporterUtil.prototype._importInterfacedefs = function () {
@@ -61,7 +63,6 @@ ImporterUtil.prototype._importComponents = function() {
       return Q.fcall(function () {});
     }
   }));
-
 };
 
 ImporterUtil.prototype._mkdirp = function (file_path) {

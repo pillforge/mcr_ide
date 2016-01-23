@@ -62,10 +62,11 @@ describe('ImporterUtil', function () {
   describe('#importAComponentFromPath', function () {
     var registry_paths;
     var components;
+    this.timeout(4000); // TODO
     before(function (done) {
       components = importer_util._getComponents(target);
-      importer_util.importAComponentFromPath(components['MainC.nc']);
-      done();
+      importer_util.importAComponentFromPath(components['MainC.nc'])
+        .nodeify(done);
     });
     it('should have registeries', function (done) {
       registry_paths = core.getRegistry(context.rootNode, 'paths');
@@ -108,10 +109,12 @@ describe('ImporterUtil', function () {
     it('should import only once', function (done) {
       var number_of_children = core.getChildrenRelids(context.rootNode).length;
       importer_util = new ImporterUtil(context, target);
-      importer_util.importAComponentFromPath(components['MainC.nc']);
-      var number_of_children2 = core.getChildrenRelids(context.rootNode).length;
-      expect(number_of_children).to.be.equal(number_of_children2);
-      done();
+      importer_util.importAComponentFromPath(components['MainC.nc'])
+        .then(function () {
+          var number_of_children2 = core.getChildrenRelids(context.rootNode).length;
+          expect(number_of_children).to.be.equal(number_of_children2);
+        })
+        .nodeify(done);
     });
   });
 
