@@ -81,23 +81,37 @@ ImporterUtil.prototype._importRefComponentsAndWirings = function(c_name, node, c
     var src_end = get_end(wire.from);
     var dst_end = get_end(wire.to);
     if (src_end && dst_end) {
+      var base = self._context.META.Link_Interface;
+      if (c_name == wire.from.name || c_name == wire.to.name) {
+        base = self._context.META.Equate_Interface;
+      }
       var wire_node = self._core.createNode({
         parent: node,
-        base: self._context.META.Link_Interface // TODO
+        base: base
       });
+      self._core.setPointer(wire_node, 'src', src_end);
+      self._core.setPointer(wire_node, 'dst', dst_end);
     }
   });
   function get_end (end_node_json) {
-    if (!created_components[end_node_json.name]) {
+    var name = end_node_json.name;
+    if (end_node_json.name.includes('.')) {
+      name = end_node_json.name.split('.')[0];
+    }
+    if (!created_components[name]) {
+      var base = self._context.META.ConfigurationRef;
+      if (self._app_json.components[name].comp_type === 'Module') {
+        base = self._context.META.ModuleRef;
+      }
       var new_node = self._core.createNode({
         parent: node,
-        base: self._context.META.ConfigurationRef // TODO
+        base: base
       });
-      self._core.setAttribute(new_node, 'name', end_node_json.name);
-      created_components[end_node_json.name] = {};
-      created_components[end_node_json.name].itself = new_node;
+      self._core.setAttribute(new_node, 'name', name);
+      created_components[name] = {};
+      created_components[name].itself = new_node;
     }
-    return created_components[end_node_json.name].itself;
+    return created_components[name].itself;
   }
 };
 

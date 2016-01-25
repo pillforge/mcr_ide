@@ -72,6 +72,7 @@ describe('Main', function () {
   });
 
   it('should compile the app', function (done) {
+    this.timeout(4000);
     var context = {
       project: project,
       commitHash: commitHash,

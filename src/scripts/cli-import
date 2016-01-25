@@ -50,7 +50,6 @@ if (program.new) {
 }
 
 var app_path = path.resolve(process.cwd(), program.args[0]);
-console.log(app_path);
 fs.writeJsonSync(path_for_config, {
   goal: 'importApp',
   app_path: app_path

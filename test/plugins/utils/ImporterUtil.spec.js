@@ -103,6 +103,16 @@ describe('ImporterUtil', function () {
         })
         .then(function (children) {
           children.should.have.length(9);
+          var children_obj = {};
+          children.forEach(function (child) {
+            var type = core.getAttribute(core.getMetaType(child), 'name');
+            children_obj[type] = children_obj[type] || [];
+            children_obj[type].push(child);
+          });
+          children_obj.ConfigurationRef.should.have.length(2, 'ConfigurationRef');
+          children_obj.ModuleRef.should.have.length(1, 'ModuleRef');
+          children_obj.Link_Interface.should.have.length(2, 'Link_Interface');
+          children_obj.Equate_Interface.should.have.length(2, 'Equate_Interface');
         })
         .nodeify(done);
     });
