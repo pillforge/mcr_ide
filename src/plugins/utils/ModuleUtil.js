@@ -39,6 +39,7 @@ ModuleUtil.prototype._generateModuleHelper = function() {
         this._generateCallgraph(created_interfaces);
         this._generateVariables(created_interfaces);
       }
+      return created_interfaces;
     }.bind(this))
     .catch(function (error) {
       console.log('_generateModuleHelper error', this._module_name, error);

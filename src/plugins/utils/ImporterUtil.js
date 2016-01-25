@@ -18,7 +18,7 @@ var ImporterUtil = function (context, target) {
 };
 
 ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
-  this._app_json = nesc_util.getAppJson(comp_path, this._target);
+  this._app_json = nesc_util.getAppJson(comp_path, this._target, true);
   this._importInterfacedefs();
   return this._importComponents()
     .then(function () {
@@ -50,7 +50,7 @@ ImporterUtil.prototype._importComponents = function() {
       var module_util = new ModuleUtil(self._context);
       var comp_json = self._app_json.components[c_name];
       var parent_node = self._mkdirp(comp_json.file_path);
-      var base = self._context.META.Configuration; //TODO
+      var base = self._context.META[comp_json.comp_type];
       var new_node = self._core.createNode({
         parent: parent_node,
         base: base
@@ -58,11 +58,47 @@ ImporterUtil.prototype._importComponents = function() {
       self._core.setAttribute(new_node, 'name', c_name);
       // TODO: set attributes
       self._registry_paths.components[c_name] = self._core.getPath(new_node);
-      return module_util.generateModule(new_node, self._app_json);
+      return module_util.generateModule(new_node, self._app_json)
+        .then(function (created_interfaces) {
+          if (comp_json.comp_type === 'Configuration') {
+            self._importRefComponentsAndWirings(c_name, new_node, created_interfaces);
+          }
+        });
     } else {
       return Q.fcall(function () {});
     }
   }));
+};
+
+ImporterUtil.prototype._importRefComponentsAndWirings = function(c_name, node, created_interfaces) {
+  var self = this;
+  var created_components = {};
+  created_components[c_name] = {};
+  created_components[c_name].itself = node;
+  created_components[c_name].childr = created_interfaces;
+  var wirings = self._app_json.components[c_name].wiring;
+  wirings.forEach(function (wire) {
+    var src_end = get_end(wire.from);
+    var dst_end = get_end(wire.to);
+    if (src_end && dst_end) {
+      var wire_node = self._core.createNode({
+        parent: node,
+        base: self._context.META.Link_Interface // TODO
+      });
+    }
+  });
+  function get_end (end_node_json) {
+    if (!created_components[end_node_json.name]) {
+      var new_node = self._core.createNode({
+        parent: node,
+        base: self._context.META.ConfigurationRef // TODO
+      });
+      self._core.setAttribute(new_node, 'name', end_node_json.name);
+      created_components[end_node_json.name] = {};
+      created_components[end_node_json.name].itself = new_node;
+    }
+    return created_components[end_node_json.name].itself;
+  }
 };
 
 ImporterUtil.prototype._mkdirp = function (file_path) {

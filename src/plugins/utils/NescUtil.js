@@ -14,19 +14,25 @@ return {
   convertCalls: convertCalls
 };
 
-function getAppJson (file_path, target) {
+function getAppJson (file_path, target, wiring) {
   var execSync = require('child_process').execSync;
   var get_calls_file = '/tmp/' + Math.random().toString(36).substring(7) + '.json';
-  var cmd = [
-    'ncc',
-    '-target=' + target,
-    '-fnesc-dump=components',
+  var cmd = ['ncc', '-target=' + target];
+  if (wiring) {
+    cmd.push(
+      '-fnesc-dump=components(wiring)',
+      '-fnesc-dump=referenced(components, interfaces)'
+    );
+  } else {
+    cmd.push('-fnesc-dump=components');
+  }
+  cmd = cmd.concat([
     '-fnesc-dump=interfacedefs',
     '-fnesc-dump=interfaces',
     '-fsyntax-only',
     '-get-calls=' + get_calls_file,
     file_path
-  ].map(function (e) { return "'" + e + "'"; }).join(' ');
+  ]).map(function (e) { return "'" + e + "'"; }).join(' ');
   var xml = execSync(cmd, {
     // cwd: path.dirname(file_path),
     encoding: 'utf8',

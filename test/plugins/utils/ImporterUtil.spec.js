@@ -102,7 +102,7 @@ describe('ImporterUtil', function () {
           return core.loadChildren(mainc_node);
         })
         .then(function (children) {
-          children.should.have.length(2);
+          children.should.have.length(9);
         })
         .nodeify(done);
     });
