@@ -133,19 +133,42 @@ ModuleUtil.prototype._generateConnection = function(from_node, call_data, create
   this._core.setPointer(conn_node, 'dst', to_node);
 };
 
-ModuleUtil.prototype._generateInterfaces = function() {
+ModuleUtil.prototype.generateInterfaces = function (node, comp_name, app_json) {
+  this._module_node = node;
+  this._app_json = app_json;
+  this._cur_pos = {
+    x: 40,
+    y: 120,
+    y_length: 5
+  };
+  var created_interfaces = {};
+  this._app_json.components[comp_name].interface_types.forEach(function (interf) {
+    var new_node = this._generateInterfaceCommon(interf);
+    created_interfaces[interf.as] = {
+      itself: new_node
+    };
+  }.bind(this));
+  return created_interfaces;
+};
+
+ModuleUtil.prototype._generateInterfaceCommon = function(interf) {
+  var base = this._context.META.Uses_Interface;
+  if (interf.provided) base = this._context.META.Provides_Interface;
+  var new_node = this._core.createNode({
+    parent: this._module_node,
+    base: base
+  });
+  this._core.setAttribute(new_node, 'name', interf.as);
+  this._core.setRegistry(new_node, 'position', {x: this._cur_pos.x, y: this._cur_pos.y});
+  this._updateCurPos(this._app_json.interfacedefs[interf.name].functions.length);
+  return new_node;
+};
+
+ModuleUtil.prototype._generateInterfaces = function () {
   var created_interfaces = {};
   var interfaces = this._app_json.components[this._module_name].interface_types;
   interfaces.forEach(function (interf) {
-    var base = this._context.META.Uses_Interface;
-    if (interf.provided) base = this._context.META.Provides_Interface;
-    var new_node = this._core.createNode({
-      parent: this._module_node,
-      base: base
-    });
-    this._core.setAttribute(new_node, 'name', interf.as);
-    this._core.setRegistry(new_node, 'position', {x: this._cur_pos.x, y: this._cur_pos.y});
-    this.updateCurPos(this._app_json.interfacedefs[interf.name].functions.length);
+    var new_node = this._generateInterfaceCommon(interf);
     var created_evcmd = nesc_util.generateEventsCommands(this._context, this._app_json.interfacedefs[interf.name].functions, new_node);
     created_interfaces[interf.as] = {
       itself: new_node,
@@ -162,13 +185,13 @@ ModuleUtil.prototype._generateInterfaces = function() {
     });
     this._core.setAttribute(task_node, 'name', task);
     this._core.setRegistry(task_node, 'position', {x: this._cur_pos.x, y: this._cur_pos.y});
-    this.updateCurPos(5);
+    this._updateCurPos(5);
     created_interfaces[task] = task_node;
   }.bind(this));
   return created_interfaces;
 };
 
-ModuleUtil.prototype.updateCurPos = function(object_length) {
+ModuleUtil.prototype._updateCurPos = function(object_length) {
   this._cur_pos.x += 200;
   this._cur_pos.y_length = Math.max(this._cur_pos.y_length, object_length);
   if (this._cur_pos.x >= 1000) {

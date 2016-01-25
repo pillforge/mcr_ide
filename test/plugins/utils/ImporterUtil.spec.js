@@ -113,8 +113,39 @@ describe('ImporterUtil', function () {
           children_obj.ModuleRef.should.have.length(1, 'ModuleRef');
           children_obj.Link_Interface.should.have.length(2, 'Link_Interface');
           children_obj.Equate_Interface.should.have.length(2, 'Equate_Interface');
+
+          return Q.all([
+            load_end_points(children_obj.Link_Interface),
+            load_end_points(children_obj.Equate_Interface)
+          ])
+          .then(function (result) {
+            var links = result[0];
+            var equates = result[1];
+            var links_names = links.map(function (link) {
+              var src_name = core.getAttribute(link[0], 'name');
+              var dst_name = core.getAttribute(link[1], 'name');
+              return [src_name, dst_name].join(' ');
+            });
+            links_names.should.contain('PlatformInit PlatformInit');
+            links_names.should.contain('Scheduler Scheduler');
+            var equate_names = equates.map(function (equate) {
+              var src_name = core.getAttribute(equate[0], 'name');
+              var dst_name = core.getAttribute(equate[1], 'name');
+              return [src_name, dst_name].join(' ');
+            });
+            equate_names.should.contain('Boot Boot');
+            equate_names.should.contain('SoftwareInit SoftwareInit');
+          });
         })
         .nodeify(done);
+      function load_end_points(wires) {
+        return Q.all(wires.map(function (wire) {
+          return Q.all([
+            core.loadPointer(wire, 'src'),
+            core.loadPointer(wire, 'dst')
+          ]);
+        }));
+      }
     });
     it('should import only once', function (done) {
       var number_of_children = core.getChildrenRelids(context.rootNode).length;

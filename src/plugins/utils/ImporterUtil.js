@@ -76,6 +76,7 @@ ImporterUtil.prototype._importRefComponentsAndWirings = function(c_name, node, c
   created_components[c_name] = {};
   created_components[c_name].itself = node;
   created_components[c_name].childr = created_interfaces;
+  var module_util = new ModuleUtil(self._context);
   var wirings = self._app_json.components[c_name].wiring;
   wirings.forEach(function (wire) {
     var src_end = get_end(wire.from);
@@ -95,12 +96,14 @@ ImporterUtil.prototype._importRefComponentsAndWirings = function(c_name, node, c
   });
   function get_end (end_node_json) {
     var name = end_node_json.name;
+    // To handle generic components
     if (end_node_json.name.includes('.')) {
-      name = end_node_json.name.split('.')[0];
+      name = end_node_json.name.split('.')[1];
     }
     if (!created_components[name]) {
       var base = self._context.META.ConfigurationRef;
-      if (self._app_json.components[name].comp_type === 'Module') {
+      var comp_name = path.basename(end_node_json.component_base, path.extname(end_node_json.component_base));
+      if (self._app_json.components[comp_name].comp_type === 'Module') {
         base = self._context.META.ModuleRef;
       }
       var new_node = self._core.createNode({
@@ -108,10 +111,13 @@ ImporterUtil.prototype._importRefComponentsAndWirings = function(c_name, node, c
         base: base
       });
       self._core.setAttribute(new_node, 'name', name);
-      created_components[name] = {};
-      created_components[name].itself = new_node;
+      created_components[name] = {
+        itself: new_node,
+        childr: module_util.generateInterfaces(new_node, comp_name, self._app_json)
+      };
     }
-    return created_components[name].itself;
+    if (end_node_json.interface === 'TaskBasic') return null; // TODO
+    return created_components[name].childr[end_node_json.interface].itself;
   }
 };
 

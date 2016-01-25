@@ -16,6 +16,7 @@ describe('ModuleUtil', function () {
   var sense_and_sendc_node;
 
   var ModuleUtil = testFixture.requirejs('project_src/plugins/utils/ModuleUtil');
+  var nesc_util = testFixture.requirejs('project_src/plugins/utils/NescUtil');
   var module_util;
 
   var fs = require('fs');
@@ -88,6 +89,7 @@ describe('ModuleUtil', function () {
   it('should have defined properties', function (done) {
     expect(module_util).to.be.an('object');
     module_util.should.have.property('generateModule');
+    module_util.should.have.property('generateInterfaces');
     done();
   });
 
@@ -224,4 +226,35 @@ describe('ModuleUtil', function () {
     });
   });
 
+  describe('#generateInterfaces', function () {
+    before(function (done) {
+      testFixture.importProject(storage, {
+        projectSeed: 'src/seeds/Meta/Meta.json',
+        projectName: projectName + '_generateInterfaces',
+        gmeConfig: gmeConfig,
+        logger: logger
+      })
+      .then(function (result) {
+        context = result;
+        core = context.core;
+        project = result.project;
+        module_util = new ModuleUtil(context);
+      })
+      .nodeify(done);
+    });
+    it('should generate interfaces', function (done) {
+      nesc_util.getMetaNodes(context);
+      var app_json = nesc_util.getAppJson(path.join(process.env.TOSDIR, 'system/MainC.nc'), 'exp430');
+      var realmainp_node = core.createNode({
+        parent: context.rootNode,
+        base: context.META.ModuleRef
+      });
+      core.setAttribute(realmainp_node, 'name', 'RealMainP');
+      var created_interfaces = module_util.generateInterfaces(realmainp_node, 'RealMainP', app_json);
+      created_interfaces.should.be.an('object');
+      Object.keys(created_interfaces).should.have.length(4);
+      core.getAttribute(created_interfaces.PlatformInit.itself, 'name').should.be.equal('PlatformInit');
+      done();
+    });
+  });
 });
