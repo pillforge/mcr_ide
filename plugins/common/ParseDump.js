@@ -171,7 +171,7 @@
           safe: is_safe,
           interface_types: [],
           tasks: [],
-          function_declerations: [],
+          function_declarations: [],
           parameters: [],
           wiring: wiring
         };
@@ -218,6 +218,17 @@
             jsobj.interface_types.push(int_type);
           });
         }
+
+        functions.forEach(function (func) {
+          var incomponent = func.get('xmlns:component-ref', ns);
+          if (incomponent) {
+            var name = func.attr('name').value();
+            if (comp_name === incomponent.attr('qname').value()) {
+              jsobj.function_declarations.push(name);
+            }
+          }
+        });
+
         output_dict[comp_name] = jsobj;
       }
 

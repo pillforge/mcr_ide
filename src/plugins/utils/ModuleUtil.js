@@ -104,7 +104,9 @@ ModuleUtil.prototype._generateCallgraph = function(created_interfaces) {
     var interface_events = module_calls.evcmd[interf_name];
     for (var evnt in interface_events) {
       calls = interface_events[evnt];
-      from_node = created_interfaces[interf_name].childr[evnt];
+      if (interf_name === '__function')
+        from_node = created_interfaces[evnt];
+      else from_node = created_interfaces[interf_name].childr[evnt];
       for (i = calls.length - 1; i >= 0; i--) {
         this._generateConnection(from_node, calls[i], created_interfaces);
       }
@@ -171,6 +173,7 @@ ModuleUtil.prototype._generateInterfaceCommon = function(interf) {
 };
 
 ModuleUtil.prototype._generateInterfaces = function () {
+  var self = this;
   var created_interfaces = {};
   var interfaces = this._app_json.components[this._module_name].interface_types;
   interfaces.forEach(function (interf) {
@@ -181,6 +184,17 @@ ModuleUtil.prototype._generateInterfaces = function () {
       childr: created_evcmd
     };
   }.bind(this));
+  var functions = this._app_json.components[this._module_name].function_declarations;
+  functions.forEach(function (func) {
+    var func_node = self._core.createNode({
+      parent: self._module_node,
+      base: self._context.META.Function_Declaration
+    });
+    self._core.setAttribute(func_node, 'name', func);
+    self._core.setRegistry(func_node, 'position', {x: self._cur_pos.x, y: self._cur_pos.y});
+    self._updateCurPos(5);
+    created_interfaces[func] = func_node;
+  });
   var tasks = [];
   if (this._app_json.calls[this._module_name])
     tasks = this._app_json.calls[this._module_name].t_variables;

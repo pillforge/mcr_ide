@@ -158,6 +158,18 @@ describe('ImporterUtil', function () {
         }));
       }
     });
+    it('should create callgraph for RealMainP', function (done) {
+      core.loadByPath(context.rootNode, registry_paths.components.RealMainP)
+        .then(function (realmainp_node) {
+          expect(realmainp_node).to.be.an('object');
+          expect(core.getAttribute(realmainp_node, 'name')).to.be.equal('RealMainP');
+          return core.loadChildren(realmainp_node);
+        })
+        .then(function (children) {
+          children.should.have.length(12);
+        })
+        .nodeify(done);
+    });
     it('should import only once', function (done) {
       var number_of_children = core.getChildrenRelids(context.rootNode).length;
       importer_util = new ImporterUtil(context, target);

@@ -21,6 +21,7 @@ function getAppJson (file_path, target, wiring) {
   if (wiring) {
     cmd.push(
       '-fnesc-dump=components(wiring)',
+      '-fnesc-dump=functions',
       '-fnesc-dump=referenced(components, interfaces)'
     );
   } else {

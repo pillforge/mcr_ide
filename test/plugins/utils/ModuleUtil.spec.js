@@ -245,12 +245,12 @@ describe('ModuleUtil', function () {
     it('should generate interfaces', function (done) {
       nesc_util.getMetaNodes(context);
       var app_json = nesc_util.getAppJson(path.join(process.env.TOSDIR, 'system/MainC.nc'), 'exp430');
-      var realmainp_node = core.createNode({
+      var realmainp_ref_node = core.createNode({
         parent: context.rootNode,
         base: context.META.ModuleRef
       });
-      core.setAttribute(realmainp_node, 'name', 'RealMainP');
-      var created_interfaces = module_util.generateInterfaces(realmainp_node, 'RealMainP', app_json);
+      core.setAttribute(realmainp_ref_node, 'name', 'RealMainP');
+      var created_interfaces = module_util.generateInterfaces(realmainp_ref_node, 'RealMainP', app_json);
       created_interfaces.should.be.an('object');
       Object.keys(created_interfaces).should.have.length(4);
       core.getAttribute(created_interfaces.PlatformInit.itself, 'name').should.be.equal('PlatformInit');
