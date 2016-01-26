@@ -3,9 +3,11 @@ function (Q, nesc_util, path, fs) {
 
 'use strict';
 
-var ModuleUtil = function (context) {
+var ModuleUtil = function (context, registry_paths, nodes) {
   this._context = context;
   this._core = context.core;
+  this._registry_paths = registry_paths;
+  this._nodes = nodes;
   nesc_util.getMetaNodes(context);
 };
 
@@ -159,6 +161,10 @@ ModuleUtil.prototype._generateInterfaceCommon = function(interf) {
     base: base
   });
   this._core.setAttribute(new_node, 'name', interf.as);
+  if (this._registry_paths && this._nodes) { // TODO
+    var interface_ref_node = this._nodes[this._registry_paths.interfacedefs[interf.name]];
+    if (interface_ref_node) this._core.setPointer(new_node, 'interface', interface_ref_node);
+  }
   this._core.setRegistry(new_node, 'position', {x: this._cur_pos.x, y: this._cur_pos.y});
   this._updateCurPos(this._app_json.interfacedefs[interf.name].functions.length);
   return new_node;

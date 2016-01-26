@@ -39,15 +39,15 @@ ImporterUtil.prototype._importInterfacedefs = function () {
       this._core.setAttribute(new_node, 'name', interf_name);
       nesc_util.generateEventsCommands(this._context, interf_json.functions, new_node);
       this._registry_paths.interfacedefs[interf_name] = this._core.getPath(new_node);
+      this._nodes[this._registry_paths.interfacedefs[interf_name]] = new_node;
     }
   }
 };
 
 ImporterUtil.prototype._importComponents = function() {
   var self = this;
-  return Q.all(Object.keys(this._app_json.components).map(function (c_name) {
+  Object.keys(self._app_json.components).forEach(function (c_name) {
     if (!self._registry_paths.components[c_name]) {
-      var module_util = new ModuleUtil(self._context);
       var comp_json = self._app_json.components[c_name];
       var parent_node = self._mkdirp(comp_json.file_path);
       var base = self._context.META[comp_json.comp_type];
@@ -58,14 +58,20 @@ ImporterUtil.prototype._importComponents = function() {
       self._core.setAttribute(new_node, 'name', c_name);
       // TODO: set attributes
       self._registry_paths.components[c_name] = self._core.getPath(new_node);
+      self._nodes[self._registry_paths.components[c_name]] = new_node;
+    }
+  });
+  return Q.all(Object.keys(self._app_json.components).map(function (c_name) {
+    var module_util = new ModuleUtil(self._context, self._registry_paths, self._nodes);
+    var new_node = self._nodes[self._registry_paths.components[c_name]];
+    var comp_json = self._app_json.components[c_name];
+    if (new_node) {
       return module_util.generateModule(new_node, self._app_json)
         .then(function (created_interfaces) {
           if (comp_json.comp_type === 'Configuration') {
             self._importRefComponentsAndWirings(c_name, new_node, created_interfaces);
           }
         });
-    } else {
-      return Q.fcall(function () {});
     }
   }));
 };
@@ -76,7 +82,7 @@ ImporterUtil.prototype._importRefComponentsAndWirings = function(c_name, node, c
   created_components[c_name] = {};
   created_components[c_name].itself = node;
   created_components[c_name].childr = created_interfaces;
-  var module_util = new ModuleUtil(self._context);
+  var module_util = new ModuleUtil(self._context, self._registry_paths, self._nodes);
   var wirings = self._app_json.components[c_name].wiring;
   wirings.forEach(function (wire) {
     var src_end = get_end(wire.from);
@@ -92,6 +98,8 @@ ImporterUtil.prototype._importRefComponentsAndWirings = function(c_name, node, c
       });
       self._core.setPointer(wire_node, 'src', src_end);
       self._core.setPointer(wire_node, 'dst', dst_end);
+    } else {
+      // TinySchedulerC-TaskBasic TODO
     }
   });
   function get_end (end_node_json) {
@@ -111,6 +119,8 @@ ImporterUtil.prototype._importRefComponentsAndWirings = function(c_name, node, c
         base: base
       });
       self._core.setAttribute(new_node, 'name', name);
+      var ref_node = self._nodes[self._registry_paths.components[comp_name]];
+      if (ref_node) self._core.setPointer(new_node, 'ref', ref_node);
       created_components[name] = {
         itself: new_node,
         childr: module_util.generateInterfaces(new_node, comp_name, self._app_json)

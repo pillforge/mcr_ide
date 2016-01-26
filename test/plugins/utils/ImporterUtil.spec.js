@@ -114,9 +114,12 @@ describe('ImporterUtil', function () {
           children_obj.Link_Interface.should.have.length(2, 'Link_Interface');
           children_obj.Equate_Interface.should.have.length(2, 'Equate_Interface');
 
+
           return Q.all([
             load_end_points(children_obj.Link_Interface),
-            load_end_points(children_obj.Equate_Interface)
+            load_end_points(children_obj.Equate_Interface),
+            core.loadPointer(children_obj.ModuleRef[0], 'ref'),
+            core.loadPointer(children_obj.Provides_Interface[0], 'interface')
           ])
           .then(function (result) {
             var links = result[0];
@@ -135,6 +138,14 @@ describe('ImporterUtil', function () {
             });
             equate_names.should.contain('Boot Boot');
             equate_names.should.contain('SoftwareInit SoftwareInit');
+
+            var realmainp_original_node = result[2];
+            expect(realmainp_original_node).to.be.an('object');
+            core.getAttribute(realmainp_original_node, 'name').should.be.equal('RealMainP');
+
+            var boot_interface_node = result[3];
+            expect(boot_interface_node).to.be.an('object');
+            core.getAttribute(boot_interface_node, 'name').should.be.equal('Boot');
           });
         })
         .nodeify(done);
