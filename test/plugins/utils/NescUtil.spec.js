@@ -131,6 +131,8 @@ describe('NescUtil', function () {
       var app_json;
       try {
         app_json = nesc_util.getAppJson(path.join(__dirname, 'NescUtil/SenseAndSend/SenseAndSendAppC.nc'), 'exp430');
+        app_json.components.SenseAndSendAppC.file_path[0].should.not.be.equal('/');
+        app_json.components.SenseAndSendAppC.file_path.should.contain('apps');
       } catch (error) {
         logger.error(error);
         expect(error.stderr).to.not.exist();

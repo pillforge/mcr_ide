@@ -155,6 +155,7 @@ define(
     }
   };
 
+  // Check new NescUtil
   Util.prototype.normalizeProjectPath = function(app_json, project_path, prefix) {
     var tos_path = process.env.TOSROOT;
     var project_prefix_dir = path.dirname(project_path);
