@@ -18,6 +18,8 @@ function getAppJson (file_path, target, wiring) {
   var execSync = require('child_process').execSync;
   var get_calls_file = '/tmp/' + Math.random().toString(36).substring(7) + '.json';
   var cmd = ['ncc', '-target=' + target];
+  if (!file_path.includes(process.env.TOSDIR))
+    cmd.push('-I' + path.dirname(file_path));
   if (wiring) {
     cmd.push(
       '-fnesc-dump=components(wiring)',

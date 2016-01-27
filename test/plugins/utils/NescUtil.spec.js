@@ -99,7 +99,7 @@ describe('NescUtil', function () {
   describe('#getAppJson', function () {
     var app_json;
     before(function (done) {
-      app_json = nesc_util.getAppJson(path.join(__dirname, 'NescUtil/SenseAndSendC.nc'), 'exp430');
+      app_json = nesc_util.getAppJson(path.join(__dirname, 'NescUtil/SenseAndSend/SenseAndSendC.nc'), 'exp430');
       done();
     });
 
@@ -115,6 +115,29 @@ describe('NescUtil', function () {
       sense_and_sendc_interfaces.should.have.length(6);
       done();
     });
+
+    it('should work with MainC', function (done) {
+      var app_json;
+      try {
+        app_json = nesc_util.getAppJson(path.join(process.env.TOSDIR, 'system/MainC.nc'), 'exp430');
+      } catch (error) {
+        logger.error(error);
+        expect(error.stderr).to.not.exist();
+      }
+      done();
+    });
+
+    it('should work with SenseAndSendAppC', function (done) {
+      var app_json;
+      try {
+        app_json = nesc_util.getAppJson(path.join(__dirname, 'NescUtil/SenseAndSend/SenseAndSendAppC.nc'), 'exp430');
+      } catch (error) {
+        logger.error(error);
+        expect(error.stderr).to.not.exist();
+      }
+      done();
+    });
+
   });
 
   describe('#getMetaNodes', function () {
@@ -185,7 +208,7 @@ describe('NescUtil', function () {
         serverPort: gmeConfig.server.port,
         httpsecure: false
       });
-      nesc_util.addBlobs(context, path.join(__dirname, 'NescUtil'), 'NescUtil')
+      nesc_util.addBlobs(context, path.join(__dirname, 'NescUtil/SenseAndSend'), 'NescUtil')
         .then(function (url) {
           http.get(url, function (res) {
             expect(res.statusCode).to.equal(200);

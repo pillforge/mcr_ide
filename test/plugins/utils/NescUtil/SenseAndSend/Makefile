@@ -1,0 +1,2 @@
+COMPONENT=SenseAndSendAppC
+include $(MAKERULES)
