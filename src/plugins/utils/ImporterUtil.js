@@ -23,7 +23,28 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
   return this._importComponents()
     .then(function () {
       this._core.setRegistry(this._context.rootNode, 'paths', this._registry_paths);
+      this._importHeaderFiles(comp_path);
     }.bind(this));
+};
+
+ImporterUtil.prototype._importHeaderFiles = function(comp_path) {
+  var self = this;
+  var comp_name = path.basename(comp_path, path.extname(comp_path));
+  var comp_node = self._nodes[self._registry_paths.components[comp_name]];
+  var parent = self._core.getParent(comp_node);
+  var dirname = path.dirname(comp_path);
+  var files = fs.readdirSync(dirname);
+  files.forEach(function (file) {
+    if (path.extname(file) === '.h') {
+      var f_content = fs.readFileSync(path.resolve(dirname, file), 'utf8');
+      var h_node = self._core.createNode({
+        parent: parent,
+        base: self._context.META.Header_File
+      });
+      self._core.setAttribute(h_node, 'name', path.basename(file, '.h'));
+      self._core.setAttribute(h_node, 'source', f_content);
+    }
+  });
 };
 
 ImporterUtil.prototype._importInterfacedefs = function () {
@@ -144,10 +165,10 @@ ImporterUtil.prototype._mkdirp = function (file_path) {
         base: self._context.META.Folder
       });
       self._core.setAttribute(dir_node, 'name', dir);
-      self._nodes[curr_path] = dir_node;
       self._registry_paths.folders[curr_path] = self._core.getPath(dir_node);
+      self._nodes[self._registry_paths.folders[curr_path]] = dir_node;
     }
-    parent_node = self._nodes[curr_path];
+    parent_node = self._nodes[self._registry_paths.folders[curr_path]];
   });
   return parent_node;
 };

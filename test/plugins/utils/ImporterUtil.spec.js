@@ -62,7 +62,7 @@ describe('ImporterUtil', function () {
   describe('#importAComponentFromPath', function () {
     var registry_paths;
     var components;
-    this.timeout(4000); // TODO
+    this.timeout(12000); // TODO
     before(function (done) {
       components = importer_util._getComponents(target);
       importer_util.importAComponentFromPath(components['MainC.nc'])
@@ -172,11 +172,23 @@ describe('ImporterUtil', function () {
     });
     it('should import only once', function (done) {
       var number_of_children = core.getChildrenRelids(context.rootNode).length;
-      importer_util = new ImporterUtil(context, target);
+      // importer_util = new ImporterUtil(context, target);
       importer_util.importAComponentFromPath(components['MainC.nc'])
         .then(function () {
           var number_of_children2 = core.getChildrenRelids(context.rootNode).length;
           expect(number_of_children).to.be.equal(number_of_children2);
+        })
+        .nodeify(done);
+    });
+    it('should import header files', function (done) {
+      importer_util.importAComponentFromPath(path.join(__dirname, './NescUtil/SenseAndSend/SenseAndSendAppC.nc'))
+        .then(function () {
+          registry_paths = core.getRegistry(context.rootNode, 'paths');
+          return core.loadByPath(context.rootNode, registry_paths.folders['/apps/SenseAndSend']);
+        })
+        .then(core.loadChildren)
+        .then(function (children) {
+          children.should.have.length(6);
         })
         .nodeify(done);
     });
