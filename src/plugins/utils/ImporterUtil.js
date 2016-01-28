@@ -20,7 +20,7 @@ var ImporterUtil = function (context, target) {
 ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
   this._app_json = nesc_util.getAppJson(comp_path, this._target, true);
   this._importInterfacedefs();
-  return this._importComponents()
+  return this._importComponents(comp_path)
     .then(function () {
       this._core.setRegistry(this._context.rootNode, 'paths', this._registry_paths);
       this._importHeaderFiles(comp_path);
@@ -65,7 +65,7 @@ ImporterUtil.prototype._importInterfacedefs = function () {
   }
 };
 
-ImporterUtil.prototype._importComponents = function() {
+ImporterUtil.prototype._importComponents = function(comp_path) {
   var self = this;
   Object.keys(self._app_json.components).forEach(function (c_name) {
     if (!self._registry_paths.components[c_name]) {
@@ -77,6 +77,13 @@ ImporterUtil.prototype._importComponents = function() {
         base: base
       });
       self._core.setAttribute(new_node, 'name', c_name);
+      if (comp_json.file_path.indexOf('tos/') !== 0) {
+        var p = path.resolve(comp_path, '../..', path.relative('apps', comp_json.file_path));
+        var source = fs.readFileSync(p, {
+          encoding: 'utf8'
+        });
+        self._core.setAttribute(new_node, 'source', source);
+      }
       // TODO: set attributes
       self._registry_paths.components[c_name] = self._core.getPath(new_node);
       self._nodes[self._registry_paths.components[c_name]] = new_node;

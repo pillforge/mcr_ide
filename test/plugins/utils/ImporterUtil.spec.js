@@ -192,6 +192,15 @@ describe('ImporterUtil', function () {
         })
         .nodeify(done);
     });
+    it('should save source for non-tos components', function (done) {
+      core.loadByPath(context.rootNode, registry_paths.components.SenseAndSendAppC)
+        .then(function (app_node) {
+          var source = core.getAttribute(app_node, 'source');
+          expect(source).to.be.a('string');
+          source.should.have.length.above(0);
+        })
+        .nodeify(done);
+    });
   });
 
   describe('#_getDirectories', function () {
