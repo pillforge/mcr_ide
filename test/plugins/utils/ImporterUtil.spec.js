@@ -9,7 +9,6 @@ describe('ImporterUtil', function () {
   var logger = testFixture.logger.fork('plugins/utils/ImporterUtil');
   var storage;
   var projectName = 'ImporterUtilTest';
-  var project;
   var context;
   var core;
 
@@ -21,27 +20,7 @@ describe('ImporterUtil', function () {
   var path = require('path');
 
   before(function (done) {
-    testFixture.clearDBAndGetGMEAuth(gmeConfig, null)
-      .then(function (gmeAuth_) {
-        gmeAuth = gmeAuth_;
-        storage = testFixture.getMemoryStorage(logger, gmeConfig, gmeAuth_);
-        return storage.openDatabase();
-      })
-      .then(function () {
-        return testFixture.importProject(storage, {
-          projectSeed: 'src/seeds/Meta/Meta.json',
-          projectName: projectName,
-          gmeConfig: gmeConfig,
-          logger: logger
-        });
-      })
-      .then(function (result) {
-        context = result;
-        core = context.core;
-        project = result.project;
-        importer_util = new ImporterUtil(context, target);
-      })
-      .nodeify(done);
+    clearDbImportProjectSetContextAndCore().nodeify(done);
   });
   after(function (done) {
     Q.allDone([
@@ -52,6 +31,7 @@ describe('ImporterUtil', function () {
   });
 
   it('should have defined properties', function (done) {
+    importer_util = new ImporterUtil(context, target);
     expect(importer_util).to.be.an('object');
     importer_util.should.have.property('importAComponentFromPath');
     importer_util.should.have.property('_getDirectories');
@@ -203,6 +183,25 @@ describe('ImporterUtil', function () {
     });
   });
 
+  describe('import AMPacket', function () {
+    before(function (done) {
+      clearDbImportProjectSetContextAndCore()
+        .then(function () {
+          importer_util = new ImporterUtil(context, target);
+        })
+        .nodeify(done);
+    });
+    it('should import all tos components', function (done) {
+      var ampacket_path = importer_util._getComponents()['AMPacket.nc'];
+      importer_util.importAComponentFromPath(ampacket_path)
+        .then(function () {
+          var registry_paths = core.getRegistry(context.rootNode, 'paths');
+          expect(registry_paths.interfacedefs.AMPacket).to.be.a('string');
+        })
+        .nodeify(done);
+    });
+  });
+
   describe('#_getDirectories', function () {
     it('should get directories', function (done) {
       var directories = importer_util._getDirectories();
@@ -219,5 +218,26 @@ describe('ImporterUtil', function () {
       done();
     });
   });
+
+  function clearDbImportProjectSetContextAndCore () {
+    return testFixture.clearDBAndGetGMEAuth(gmeConfig, null)
+      .then(function (gmeAuth_) {
+        gmeAuth = gmeAuth_;
+        storage = testFixture.getMemoryStorage(logger, gmeConfig, gmeAuth_);
+        return storage.openDatabase();
+      })
+      .then(function () {
+        return testFixture.importProject(storage, {
+          projectSeed: 'src/seeds/Meta/Meta.json',
+          projectName: projectName,
+          gmeConfig: gmeConfig,
+          logger: logger
+        });
+      })
+      .then(function (result) {
+        context = result;
+        core = context.core;
+      });
+  }
 
 });

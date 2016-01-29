@@ -20,17 +20,28 @@ var ImporterUtil = function (context, target) {
 ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
   this._app_json = nesc_util.getAppJson(comp_path, this._target, true);
   this._importInterfacedefs();
-  return this._importComponents(comp_path)
-    .then(function () {
-      this._core.setRegistry(this._context.rootNode, 'paths', this._registry_paths);
-      this._importHeaderFiles(comp_path);
-    }.bind(this));
+  var comp_name = path.basename(comp_path, path.extname(comp_path));
+  if (this._app_json.interfacedefs[comp_name]) {
+    this._core.setRegistry(this._context.rootNode, 'paths', this._registry_paths);
+    return Q.fcall(function () {});
+  } else {
+    return this._importComponents(comp_path)
+      .then(function () {
+        this._core.setRegistry(this._context.rootNode, 'paths', this._registry_paths);
+        this._importHeaderFiles(comp_path);
+      }.bind(this));
+  }
 };
 
 ImporterUtil.prototype._importHeaderFiles = function(comp_path) {
   var self = this;
   var comp_name = path.basename(comp_path, path.extname(comp_path));
   var comp_node = self._nodes[self._registry_paths.components[comp_name]];
+  if (!comp_node) comp_node = self._nodes[self._registry_paths.interfacedefs[comp_name]];
+  if (!comp_node) {
+    console.log('Something is wrong');
+    return;
+  }
   var parent = self._core.getParent(comp_node);
   var dirname = path.dirname(comp_path);
   var files = fs.readdirSync(dirname);
@@ -100,6 +111,8 @@ ImporterUtil.prototype._importComponents = function(comp_path) {
             self._importRefComponentsAndWirings(c_name, new_node, created_interfaces);
           }
         });
+    } else {
+      return Q.fcall(function () {});
     }
   }));
 };
