@@ -36,6 +36,7 @@ function getAppJson (file_path, target, wiring) {
     '-get-calls=' + get_calls_file,
     file_path
   ]).map(function (e) { return "'" + e + "'"; }).join(' ');
+  console.log(cmd);
   var xml = execSync(cmd, {
     // cwd: path.dirname(file_path),
     encoding: 'utf8',
@@ -47,7 +48,12 @@ function getAppJson (file_path, target, wiring) {
   // Normalize the paths
   var re = new RegExp(path.dirname(path.dirname(file_path)), 'g');
   app_json = JSON.parse(JSON.stringify(app_json).replace(re, 'apps'));
-  app_json.calls = convertCalls(fs.readJsonSync(get_calls_file));
+  if (fs.existsSync(get_calls_file)) {
+    app_json.calls = convertCalls(fs.readJsonSync(get_calls_file));
+  } else {
+    app_json.calls = {};
+  }
+  fs.outputJsonSync('debug.json', app_json);
   return app_json;
 }
 

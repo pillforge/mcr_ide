@@ -20,17 +20,39 @@ var ImporterUtil = function (context, target) {
 ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
   this._app_json = nesc_util.getAppJson(comp_path, this._target, true);
   this._importInterfacedefs();
-  return this._importComponents(comp_path)
+  var comp_name = path.basename(comp_path, path.extname(comp_path));
+  if (this._app_json.interfacedefs[comp_name]) {
+    return Q.fcall(function () {});
+  } else return this._importComponents(comp_path)
     .then(function () {
       this._core.setRegistry(this._context.rootNode, 'paths', this._registry_paths);
       this._importHeaderFiles(comp_path);
     }.bind(this));
 };
 
+ImporterUtil.prototype.importAllTosComponents = function() {
+  var self = this;
+  var components = self._getComponents();
+  // console.log(components);
+  // console.log(Object.keys(components).length);
+  var m_components = {
+    // 'MainC.nc': components['MainC.nc'] ,
+    'AMPacket.nc': components['AMPacket.nc']
+  };
+  return Q.all(Object.keys(m_components).map(function (key) {
+    return self.importAComponentFromPath(m_components[key]);
+  }));
+};
+
 ImporterUtil.prototype._importHeaderFiles = function(comp_path) {
   var self = this;
   var comp_name = path.basename(comp_path, path.extname(comp_path));
   var comp_node = self._nodes[self._registry_paths.components[comp_name]];
+  if (!comp_node) comp_node = self._nodes[self._registry_paths.interfacedefs[comp_name]];
+  if (!comp_node) {
+    console.log('Something is wrong');
+    return;
+  }
   var parent = self._core.getParent(comp_node);
   var dirname = path.dirname(comp_path);
   var files = fs.readdirSync(dirname);
@@ -89,17 +111,23 @@ ImporterUtil.prototype._importComponents = function(comp_path) {
       self._nodes[self._registry_paths.components[c_name]] = new_node;
     }
   });
+  // return Q.fcall(function () {});
   return Q.all(Object.keys(self._app_json.components).map(function (c_name) {
     var module_util = new ModuleUtil(self._context, self._registry_paths, self._nodes);
     var new_node = self._nodes[self._registry_paths.components[c_name]];
     var comp_json = self._app_json.components[c_name];
     if (new_node) {
+      // return Q.fcall(function () {});
       return module_util.generateModule(new_node, self._app_json)
         .then(function (created_interfaces) {
-          if (comp_json.comp_type === 'Configuration') {
-            self._importRefComponentsAndWirings(c_name, new_node, created_interfaces);
-          }
+          // if (comp_json.comp_type === 'Configuration') {
+          //   console.log(c_name, 'for conf');
+          //   // console.log(Object.keys(created_interfaces));
+          //   self._importRefComponentsAndWirings(c_name, new_node, created_interfaces);
+          // }
         });
+    } else {
+      return Q.fcall(function () {});
     }
   }));
 };
@@ -111,6 +139,9 @@ ImporterUtil.prototype._importRefComponentsAndWirings = function(c_name, node, c
   created_components[c_name].itself = node;
   created_components[c_name].childr = created_interfaces;
   var module_util = new ModuleUtil(self._context, self._registry_paths, self._nodes);
+  console.log(c_name, !!self._app_json.components);
+  console.log('wolo', c_name, !!self._app_json.components[c_name]);
+  console.log('thef', c_name, !!self._app_json.components[c_name].wiring);
   var wirings = self._app_json.components[c_name].wiring;
   wirings.forEach(function (wire) {
     var src_end = get_end(wire.from);

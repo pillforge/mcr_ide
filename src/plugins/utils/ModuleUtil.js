@@ -35,6 +35,7 @@ ModuleUtil.prototype.generateModule = function(module_node, app_json) {
 ModuleUtil.prototype._generateModuleHelper = function() {
   return this._deleteExistingObjects()
     .then(function () {
+      console.log('who', this._module_name, this._app_json);
       var created_interfaces = this._generateInterfaces();
       if (this._app_json.components[this._module_name].comp_type === 'Module' &&
           !this._app_json.components[this._module_name].generic) { // TODO
@@ -42,10 +43,11 @@ ModuleUtil.prototype._generateModuleHelper = function() {
         this._generateVariables(created_interfaces);
       }
       return created_interfaces;
-    }.bind(this))
-    .catch(function (error) {
-      console.log('_generateModuleHelper error', this._module_name, error);
     }.bind(this));
+    // .catch(function (error) {
+    //   // console.log(this._module_name, this._app_json);
+    //   console.log('_generateModuleHelper error', this._module_name, error);
+    // }.bind(this));
 };
 
 ModuleUtil.prototype._deleteExistingObjects = function() {
