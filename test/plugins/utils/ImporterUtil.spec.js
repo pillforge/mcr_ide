@@ -34,6 +34,7 @@ describe('ImporterUtil', function () {
     importer_util = new ImporterUtil(context, target);
     expect(importer_util).to.be.an('object');
     importer_util.should.have.property('importAComponentFromPath');
+    importer_util.should.have.property('importAllTosComponents');
     importer_util.should.have.property('_getDirectories');
     importer_util.should.have.property('_getComponents');
     done();
@@ -197,6 +198,37 @@ describe('ImporterUtil', function () {
         .then(function () {
           var registry_paths = core.getRegistry(context.rootNode, 'paths');
           expect(registry_paths.interfacedefs.AMPacket).to.be.a('string');
+        })
+        .nodeify(done);
+    });
+  });
+
+  describe.skip('#importAllTosComponents', function () {
+    this.timeout(12000);
+    before(function (done) {
+      clearDbImportProjectSetContextAndCore()
+        .then(function () {
+          importer_util = new ImporterUtil(context, target);
+        })
+        .nodeify(done);
+    });
+    it('should import all tos components', function (done) {
+      importer_util.importAllTosComponents()
+        .then(function () {
+          var registry_paths = core.getRegistry(context.rootNode, 'paths');
+          expect(registry_paths).to.be.an('object');
+          var importable_nesc_files = importer_util._getComponents();
+          var importables_nesc_files_sorted = Object.keys(importable_nesc_files).map(function (e) {
+            return e.split('.')[0];
+          }).sort();
+          var idefs_arr = Object.keys(registry_paths.interfacedefs);
+          var comps_arr = Object.keys(registry_paths.components);
+          var imported_nesc_files = idefs_arr.concat(comps_arr).sort();
+          expect(importables_nesc_files_sorted).to.be.equal(imported_nesc_files);
+          return core.loadByPath(context.rootNode, registry_paths.components.MainC);
+        })
+        .then(function (mainc_node) {
+          expect(mainc_node).to.be.an('object');
         })
         .nodeify(done);
     });

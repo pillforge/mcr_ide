@@ -1,7 +1,7 @@
 define([ 'project_src/plugins/utils/NescUtil',
          'project_src/plugins/utils/ModuleUtil',
-         'q', 'path', 'fs-extra'],
-function (nesc_util, ModuleUtil, Q, path, fs) {
+         'q', 'path', 'fs-extra', 'async'],
+function (nesc_util, ModuleUtil, Q, path, fs, async) {
 
 'use strict';
 
@@ -31,6 +31,20 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
         this._importHeaderFiles(comp_path);
       }.bind(this));
   }
+};
+
+ImporterUtil.prototype.importAllTosComponents = function() {
+  var self = this;
+  var deferred = Q.defer();
+  var components = self._getComponents();
+  var m_components = [
+    'MainC',
+    'AMPacket'
+  ];
+  async.eachSeries(m_components, function iterator(key, callback) {
+    self.importAComponentFromPath(components[key + '.nc']).then(callback);
+  }, deferred.resolve);
+  return deferred.promise;
 };
 
 ImporterUtil.prototype._importHeaderFiles = function(comp_path) {
