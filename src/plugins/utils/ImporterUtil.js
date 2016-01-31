@@ -19,6 +19,7 @@ var ImporterUtil = function (context, target) {
 
 ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
   this._app_json = nesc_util.getAppJson(comp_path, this._target, true);
+  // fs.outputJsonSync('debug.json', this._app_json);
   this._importInterfacedefs();
   var comp_name = path.basename(comp_path, path.extname(comp_path));
   if (this._app_json.interfacedefs[comp_name]) {
@@ -38,8 +39,13 @@ ImporterUtil.prototype.importAllTosComponents = function() {
   var deferred = Q.defer();
   var components = self._getComponents();
   var m_components = [
-    'MainC',
-    'AMPacket'
+    'MainC'
+    // // 'AMReceiverC'
+    // ,'AMQueueP'
+    // ,'ActiveMessageImplP'
+    // ,'AdcConfigure'
+    // ,
+    // 'AdcP'
   ];
   async.eachSeries(m_components, function iterator(key, callback) {
     self.importAComponentFromPath(components[key + '.nc']).then(callback);
