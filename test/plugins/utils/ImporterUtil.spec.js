@@ -193,8 +193,8 @@ describe('ImporterUtil', function () {
         .nodeify(done);
     });
     it('should import all tos components', function (done) {
-      var ampacket_path = importer_util._getComponents()['AMPacket.nc'];
-      importer_util.importAComponentFromPath(ampacket_path)
+      var comp_path = importer_util._getComponents()['AMPacket.nc'];
+      importer_util.importAComponentFromPath(comp_path)
         .then(function () {
           var registry_paths = core.getRegistry(context.rootNode, 'paths');
           expect(registry_paths.interfacedefs.AMPacket).to.be.a('string');
@@ -203,8 +203,27 @@ describe('ImporterUtil', function () {
     });
   });
 
+  describe('import AMReceiverC (generic configuration)', function () {
+    before(function (done) {
+      clearDbImportProjectSetContextAndCore()
+        .then(function () {
+          importer_util = new ImporterUtil(context, target);
+        })
+        .nodeify(done);
+    });
+    it('should import all tos components', function (done) {
+      var comp_path = importer_util._getComponents()['AMReceiverC.nc'];
+      importer_util.importAComponentFromPath(comp_path)
+        .then(function () {
+          var registry_paths = core.getRegistry(context.rootNode, 'paths');
+          expect(registry_paths.components.AMReceiverC).to.be.a('string');
+        })
+        .nodeify(done);
+    });
+  });
+
   describe.skip('#importAllTosComponents', function () {
-    this.timeout(12000);
+    this.timeout(120000);
     before(function (done) {
       clearDbImportProjectSetContextAndCore()
         .then(function () {

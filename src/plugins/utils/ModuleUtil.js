@@ -99,6 +99,9 @@ ModuleUtil.prototype._generateVariables = function(created_interfaces) {
 
 ModuleUtil.prototype._generateCallgraph = function(created_interfaces) {
   var module_calls = this._app_json.calls[this._module_name];
+  if (!module_calls) {
+    throw new Error(this._module_name + ' No app_json.calls');
+  }
   var calls, from_node, i;
   for (var interf_name in module_calls.evcmd) {
     var interface_events = module_calls.evcmd[interf_name];

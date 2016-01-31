@@ -25,7 +25,11 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
     this._core.setRegistry(this._context.rootNode, 'paths', this._registry_paths);
     return Q.fcall(function () {});
   } else {
-    return this._importComponents(comp_path)
+    var single_comp = null;
+    if (this._typeOfComponent(comp_path) === 'generic') {
+      single_comp = comp_name;
+    }
+    return this._importComponents(comp_path, single_comp)
       .then(function () {
         this._core.setRegistry(this._context.rootNode, 'paths', this._registry_paths);
         this._importHeaderFiles(comp_path);
@@ -33,13 +37,27 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
   }
 };
 
+ImporterUtil.prototype._typeOfComponent = function(comp_path) {
+  var comp_name = path.basename(comp_path, path.extname(comp_path));
+  if (this._app_json.interfacedefs[comp_name]) return 'interfacedef';
+  if (this._app_json.components[comp_name]) {
+    if (this._app_json.components[comp_name].generic) return 'generic';
+    else return 'non-generic';
+  }
+  return null;
+};
+
 ImporterUtil.prototype.importAllTosComponents = function() {
   var self = this;
   var deferred = Q.defer();
   var components = self._getComponents();
   var m_components = [
-    'MainC',
-    'AMPacket'
+    'MainC'
+    // // 'AMReceiverC'
+    // ,'AMQueueP'
+    // ,'ActiveMessageImplP'
+    // ,'AdcConfigure'
+    // 'AdcP'
   ];
   async.eachSeries(m_components, function iterator(key, callback) {
     self.importAComponentFromPath(components[key + '.nc']).then(callback);
@@ -90,9 +108,11 @@ ImporterUtil.prototype._importInterfacedefs = function () {
   }
 };
 
-ImporterUtil.prototype._importComponents = function(comp_path) {
+ImporterUtil.prototype._importComponents = function(comp_path, single_comp) {
   var self = this;
-  Object.keys(self._app_json.components).forEach(function (c_name) {
+  var keys = Object.keys(self._app_json.components);
+  if (single_comp) keys = [single_comp];
+  keys.forEach(function (c_name) {
     if (!self._registry_paths.components[c_name]) {
       var comp_json = self._app_json.components[c_name];
       var parent_node = self._mkdirp(comp_json.file_path);
@@ -114,7 +134,7 @@ ImporterUtil.prototype._importComponents = function(comp_path) {
       self._nodes[self._registry_paths.components[c_name]] = new_node;
     }
   });
-  return Q.all(Object.keys(self._app_json.components).map(function (c_name) {
+  return Q.all(keys.map(function (c_name) {
     var module_util = new ModuleUtil(self._context, self._registry_paths, self._nodes);
     var new_node = self._nodes[self._registry_paths.components[c_name]];
     var comp_json = self._app_json.components[c_name];
