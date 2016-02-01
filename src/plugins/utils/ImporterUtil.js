@@ -18,9 +18,16 @@ var ImporterUtil = function (context, target) {
 };
 
 ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
-  this._app_json = nesc_util.getAppJson(comp_path, this._target, true);
-  this._importInterfacedefs();
   var comp_name = path.basename(comp_path, path.extname(comp_path));
+  console.log('importing', comp_name, comp_path);
+  if (this._doesExist(comp_path, comp_name)) {
+    return Q.fcall(function () {});
+  }
+  this._app_json = nesc_util.getAppJson(comp_path, this._target, true);
+  if (this._app_json === null) {
+    return Q.fcall(function () {});
+  }
+  this._importInterfacedefs();
   if (this._app_json.interfacedefs[comp_name]) {
     this._core.setRegistry(this._context.rootNode, 'paths', this._registry_paths);
     return Q.fcall(function () {});
@@ -37,6 +44,12 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
   }
 };
 
+ImporterUtil.prototype._doesExist = function(comp_path, comp_name) {
+  if (this._registry_paths.interfacedefs[comp_name] || this._registry_paths.components[comp_name])
+    return true;
+  return false;
+};
+
 ImporterUtil.prototype._typeOfComponent = function(comp_path) {
   var comp_name = path.basename(comp_path, path.extname(comp_path));
   if (this._app_json.interfacedefs[comp_name]) return 'interfacedef';
@@ -51,16 +64,13 @@ ImporterUtil.prototype.importAllTosComponents = function() {
   var self = this;
   var deferred = Q.defer();
   var components = self._getComponents();
-  var m_components = [
-    'MainC'
-    // // 'AMReceiverC'
-    // ,'AMQueueP'
-    // ,'ActiveMessageImplP'
-    // ,'AdcConfigure'
-    // 'AdcP'
-  ];
+  var m_components = Object.keys(components);
+  m_components.unshift('AMQueueP.nc');
+  var counter = 0;
+  var length = m_components.length;
   async.eachSeries(m_components, function iterator(key, callback) {
-    self.importAComponentFromPath(components[key + '.nc']).then(callback);
+    console.log(counter++ + '/' + length);
+    self.importAComponentFromPath(components[key]).then(callback);
   }, deferred.resolve);
   return deferred.promise;
 };

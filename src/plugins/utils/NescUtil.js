@@ -36,11 +36,18 @@ function getAppJson (file_path, target, wiring) {
     '-get-calls=' + get_calls_file,
     file_path
   ]).map(function (e) { return "'" + e + "'"; }).join(' ');
-  var xml = execSync(cmd, {
-    // cwd: path.dirname(file_path),
-    encoding: 'utf8',
-    stdio: 'pipe'
-  });
+  var xml;
+  try {
+    xml = execSync(cmd, {
+      // cwd: path.dirname(file_path),
+      encoding: 'utf8',
+      stdio: 'pipe'
+    });
+  } catch (error) {
+    console.log('nesc error:', error.stderr);
+    return null;
+    // throw new Error(error);
+  }
   var parser_path = path.join(module.uri, '../../../../plugins/common/ParseDump');
   var pd = require(parser_path);
   var app_json = pd.parse(xml);
