@@ -111,6 +111,8 @@ ImporterUtil.prototype._importHeaderFiles = function(comp_path) {
     return;
   }
   var parent = self._core.getParent(comp_node);
+  if (self._core.getRegistry(parent, 'headers')) return;
+  self._core.setRegistry(parent, 'headers', true);
   var dirname = path.dirname(comp_path);
   var files = fs.readdirSync(dirname);
   files.forEach(function (file) {

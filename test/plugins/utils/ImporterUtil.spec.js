@@ -222,6 +222,42 @@ describe('ImporterUtil', function () {
     });
   });
 
+  describe('import header files once', function () {
+    this.timeout(16000);
+    before(function (done) {
+      clearDbImportProjectSetContextAndCore()
+        .then(function () {
+          importer_util = new ImporterUtil(context, target);
+        })
+        .nodeify(done);
+    });
+    it('should import header files once', function (done) {
+      var comps = importer_util._getComponents();
+      importer_util.importAComponentFromPath(comps['MainC.nc'])
+        .then(function () {
+          return importer_util.importAComponentFromPath(comps['AMQueueP.nc']);
+        })
+        .then(function () {
+          var registry_paths = core.getRegistry(context.rootNode, 'paths');
+          return core.loadByPath(context.rootNode, registry_paths.folders['/tos/system']);
+        })
+        .then(function (tos_system_node) {
+          return core.loadChildren(tos_system_node);
+        })
+        .then(function (children) {
+          var header_names = {};
+          children.forEach(function (child) {
+            if (core.isTypeOf(child, context.META.Header_File)) {
+              var name = core.getAttribute(child, 'name');
+              expect(header_names[name]).to.be.an('undefined', name);
+              header_names[name] = true;
+            }
+          });
+        })
+        .nodeify(done);
+    });
+  });
+
   // Skipping this test because it takes too long
   describe.skip('#importAllTosComponents', function () {
     this.timeout(400000);
