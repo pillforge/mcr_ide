@@ -15,33 +15,59 @@ var ImporterUtil = function (context, target) {
   this._registry_paths.folders = this._registry_paths.folders || {};
   this._registry_paths.components = this._registry_paths.components || {};
   nesc_util.getMetaNodes(context);
+  this._areNodesLoaded = false;
 };
 
 ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
-  var comp_name = path.basename(comp_path, path.extname(comp_path));
-  console.log('importing', comp_name, comp_path);
-  if (this._doesExist(comp_path, comp_name)) {
-    return Q.fcall(function () {});
-  }
-  this._app_json = nesc_util.getAppJson(comp_path, this._target, true);
-  if (this._app_json === null) {
-    return Q.fcall(function () {});
-  }
-  this._importInterfacedefs();
-  if (this._app_json.interfacedefs[comp_name]) {
-    this._core.setRegistry(this._context.rootNode, 'paths', this._registry_paths);
-    return Q.fcall(function () {});
-  } else {
-    var single_comp = null;
-    if (this._typeOfComponent(comp_path) === 'generic') {
-      single_comp = comp_name;
+  var deferred = Q.defer();
+  var self = this;
+  self._loadNodes().then(function () {
+    var comp_name = path.basename(comp_path, path.extname(comp_path));
+    console.log('importing', comp_name, comp_path);
+    if (self._doesExist(comp_path, comp_name)) {
+      return deferred.resolve();
     }
-    return this._importComponents(comp_path, single_comp)
-      .then(function () {
-        this._core.setRegistry(this._context.rootNode, 'paths', this._registry_paths);
-        this._importHeaderFiles(comp_path);
-      }.bind(this));
+    self._app_json = nesc_util.getAppJson(comp_path, self._target, true);
+    if (self._app_json === null) {
+      return deferred.resolve();
+    }
+    self._importInterfacedefs();
+    if (self._app_json.interfacedefs[comp_name]) {
+      self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
+      return deferred.resolve();
+    } else {
+      var single_comp = null;
+      if (self._typeOfComponent(comp_path) === 'generic') {
+        single_comp = comp_name;
+      }
+      self._importComponents(comp_path, single_comp)
+        .then(function () {
+          self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
+          self._importHeaderFiles(comp_path);
+          return deferred.resolve();
+        });
+    }
+  });
+  return deferred.promise;
+};
+
+ImporterUtil.prototype._loadNodes = function () {
+  var self = this;
+  var deferred = Q.defer();
+  if (this._areNodesLoaded) deferred.resolve();
+  else {
+    this._areNodesLoaded = true;
+    async.forEachOf(this._registry_paths, function (value, key, callback) {
+      async.forEachOf(value, function (v, k, c) {
+        self._core.loadByPath(self._context.rootNode, v)
+          .then(function (node) {
+            self._nodes[v] = node;
+            c();
+          });
+      }, callback);
+    }, deferred.resolve);
   }
+  return deferred.promise;
 };
 
 ImporterUtil.prototype._doesExist = function(comp_path, comp_name) {

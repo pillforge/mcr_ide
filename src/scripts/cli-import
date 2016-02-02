@@ -20,18 +20,20 @@ if (!fs.existsSync(s_path)) {
 }
 
 program
-  .version('0.0.1')
+  .version('0.1.0')
   .usage('[options] <file>')
   .option('-n --new', 'Create new project')
   .option('-p --project [string]', 'Project [mandatory]')
   .option('-b --branch [string]', 'Branch [mandatory, if new is not set]')
+  .option('-t --target', 'Target platform')
   .option('-r --recursive', 'Recursive')
+  .option('-a --all', 'Import all TOS')
   .parse(process.argv);
 
 if (!program.project || (!program.new && !program.branch))
   program.help();
 
-if (program.args.length !== 1) {
+if (program.args.length !== 1 && !program.all) {
   console.log('Please provide a single argument');
   program.help();
 }
@@ -49,15 +51,23 @@ if (program.new) {
   });
 }
 
-var app_path = path.resolve(process.cwd(), program.args[0]);
-fs.writeJsonSync(path_for_config, {
-  goal: 'importApp',
-  app_path: app_path
-});
+var obj = {};
+if (program.all) {
+  obj = {
+    goal: 'importTos'
+  };
+} else {
+  var app_path = path.resolve(process.cwd(), program.args[0]);
+  obj = {
+    goal: 'importApp',
+    app_path: app_path
+  };
+}
+fs.writeJsonSync(path_for_config, obj);
 
 var rpp = path.resolve(wb_path, 'run_plugin.js');
 var cmd = ['node', rpp,
-  '-b', program.branch,
+  '-b', program.branch || 'master',
   '-j', path_for_config,
   'Main', program.project
 ].join(' ');

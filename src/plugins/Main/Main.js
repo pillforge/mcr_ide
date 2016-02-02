@@ -94,6 +94,17 @@ define([ 'plugin/PluginConfig',
             callCallback(null, true);
           });
         break;
+      case 'importTos':
+        self.logger.info('import Tos for', 'exp430');
+        importer_util = new ImporterUtil(self, 'exp430');
+        importer_util.importAllTosComponents()
+          .then(function () {
+            return self.save('Tos imported for exp430');
+          })
+          .then(function () {
+            callCallback(null, true);
+          });
+        break;
       default:
         self.logger.warn('No matching goal');
         return callCallback(null, true);
