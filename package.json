@@ -22,7 +22,7 @@
     "fs-extra": "^0.26.4",
     "libxmljs": "^0.16.1",
     "q": "^1.4.1",
-    "webgme": "pillforge/webgme#mcr_v1.3.2"
+    "webgme": "pillforge/webgme#mcr_master"
   },
   "devDependencies": {
     "chai": "^3.4.1",

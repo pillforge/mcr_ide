@@ -12,6 +12,9 @@
       },
       "SenseAndSend": {
         "src": "src/seeds/SenseAndSend"
+      },
+      "TOS-exp430": {
+        "src": "src/seeds/TOS-exp430"
       }
     },
     "visualizers": {},

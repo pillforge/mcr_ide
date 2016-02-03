@@ -8,6 +8,8 @@ config.plugin.allowServerExecution = true;
 config.plugin.allowBrowserExecution = false;
 
 config.visualization.decoratorPaths.unshift("./decorators");
+config.seedProjects.basePaths = config.seedProjects.basePaths
+  .filter(path => path.indexOf('webgme') === -1);
 
 config.seedProjects.enable = true;
 config.seedProjects.defaultProject = 'Meta';
