@@ -4,7 +4,6 @@ var validateConfig = require('webgme/config/validator');
 config.server.port = 9091;
 config.mongo.uri = 'mongodb://127.0.0.1:27017/multi';
 
-config.plugin.basePaths.push('./plugins');
 config.plugin.allowServerExecution = true;
 config.plugin.allowBrowserExecution = false;
 

@@ -45,6 +45,7 @@ describe('ImporterUtil', function () {
     var components;
     this.timeout(12000); // TODO
     before(function (done) {
+      importer_util = new ImporterUtil(context, target);
       components = importer_util._getComponents(target);
       importer_util.importAComponentFromPath(components['MainC.nc'])
         .nodeify(done);
@@ -192,7 +193,7 @@ describe('ImporterUtil', function () {
         })
         .nodeify(done);
     });
-    it('should import all tos components', function (done) {
+    it('should import AMPacket component', function (done) {
       var comp_path = importer_util._getComponents()['AMPacket.nc'];
       importer_util.importAComponentFromPath(comp_path)
         .then(function () {
@@ -204,6 +205,7 @@ describe('ImporterUtil', function () {
   });
 
   describe('import AMReceiverC (generic configuration)', function () {
+    this.timeout(8000);
     before(function (done) {
       clearDbImportProjectSetContextAndCore()
         .then(function () {
@@ -211,7 +213,7 @@ describe('ImporterUtil', function () {
         })
         .nodeify(done);
     });
-    it('should import all tos components', function (done) {
+    it('should import AMReceiverC component', function (done) {
       var comp_path = importer_util._getComponents()['AMReceiverC.nc'];
       importer_util.importAComponentFromPath(comp_path)
         .then(function () {
@@ -260,7 +262,7 @@ describe('ImporterUtil', function () {
 
   // Skipping this test because it takes too long
   describe.skip('#importAllTosComponents', function () {
-    this.timeout(400000);
+    this.timeout(500000);
     before(function (done) {
       clearDbImportProjectSetContextAndCore()
         .then(function () {

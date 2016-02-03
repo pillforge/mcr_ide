@@ -1,5 +1,5 @@
-define(['q', 'path', 'fs-extra', 'module'],
-function (Q, path, fs, module) {
+define(['q', 'path', 'fs-extra', 'module', './ParseDump'],
+function (Q, path, fs, module, pd) {
 
 'use strict';
 
@@ -48,8 +48,6 @@ function getAppJson (file_path, target, wiring) {
     return null;
     // throw new Error(error);
   }
-  var parser_path = path.join(module.uri, '../../../../plugins/common/ParseDump');
-  var pd = require(parser_path);
   var app_json = pd.parse(xml);
   // Normalize the paths
   var re = new RegExp(path.dirname(path.dirname(file_path)), 'g');
