@@ -5,6 +5,7 @@ function (Q, path, fs, module, pd) {
 
 return {
   getAppJson: getAppJson,
+  getAppJsonMakefile: getAppJsonMakefile,
   getMetaNodes: getMetaNodes,
   saveSourceAndDependencies: saveSourceAndDependencies,
   compileApp: compileApp,
@@ -57,6 +58,13 @@ function getAppJson (file_path, target, wiring) {
     app_json.calls = convertCalls(fs.readJsonSync(get_calls_file));
   }
   return app_json;
+}
+
+function getAppJsonMakefile (directory_path, target) {
+  var makefile_path = path.join(directory_path, 'Makefile');
+  if (!fs.existsSync(makefile_path)) return null;
+  
+  return {};
 }
 
 function getMetaNodes (context) {

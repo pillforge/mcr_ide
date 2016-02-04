@@ -88,6 +88,7 @@ describe('NescUtil', function () {
   it('should have defined properties', function (done) {
     expect(nesc_util).to.be.an('object');
     nesc_util.should.have.property('getAppJson');
+    nesc_util.should.have.property('getAppJsonMakefile');
     nesc_util.should.have.property('getMetaNodes');
     nesc_util.should.have.property('saveSourceAndDependencies');
     nesc_util.should.have.property('compileApp');
@@ -139,7 +140,20 @@ describe('NescUtil', function () {
       }
       done();
     });
+  });
 
+  describe.only('#getAppJsonMakefile', function () {
+    it('should work', function (done) {
+      var app_json = nesc_util.getAppJsonMakefile(path.join(__dirname, 'NescUtil/SenseAndSend'), 'exp430');
+      var schema = fs.readJsonSync(path.join(__dirname, 'NescUtil/AppSchema.json'));
+      app_json.should.be.jsonSchema(schema);
+      done();
+    });
+    it('should return null when Makefile does not exist', function (done) {
+      var app_json = nesc_util.getAppJsonMakefile(path.join(__dirname, 'NescUtil'), 'exp430');
+      expect(app_json).to.be.a('null');
+      done();
+    });
   });
 
   describe('#getMetaNodes', function () {

@@ -21,33 +21,41 @@ var ImporterUtil = function (context, target) {
 ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
   var deferred = Q.defer();
   var self = this;
-  self._loadNodes().then(function () {
-    var comp_name = path.basename(comp_path, path.extname(comp_path));
-    console.log('importing', comp_name, comp_path);
-    if (self._doesExist(comp_path, comp_name)) {
-      return deferred.resolve();
-    }
-    self._app_json = nesc_util.getAppJson(comp_path, self._target, true);
-    if (self._app_json === null) {
-      return deferred.resolve();
-    }
-    self._importInterfacedefs();
-    if (self._app_json.interfacedefs[comp_name]) {
-      self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
-      return deferred.resolve();
-    } else {
-      var single_comp = null;
-      if (self._typeOfComponent(comp_path) === 'generic') {
-        single_comp = comp_name;
+  if (fs.lstatSync(comp_path).isDirectory()) {
+    // self._app_json = nesc_util.getAppJsonMakefile(comp_path, self._target, true);
+    deferred.resolve();
+  } else {
+    self._loadNodes().then(function () {
+      var comp_name = path.basename(comp_path, path.extname(comp_path));
+      // console.log('importing', comp_name, comp_path);
+      if (self._doesExist(comp_path, comp_name)) {
+        deferred.resolve();
       }
-      self._importComponents(comp_path, single_comp)
-        .then(function () {
-          self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
-          self._importHeaderFiles(comp_path);
-          return deferred.resolve();
-        });
-    }
-  });
+      self._app_json = nesc_util.getAppJson(comp_path, self._target, true);
+      if (self._app_json === null) {
+        deferred.resolve();
+      }
+      self._importInterfacedefs();
+      if (self._app_json.interfacedefs[comp_name]) {
+        self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
+        deferred.resolve();
+      } else {
+        var single_comp = null;
+        if (self._typeOfComponent(comp_path) === 'generic') {
+          single_comp = comp_name;
+        }
+        self._importComponents(comp_path, single_comp)
+          .then(function () {
+            self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
+            self._importHeaderFiles(comp_path);
+            deferred.resolve();
+          });
+      }
+    })
+    .fail(function (error) {
+      deferred.reject(new Error(error));
+    });
+  }
   return deferred.promise;
 };
 

@@ -185,6 +185,24 @@ describe('ImporterUtil', function () {
     });
   });
 
+  describe.only('import a component from a directory including Makefile', function () {
+    var importer_util;
+    before(function (done) {
+      clearDbImportProjectSetContextAndCore()
+        .then(function (imp_util) {
+          importer_util = imp_util;
+        })
+        .nodeify(done);
+    });
+    it('should work', function (done) {
+      importer_util.importAComponentFromPath(path.join(__dirname, './NescUtil/SenseAndSend/'))
+        .then(function () {
+
+        })
+        .nodeify(done);
+    });
+  });
+
   describe('import AMPacket', function () {
     before(function (done) {
       clearDbImportProjectSetContextAndCore()
@@ -328,6 +346,7 @@ describe('ImporterUtil', function () {
       .then(function (result) {
         context = result;
         core = context.core;
+        return new ImporterUtil(context, target);
       });
   }
 
