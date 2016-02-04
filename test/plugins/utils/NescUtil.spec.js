@@ -139,7 +139,17 @@ describe('NescUtil', function () {
       }
       done();
     });
-
+    it('should return null when Makefile does not exist for directory', function (done) {
+      var app_json = nesc_util.getAppJson(path.join(__dirname, 'NescUtil'), 'exp430');
+      expect(app_json).to.be.a('null');
+      done();
+    });
+    it('should work', function (done) {
+      var app_json = nesc_util.getAppJson(path.join(__dirname, 'NescUtil/SenseAndSend'), 'exp430');
+      var schema = fs.readJsonSync(path.join(__dirname, 'NescUtil/AppSchema.json'));
+      app_json.should.be.jsonSchema(schema);
+      done();
+    });
   });
 
   describe('#getMetaNodes', function () {

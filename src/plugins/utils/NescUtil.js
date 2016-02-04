@@ -16,30 +16,45 @@ return {
 
 function getAppJson (file_path, target, wiring) {
   var execSync = require('child_process').execSync;
+  var cmd, xml, app_json;
+  var is_makefile = false;
+  if (fs.lstatSync(file_path).isDirectory()) {
+    var makefile_path = path.join(file_path, 'Makefile');
+    if (!fs.existsSync(makefile_path)) return null;
+    is_makefile = true;
+    wiring = true;
+    execSync = require('child_process').execSync;
+    var ncc_cmd = execSync('make -n ' + target + ' | grep ncc | tr -d "\\n"', {
+     cwd: file_path,
+     encoding: 'utf8'
+    });
+    cmd = ncc_cmd;
+  } else {
+    cmd = 'ncc' + ' -target=' + target + ' ' + file_path;
+  }
   var get_calls_file = '/tmp/' + Math.random().toString(36).substring(7) + '.json';
-  var cmd = ['ncc', '-target=' + target];
-  if (!file_path.includes(process.env.TOSDIR))
-    cmd.push('-I' + path.dirname(file_path));
+  var opts = [];
+  if (!file_path.includes(process.env.TOSDIR) && !is_makefile)
+    opts.push('-I' + path.dirname(file_path));
   if (wiring) {
-    cmd.push(
+    opts.push(
       '-fnesc-dump=components(wiring)',
       '-fnesc-dump=functions',
       '-fnesc-dump=referenced(components, interfaces)'
     );
   } else {
-    cmd.push('-fnesc-dump=components');
+    opts.push('-fnesc-dump=components');
   }
-  cmd = cmd.concat([
+  opts = opts.concat([
     '-fnesc-dump=interfacedefs',
     '-fnesc-dump=interfaces',
     '-fsyntax-only',
-    '-get-calls=' + get_calls_file,
-    file_path
+    '-get-calls=' + get_calls_file
   ]).map(function (e) { return "'" + e + "'"; }).join(' ');
-  var xml;
+  cmd += ' ' + opts;
   try {
     xml = execSync(cmd, {
-      // cwd: path.dirname(file_path),
+      cwd: is_makefile ? file_path : undefined,
       encoding: 'utf8',
       stdio: 'pipe'
     });
@@ -48,7 +63,7 @@ function getAppJson (file_path, target, wiring) {
     return null;
     // throw new Error(error);
   }
-  var app_json = pd.parse(xml);
+  app_json = pd.parse(xml);
   // Normalize the paths
   var re = new RegExp(path.dirname(path.dirname(file_path)), 'g');
   app_json = JSON.parse(JSON.stringify(app_json).replace(re, 'apps'));
