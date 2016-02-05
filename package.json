@@ -21,6 +21,7 @@
     "drug.delivery": "pillforge/drug.delivery",
     "fs-extra": "^0.26.4",
     "libxmljs": "^0.16.1",
+    "lodash": "^4.2.1",
     "q": "^1.4.1",
     "webgme": "pillforge/webgme#mcr_master"
   },

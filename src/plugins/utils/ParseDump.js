@@ -28,6 +28,7 @@
       var libxmljs = require('libxmljs');
       var fs = require('fs');
       var path = require('path');
+      var _ = require('lodash');
       var xml_doc = libxmljs.parseXml(xml, { noblanks: true });
 
       // The namespace has to be defined and
@@ -229,6 +230,9 @@
           }
         });
 
+        jsobj.interface_types = _.uniqBy(jsobj.interface_types, 'as');
+        jsobj.function_declarations = _.uniq(jsobj.function_declarations);
+        jsobj.tasks = _.uniq(jsobj.tasks);
         output_dict[comp_name] = jsobj;
       }
 

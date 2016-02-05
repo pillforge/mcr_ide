@@ -15,10 +15,11 @@ describe('ImporterUtil', function () {
   var Q = testFixture.Q;
 
   var ImporterUtil = testFixture.requirejs('project_src/plugins/utils/ImporterUtil');
-  var importer_util;
   var target = 'exp430';
   var path = require('path');
+  var _ = require('lodash');
 
+  var importer_util;
   before(function (done) {
     clearDbImportProjectSetContextAndCore().nodeify(done);
   });
@@ -30,14 +31,46 @@ describe('ImporterUtil', function () {
     .nodeify(done);
   });
 
-  it('should have defined properties', function (done) {
-    importer_util = new ImporterUtil(context, target);
-    expect(importer_util).to.be.an('object');
-    importer_util.should.have.property('importAComponentFromPath');
-    importer_util.should.have.property('importAllTosComponents');
-    importer_util.should.have.property('_getDirectories');
-    importer_util.should.have.property('_getComponents');
-    done();
+  describe('ImporterUtil', function () {
+    it('should have defined properties', function (done) {
+      expect(importer_util).to.be.an('object');
+      importer_util.should.have.property('importAComponentFromPath');
+      importer_util.should.have.property('importAllTosComponents');
+      importer_util.should.have.property('_getDirectories');
+      importer_util.should.have.property('_getComponents');
+      done();
+    });
+  });
+
+  describe('import several different nesC components', function () {
+    var component_paths;
+    before(function(done) {
+      clearDbImportProjectSetContextAndCore()
+        .then(function () {
+          component_paths = importer_util._getComponents();
+        })
+        .nodeify(done);
+    });
+    beforeEach(function (done) {
+      clearDbImportProjectSetContextAndCore().nodeify(done);
+    });
+    it('SchedulerBasicP', function (done) {
+      importer_util.importAComponentFromPath(component_paths['SchedulerBasicP.nc'])
+        .then(function () {
+          var registry_paths = core.getRegistry(context.rootNode, 'paths');
+          return core.loadByPath(context.rootNode, registry_paths.components.SchedulerBasicP);
+        })
+        .then(function (scheduler_basic_node) {
+          return core.loadChildren(scheduler_basic_node);
+        })
+        .then(function (children) {
+          var children_obj = getChildrenByType(children);
+          var uniq_uses = _.uniq(children_obj.Uses_Interface.map(child => core.getAttribute(child, 'name')));
+          expect(children_obj.Uses_Interface.length)
+            .to.equal(uniq_uses.length, 'Uses_Interface objects with the same name');
+        })
+        .nodeify(done);
+    });
   });
 
   describe('#importAComponentFromPath', function () {
@@ -85,12 +118,7 @@ describe('ImporterUtil', function () {
         })
         .then(function (children) {
           children.should.have.length(9);
-          var children_obj = {};
-          children.forEach(function (child) {
-            var type = core.getAttribute(core.getMetaType(child), 'name');
-            children_obj[type] = children_obj[type] || [];
-            children_obj[type].push(child);
-          });
+          var children_obj = getChildrenByType(children);
           children_obj.ConfigurationRef.should.have.length(2, 'ConfigurationRef');
           children_obj.ModuleRef.should.have.length(1, 'ModuleRef');
           children_obj.Link_Interface.should.have.length(2, 'Link_Interface');
@@ -187,15 +215,10 @@ describe('ImporterUtil', function () {
 
   describe('import a component from a directory that includes Makefile', function () {
     this.timeout(8000);
-    var importer_util;
     before(function (done) {
-      clearDbImportProjectSetContextAndCore()
-        .then(function (imp_util) {
-          importer_util = imp_util;
-        })
-        .nodeify(done);
+      clearDbImportProjectSetContextAndCore().nodeify(done);
     });
-    it('should work', function (done) {
+    it('imports SenseAndSend from Makefile', function (done) {
       importer_util.importAComponentFromPath(path.join(__dirname, './NescUtil/SenseAndSend/'))
         .then(function () {
           var registry_paths = core.getRegistry(context.rootNode, 'paths');
@@ -331,6 +354,16 @@ describe('ImporterUtil', function () {
     });
   });
 
+  function getChildrenByType (children) {
+    var children_obj = {};
+    children.forEach(function (child) {
+      var type = core.getAttribute(core.getMetaType(child), 'name');
+      children_obj[type] = children_obj[type] || [];
+      children_obj[type].push(child);
+    });
+    return children_obj;
+  }
+
   function clearDbImportProjectSetContextAndCore () {
     return testFixture.clearDBAndGetGMEAuth(gmeConfig, null)
       .then(function (gmeAuth_) {
@@ -349,7 +382,7 @@ describe('ImporterUtil', function () {
       .then(function (result) {
         context = result;
         core = context.core;
-        return new ImporterUtil(context, target);
+        importer_util = new ImporterUtil(context, target);
       });
   }
 
