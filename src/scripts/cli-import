@@ -7,10 +7,6 @@ var path = require('path');
 var fs = require('fs-extra');
 var execSync = require('child_process').execSync;
 
-var path_for_config = path.resolve(
-  __dirname,
-  'config_' + new Date().getTime().toString() + '.json'
-);
 var root_path = path.resolve(__dirname, '../..');
 var wb_path = path.resolve(root_path, 'node_modules/webgme/src/bin/');
 var s_path = path.resolve(root_path, 'src/seeds/Meta/Meta.json');
@@ -24,13 +20,13 @@ program
   .usage('[options] <file>')
   .option('-n --new', 'Create new project')
   .option('-p --project [string]', 'Project [mandatory]')
-  .option('-b --branch [string]', 'Branch [mandatory, if new is not set]')
+  .option('-b --branch [string]', 'Branch [default is master]')
   .option('-t --target', 'Target platform')
   .option('-r --recursive', 'Recursive')
   .option('-a --all', 'Import all TOS')
   .parse(process.argv);
 
-if (!program.project || (!program.new && !program.branch))
+if (!program.project)
   program.help();
 
 if (program.args.length !== 1 && !program.all) {
@@ -56,25 +52,45 @@ if (program.all) {
   obj = {
     goal: 'importTos'
   };
+  run_plugin();
+} else if (program.recursive) {
+  var dir_path = path.resolve(process.cwd(), program.args[0]);
+  if (fs.lstatSync(dir_path).isDirectory()) {
+    var files = fs.readdirSync(dir_path);
+    files.forEach(file => {
+      if (fs.existsSync(path.join(dir_path, file, 'Makefile'))) {
+        obj = {
+          goal: 'importApp',
+          app_path: path.join(dir_path, file)
+        };
+        run_plugin();
+      }
+    });
+  }
 } else {
   var app_path = path.resolve(process.cwd(), program.args[0]);
   obj = {
     goal: 'importApp',
     app_path: app_path
   };
+  run_plugin();
 }
-fs.writeJsonSync(path_for_config, obj);
 
-var rpp = path.resolve(wb_path, 'run_plugin.js');
-var cmd = ['node', rpp,
-  '-b', program.branch || 'master',
-  '-j', path_for_config,
-  'Main', program.project
-].join(' ');
-
-execSync(cmd, {
-  cwd: root_path,
-  stdio: 'inherit'
-});
-
-fs.removeSync(path_for_config);
+function run_plugin() {
+  var path_for_config = path.resolve(
+    __dirname,
+    'config_' + new Date().getTime().toString() + '.json'
+  );
+  fs.writeJsonSync(path_for_config, obj);
+  var rpp = path.resolve(wb_path, 'run_plugin.js');
+  var cmd = ['node', rpp,
+    '-b', program.branch || 'master',
+    '-j', path_for_config,
+    'Main', program.project
+  ].join(' ');
+  execSync(cmd, {
+    cwd: root_path,
+    stdio: 'inherit'
+  });
+  fs.removeSync(path_for_config);
+}
