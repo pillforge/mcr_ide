@@ -21,34 +21,53 @@ var ImporterUtil = function (context, target) {
 ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
   var deferred = Q.defer();
   var self = this;
+  var is_directory = fs.lstatSync(comp_path).isDirectory();
+  var dir_path = is_directory ? comp_path : path.dirname(comp_path);
+  self._app_name = path.basename(dir_path);
   self._loadNodes().then(function () {
-    var comp_name = path.basename(comp_path, path.extname(comp_path));
-    console.log('importing', comp_name, comp_path);
-    if (self._doesExist(comp_path, comp_name)) {
-      return deferred.resolve();
-    }
-    self._app_json = nesc_util.getAppJson(comp_path, self._target, true);
-    if (self._app_json === null) {
-      return deferred.resolve();
-    }
-    self._importInterfacedefs();
-    if (self._app_json.interfacedefs[comp_name]) {
-      self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
-      return deferred.resolve();
+
+    var comp_name;
+    if (!is_directory) {
+      comp_name = path.basename(comp_path, path.extname(comp_path));
+      if (self._doesExist(comp_path, comp_name)) deferred.resolve();
     } else {
-      var single_comp = null;
-      if (self._typeOfComponent(comp_path) === 'generic') {
-        single_comp = comp_name;
-      }
-      self._importComponents(comp_path, single_comp)
-        .then(function () {
-          self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
-          self._importHeaderFiles(comp_path);
-          return deferred.resolve();
-        });
+      comp_name = self._getComponentName(dir_path);
     }
+
+    self._app_json = nesc_util.getAppJson(comp_path, self._target, true);
+    if (self._app_json === null) deferred.resolve();
+
+    self._importInterfacedefs();
+
+    if (!is_directory && self._app_json.interfacedefs[comp_name]) return;
+    var single_comp = null;
+    if (!is_directory && self._typeOfComponent(comp_path) === 'generic') {
+      single_comp = comp_name;
+    }
+
+    return self._importComponents(dir_path, single_comp)
+      .then(function () {
+        self._importHeaderFiles(comp_name, dir_path);
+        return;
+      });
+  })
+  .then(function () {
+    self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
+    deferred.resolve();
+  })
+  .fail(function (error) {
+    deferred.reject(new Error(error));
   });
   return deferred.promise;
+};
+
+ImporterUtil.prototype._getComponentName = function(dir_path) {
+  var makefile_path = path.join(dir_path, 'Makefile');
+  if (!fs.existsSync(makefile_path)) return null;
+  var makefile_content = fs.readFileSync(makefile_path, 'utf8');
+  var m = makefile_content.match(/COMPONENT=(\w+\b)/);
+  if (m) return m[1];
+  return null;
 };
 
 ImporterUtil.prototype._loadNodes = function () {
@@ -101,9 +120,8 @@ ImporterUtil.prototype.importAllTosComponents = function() {
   return deferred.promise;
 };
 
-ImporterUtil.prototype._importHeaderFiles = function(comp_path) {
+ImporterUtil.prototype._importHeaderFiles = function(comp_name, dir_path) {
   var self = this;
-  var comp_name = path.basename(comp_path, path.extname(comp_path));
   var comp_node = self._nodes[self._registry_paths.components[comp_name]];
   if (!comp_node) comp_node = self._nodes[self._registry_paths.interfacedefs[comp_name]];
   if (!comp_node) {
@@ -113,11 +131,10 @@ ImporterUtil.prototype._importHeaderFiles = function(comp_path) {
   var parent = self._core.getParent(comp_node);
   if (self._core.getRegistry(parent, 'headers')) return;
   self._core.setRegistry(parent, 'headers', true);
-  var dirname = path.dirname(comp_path);
-  var files = fs.readdirSync(dirname);
+  var files = fs.readdirSync(dir_path);
   files.forEach(function (file) {
     if (path.extname(file) === '.h') {
-      var f_content = fs.readFileSync(path.resolve(dirname, file), 'utf8');
+      var f_content = fs.readFileSync(path.resolve(dir_path, file), 'utf8');
       var h_node = self._core.createNode({
         parent: parent,
         base: self._context.META.Header_File
@@ -146,7 +163,7 @@ ImporterUtil.prototype._importInterfacedefs = function () {
   }
 };
 
-ImporterUtil.prototype._importComponents = function(comp_path, single_comp) {
+ImporterUtil.prototype._importComponents = function(dir_path, single_comp) {
   var self = this;
   var keys = Object.keys(self._app_json.components);
   if (single_comp) keys = [single_comp];
@@ -161,7 +178,11 @@ ImporterUtil.prototype._importComponents = function(comp_path, single_comp) {
       });
       self._core.setAttribute(new_node, 'name', c_name);
       if (comp_json.file_path.indexOf('tos/') !== 0) {
-        var p = path.resolve(comp_path, '../..', path.relative('apps', comp_json.file_path));
+        var file_path = comp_json.file_path;
+        if (!file_path.match(/^[tos|apps]/)) {
+          file_path = path.join('apps', self._app_name, file_path);
+        }
+        var p = path.resolve(dir_path, '..', path.relative('apps', file_path));
         var source = fs.readFileSync(p, {
           encoding: 'utf8'
         });
@@ -246,6 +267,9 @@ ImporterUtil.prototype._importRefComponentsAndWirings = function(c_name, node, c
 
 ImporterUtil.prototype._mkdirp = function (file_path) {
   var self = this;
+  if (!file_path.match(/^[tos|apps]/)) {
+    file_path = path.join('apps', self._app_name, file_path);
+  }
   var dirs = path.dirname(file_path).split(path.sep);
   var parent_node = self._context.rootNode;
   var curr_path = '';

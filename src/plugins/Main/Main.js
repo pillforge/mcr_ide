@@ -92,6 +92,9 @@ define([ 'plugin/PluginConfig',
           })
           .then(function () {
             callCallback(null, true);
+          })
+          .fail(function (error) {
+            callCallback(error, false);
           });
         break;
       case 'importTos':

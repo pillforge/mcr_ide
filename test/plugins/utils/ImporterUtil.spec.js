@@ -185,6 +185,27 @@ describe('ImporterUtil', function () {
     });
   });
 
+  describe('import a component from a directory that includes Makefile', function () {
+    this.timeout(8000);
+    var importer_util;
+    before(function (done) {
+      clearDbImportProjectSetContextAndCore()
+        .then(function (imp_util) {
+          importer_util = imp_util;
+        })
+        .nodeify(done);
+    });
+    it('should work', function (done) {
+      importer_util.importAComponentFromPath(path.join(__dirname, './NescUtil/SenseAndSend/'))
+        .then(function () {
+          var registry_paths = core.getRegistry(context.rootNode, 'paths');
+          expect(registry_paths.interfacedefs.Boot).to.be.a('string', 'Boot');
+          expect(registry_paths.components.MainC).to.be.a('string', 'MainC');
+        })
+        .nodeify(done);
+    });
+  });
+
   describe('import AMPacket', function () {
     before(function (done) {
       clearDbImportProjectSetContextAndCore()
@@ -328,6 +349,7 @@ describe('ImporterUtil', function () {
       .then(function (result) {
         context = result;
         core = context.core;
+        return new ImporterUtil(context, target);
       });
   }
 

@@ -63,6 +63,7 @@ function getAppJson (file_path, target, wiring) {
     return null;
     // throw new Error(error);
   }
+  fs.outputFileSync('app.xml', xml);
   app_json = pd.parse(xml);
   // Normalize the paths
   var re = new RegExp(path.dirname(path.dirname(file_path)), 'g');
@@ -71,6 +72,7 @@ function getAppJson (file_path, target, wiring) {
   if (fs.existsSync(get_calls_file)) {
     app_json.calls = convertCalls(fs.readJsonSync(get_calls_file));
   }
+  fs.outputJsonSync('makefile.json.log', app_json);
   return app_json;
 }
 
