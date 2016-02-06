@@ -186,7 +186,11 @@
 
             // Check if it is a task definition: TaskBasic
             if (intf_name === 'TaskBasic') {
-              return jsobj.tasks.push(intf_as);
+              var interface_ref = e.get('xmlns:type-interface/xmlns:interface-ref', ns);
+              var interface_ref_name = interface_ref.attr('name').value();
+              if (interface_ref_name !== 'TaskBasic') {
+                return jsobj.tasks.push(intf_as);
+              }
             }
 
             var argument_type_list = null;
@@ -246,8 +250,8 @@
           file_path: get_path(interfacedef),
           functions: []
         };
-        var functions = interfacedef.find('xmlns:function', ns);
-        var funct_arr = interfacedefs_json[qname]['functions'];
+        functions = interfacedef.find('xmlns:function', ns);
+        var funct_arr = interfacedefs_json[qname].functions;
         for (var i = 0; i < functions.length; i++) {
           var funct = functions[i];
           funct_arr.push({

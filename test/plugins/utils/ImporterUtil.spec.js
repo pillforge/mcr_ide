@@ -68,6 +68,8 @@ describe('ImporterUtil', function () {
           var uniq_uses = _.uniq(children_obj.Uses_Interface.map(child => core.getAttribute(child, 'name')));
           expect(children_obj.Uses_Interface.length)
             .to.equal(uniq_uses.length, 'Uses_Interface objects with the same name');
+          expect(children_obj.Provides_Interface.length)
+            .to.be.equal(2, 'There should be 2 Provides_Interfaces');
         })
         .nodeify(done);
     });

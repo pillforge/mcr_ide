@@ -21,6 +21,8 @@ describe('NescUtil', function () {
   var Q = testFixture.Q;
   var sense_and_send_appc_node;
 
+  this.timeout(4000);
+
   before(function (done) {
     testFixture.clearDBAndGetGMEAuth(gmeConfig, null)
       .then(function (gmeAuth_) {
@@ -144,7 +146,7 @@ describe('NescUtil', function () {
       expect(app_json).to.be.a('null');
       done();
     });
-    it('should work', function (done) {
+    it('should return correct Json from a directory', function (done) {
       var app_json = nesc_util.getAppJson(path.join(__dirname, 'NescUtil/SenseAndSend'), 'exp430');
       var schema = fs.readJsonSync(path.join(__dirname, 'NescUtil/AppSchema.json'));
       app_json.should.be.jsonSchema(schema);
