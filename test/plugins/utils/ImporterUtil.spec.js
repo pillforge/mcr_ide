@@ -61,6 +61,8 @@ describe('ImporterUtil', function () {
           return core.loadByPath(context.rootNode, registry_paths.components.SchedulerBasicP);
         })
         .then(function (scheduler_basic_node) {
+          var safe = core.getAttribute(scheduler_basic_node, 'safe');
+          safe.should.be.equal(true);
           return core.loadChildren(scheduler_basic_node);
         })
         .then(function (children) {

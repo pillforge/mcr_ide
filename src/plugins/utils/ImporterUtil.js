@@ -177,6 +177,7 @@ ImporterUtil.prototype._importComponents = function(dir_path, single_comp) {
         base: base
       });
       self._core.setAttribute(new_node, 'name', c_name);
+      self._core.setAttribute(new_node, 'safe', comp_json.safe);
       if (comp_json.file_path.indexOf('tos/') !== 0) {
         var file_path = comp_json.file_path;
         if (!file_path.match(/^[tos|apps]/)) {
@@ -188,7 +189,6 @@ ImporterUtil.prototype._importComponents = function(dir_path, single_comp) {
         });
         self._core.setAttribute(new_node, 'source', source);
       }
-      // TODO: set attributes
       self._registry_paths.components[c_name] = self._core.getPath(new_node);
       self._nodes[self._registry_paths.components[c_name]] = new_node;
     }
