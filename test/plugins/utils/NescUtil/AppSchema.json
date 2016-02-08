@@ -9,7 +9,19 @@
           "type": "object",
           "properties": {
             "interface_types": {
-              "type": "array"
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "interface_parameters": {
+                    "type": "string"
+                  }
+                },
+                "required": ["name", "interface_parameters"]
+              }
             },
             "wiring": {
               "type": "array"

@@ -166,6 +166,7 @@ ModuleUtil.prototype._generateInterfaceCommon = function(interf) {
     base: base
   });
   this._core.setAttribute(new_node, 'name', interf.as);
+  this._core.setAttribute(new_node, 'interface_parameters', interf.interface_parameters);
   if (this._registry_paths && this._nodes) { // TODO
     var interface_ref_node = this._nodes[this._registry_paths.interfacedefs[interf.name]];
     if (interface_ref_node) this._core.setPointer(new_node, 'interface', interface_ref_node);

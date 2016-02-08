@@ -217,6 +217,7 @@
                 "MetaDoc": "The specification can be an interface  or a function that is used or provided",
                 "attributes": "",
                 "instance_parameters": "",
+                "interface_parameters": "",
                 "name": "Interface_Type",
                 "type_arguments": ""
             },
@@ -233,6 +234,9 @@
                     },
                     "type_arguments": {
                         "default": "",
+                        "type": "string"
+                    },
+                    "interface_parameters": {
                         "type": "string"
                     }
                 },

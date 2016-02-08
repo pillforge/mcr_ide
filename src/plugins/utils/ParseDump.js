@@ -75,15 +75,6 @@
         }
       });
 
-      // this._wi('all refid');
-      // console.dir(refidx);
-      // this._wi('all qname');
-      // console.dir(qnameidx);
-      // this._wi('all speclist');
-      // console.dir(speclist);
-
-      //this._wi("Qname " + Object.keys(qnameidx).length + " elements");
-
       var instance_components = {};
       components.forEach(function(x) {
         var comp_inst = x.get("xmlns:instance", ns);
@@ -212,13 +203,27 @@
               }
               argument_type_list = arg_arr.join(',');
             }
+
+            // <interface-parameters>
+            var interface_parameters_value = [];
+            var interface_parameters = e.get('xmlns:interface-parameters', ns);
+            if (interface_parameters) {
+              var interface_parameters_children = interface_parameters.childNodes();
+              interface_parameters_children.forEach(child => {
+                var typedef_ref = child.get('*/xmlns:typedef-ref', ns);
+                if (typedef_ref) {
+                  interface_parameters_value.push(typedef_ref.attr('name').value()); 
+                }
+              });
+            }
             
             // A javascript representation of an interface_type
             var int_type = {
               name: intf_name,
               as: intf_as,
               provided: provided,
-              argument_type: argument_type_list
+              argument_type: argument_type_list,
+              interface_parameters: interface_parameters_value.join(' ')
             };
             jsobj.interface_types.push(int_type);
           });

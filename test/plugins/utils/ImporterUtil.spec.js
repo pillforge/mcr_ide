@@ -72,6 +72,11 @@ describe('ImporterUtil', function () {
             .to.equal(uniq_uses.length, 'Uses_Interface objects with the same name');
           expect(children_obj.Provides_Interface.length)
             .to.be.equal(2, 'There should be 2 Provides_Interfaces');
+          var task_basic_node = _.find(children_obj.Provides_Interface, function (o) {
+            return core.getAttribute(o, 'name') === 'TaskBasic';
+          });
+          var iface_parameters = core.getAttribute(task_basic_node, 'interface_parameters');
+          expect(iface_parameters).to.be.equal('uint8_t');
         })
         .nodeify(done);
     });
