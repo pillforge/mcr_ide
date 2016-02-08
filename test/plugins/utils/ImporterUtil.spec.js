@@ -81,6 +81,19 @@ describe('ImporterUtil', function () {
         })
         .nodeify(done);
     });
+    it('Actuate - interface definition', function (done) {
+      importer_util.importAComponentFromPath(path.join(__dirname, './NescUtil/Actuate.nc'))
+        .then(function () {
+          var registry_paths = core.getRegistry(context.rootNode, 'paths');
+          return core.loadByPath(context.rootNode, registry_paths.interfacedefs.Actuate);
+        })
+        .then(function (actuate_node) {
+          var source = core.getAttribute(actuate_node, 'source');
+          expect(source).to.be.a('string');
+          source.should.have.length.above(0);
+        })
+        .nodeify(done);
+    });
   });
 
   describe('#importAComponentFromPath', function () {
@@ -88,9 +101,11 @@ describe('ImporterUtil', function () {
     var components;
     this.timeout(12000); // TODO
     before(function (done) {
-      importer_util = new ImporterUtil(context, target);
-      components = importer_util._getComponents(target);
-      importer_util.importAComponentFromPath(components['MainC.nc'])
+      clearDbImportProjectSetContextAndCore()
+        .then(function () {
+          components = importer_util._getComponents(target);
+          return importer_util.importAComponentFromPath(components['MainC.nc']);
+        })
         .nodeify(done);
     });
     it('should have registeries', function (done) {

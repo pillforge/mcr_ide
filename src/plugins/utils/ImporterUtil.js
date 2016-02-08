@@ -37,7 +37,7 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
     self._app_json = nesc_util.getAppJson(comp_path, self._target, true);
     if (self._app_json === null) deferred.resolve();
 
-    self._importInterfacedefs();
+    self._importInterfacedefs(dir_path);
 
     if (!is_directory && self._app_json.interfacedefs[comp_name]) return;
     var single_comp = null;
@@ -145,7 +145,7 @@ ImporterUtil.prototype._importHeaderFiles = function(comp_name, dir_path) {
   });
 };
 
-ImporterUtil.prototype._importInterfacedefs = function () {
+ImporterUtil.prototype._importInterfacedefs = function (dir_path) {
   for (var interf_name in this._app_json.interfacedefs) {
     if (!this._registry_paths.interfacedefs[interf_name]) {
       var interf_json = this._app_json.interfacedefs[interf_name];
@@ -156,10 +156,26 @@ ImporterUtil.prototype._importInterfacedefs = function () {
         base: base
       });
       this._core.setAttribute(new_node, 'name', interf_name);
+      this._saveSource(new_node, interf_json, dir_path);
       nesc_util.generateEventsCommands(this._context, interf_json.functions, new_node);
       this._registry_paths.interfacedefs[interf_name] = this._core.getPath(new_node);
       this._nodes[this._registry_paths.interfacedefs[interf_name]] = new_node;
     }
+  }
+};
+
+ImporterUtil.prototype._saveSource = function(new_node, comp_json, dir_path) {
+  var self = this;
+  if (comp_json.file_path.indexOf('tos/') !== 0) {
+    var file_path = comp_json.file_path;
+    if (!file_path.match(/^[tos|apps]/)) {
+      file_path = path.join('apps', self._app_name, file_path);
+    }
+    var p = path.resolve(dir_path, '..', path.relative('apps', file_path));
+    var source = fs.readFileSync(p, {
+      encoding: 'utf8'
+    });
+    self._core.setAttribute(new_node, 'source', source);
   }
 };
 
@@ -178,17 +194,7 @@ ImporterUtil.prototype._importComponents = function(dir_path, single_comp) {
       });
       self._core.setAttribute(new_node, 'name', c_name);
       self._core.setAttribute(new_node, 'safe', comp_json.safe);
-      if (comp_json.file_path.indexOf('tos/') !== 0) {
-        var file_path = comp_json.file_path;
-        if (!file_path.match(/^[tos|apps]/)) {
-          file_path = path.join('apps', self._app_name, file_path);
-        }
-        var p = path.resolve(dir_path, '..', path.relative('apps', file_path));
-        var source = fs.readFileSync(p, {
-          encoding: 'utf8'
-        });
-        self._core.setAttribute(new_node, 'source', source);
-      }
+      self._saveSource(new_node, comp_json, dir_path);
       self._registry_paths.components[c_name] = self._core.getPath(new_node);
       self._nodes[self._registry_paths.components[c_name]] = new_node;
     }
