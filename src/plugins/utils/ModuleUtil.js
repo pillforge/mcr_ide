@@ -129,7 +129,7 @@ ModuleUtil.prototype._generateConnection = function(from_node, call_data, create
   if (call_data[0] == 'post') {
     to_node = created_interfaces[call_data[1]];
   } else {
-    if (call_data[1] === 'TaskBasic') return; // TODO
+    // if (call_data[1] === 'TaskBasic') return; // TODO
     to_node = created_interfaces[call_data[1]].childr[call_data[2]];
   }
   var conn_node = this._core.createNode({

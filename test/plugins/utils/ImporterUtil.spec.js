@@ -77,6 +77,7 @@ describe('ImporterUtil', function () {
           });
           var iface_parameters = core.getAttribute(task_basic_node, 'interface_parameters');
           expect(iface_parameters).to.be.equal('uint8_t');
+          children_obj.signal.should.have.length(2);
         })
         .nodeify(done);
     });
