@@ -115,7 +115,9 @@ ImporterUtil.prototype.importAllTosComponents = function() {
   var length = m_components.length;
   async.eachSeries(m_components, function iterator(key, callback) {
     console.log(counter++ + '/' + length);
-    self.importAComponentFromPath(components[key]).then(callback);
+    self.importAComponentFromPath(components[key]).then(function () {
+      callback();
+    });
   }, deferred.resolve);
   return deferred.promise;
 };
@@ -187,7 +189,8 @@ ImporterUtil.prototype._importComponents = function(dir_path, single_comp) {
     if (!self._registry_paths.components[c_name]) {
       var comp_json = self._app_json.components[c_name];
       var parent_node = self._mkdirp(comp_json.file_path);
-      var base = self._context.META[comp_json.comp_type];
+      var type = (comp_json.generic ? 'Generic_' : '') + comp_json.comp_type;
+      var base = self._context.META[type];
       var new_node = self._core.createNode({
         parent: parent_node,
         base: base

@@ -112,6 +112,27 @@ describe('ImporterUtil', function () {
         })
         .nodeify(done);
     });
+    it('DemoSensorC - configuration', function (done) {
+      importer_util.importAComponentFromPath(component_paths['DemoSensorC.nc'])
+        .then(function (registry_paths) {
+          return core.loadByPath(context.rootNode, registry_paths.components.DemoSensorC);
+        })
+        .then(function (demosensorc_node) {
+          var meta_name = core.getAttribute(core.getMetaType(demosensorc_node), 'name');
+          expect(meta_name).to.be.equal('Generic_Configuration');
+          // return core.loadChildren(demosensorc_node);
+        })
+        // .then(function (children) {
+        //   var demosensor = findChildByName(children, 'DemoSensor');
+        //   return core.loadPointer(demosensor, 'ref');
+        // })
+        // .then(function (potentiometerc) {
+          // expect(potentiometerc).to.be.an('object');
+          // var meta_name = core.getAttribute(core.getMetaType(potentiometerc), 'name');
+          // expect(meta_name).to.be.equal('Generic_Configuration');
+        // })
+        .nodeify(done);
+    });
   });
 
   describe('#importAComponentFromPath', function () {
@@ -349,7 +370,7 @@ describe('ImporterUtil', function () {
 
   // Skipping this test because it takes too long
   describe.skip('#importAllTosComponents', function () {
-    this.timeout(500000);
+    this.timeout(800000);
     before(function (done) {
       clearDbImportProjectSetContextAndCore()
         .then(function () {
@@ -370,7 +391,7 @@ describe('ImporterUtil', function () {
           var comps_arr = Object.keys(registry_paths.components);
           var imported_nesc_files = idefs_arr.concat(comps_arr).sort();
           // expect(importables_nesc_files_sorted).to.be.equal(imported_nesc_files);
-          importables_nesc_files_sorted.should.have.length.above(400);
+          imported_nesc_files.should.have.length.above(400);
           return core.loadByPath(context.rootNode, registry_paths.components.MainC);
         })
         .then(function (mainc_node) {
