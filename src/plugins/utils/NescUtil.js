@@ -3,7 +3,7 @@ function (Q, path, fs, module, pd) {
 
 'use strict';
 
-var debug = true;
+var debug = false;
 
 return {
   getAppJson: getAppJson,
@@ -54,6 +54,7 @@ function getAppJson (file_path, target, wiring) {
     '-get-calls=' + get_calls_file
   ]).map(function (e) { return "'" + e + "'"; }).join(' ');
   cmd += ' ' + opts;
+  if (debug) console.log('cmd', cmd);
   try {
     xml = execSync(cmd, {
       cwd: is_makefile ? file_path : undefined,

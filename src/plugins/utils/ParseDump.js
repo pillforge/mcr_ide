@@ -176,7 +176,7 @@ define([], function () {
               }
             }
 
-            var argument_type_list = null;
+            var argument_type_list = '';
             var arguments_node = e.get('xmlns:instance/xmlns:arguments', ns);
             if (arguments_node) {
               var arg_arr = [];
@@ -195,7 +195,7 @@ define([], function () {
                   arg_arr.unshift(arg_type_name);
                 }
               }
-              argument_type_list = arg_arr.join(',');
+              argument_type_list = arg_arr.join(', ');
             }
 
             // <interface-parameters>
@@ -216,7 +216,7 @@ define([], function () {
               name: intf_name,
               as: intf_as,
               provided: provided,
-              argument_type: argument_type_list,
+              arguments: argument_type_list,
               interface_parameters: interface_parameters_value.join(' ')
             };
             jsobj.interface_types.push(int_type);

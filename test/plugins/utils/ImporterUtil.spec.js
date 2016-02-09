@@ -94,6 +94,24 @@ describe('ImporterUtil', function () {
         })
         .nodeify(done);
     });
+    it('ActiveMessageC - configuration', function (done) {
+      importer_util.importAComponentFromPath(component_paths['ActiveMessageC.nc'], true)
+        .then(function (registry_paths) {
+          return core.loadByPath(context.rootNode, registry_paths.components.ActiveMessageC);
+        })
+        .then(function (activemessagec_node) {
+          return core.loadChildren(activemessagec_node);
+        })
+        .then(function (children) {
+          var packetfield = findChildByName(children, 'PacketRSSI');
+          var packetstamp = findChildByName(children, 'PacketTimeStampMilli');
+          expect(core.getAttribute(packetfield, 'arguments')).to.be.equal('uint8_t');
+          expect(core.getAttribute(packetstamp, 'arguments')).to.be.equal('TMilli, uint32_t');
+          // var messsagec = findChildByName(children, 'MessageC');
+          // expect(messagec).to.not.equal(undefined);
+        })
+        .nodeify(done);
+    });
   });
 
   describe('#importAComponentFromPath', function () {
@@ -378,6 +396,12 @@ describe('ImporterUtil', function () {
       done();
     });
   });
+
+  function findChildByName(children, name) {
+    return _.find(children, function (child) {
+      return core.getAttribute(child, 'name') === name;
+    });
+  }
 
   function getChildrenByType (children) {
     var children_obj = {};

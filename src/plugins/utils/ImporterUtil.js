@@ -18,7 +18,7 @@ var ImporterUtil = function (context, target) {
   this._areNodesLoaded = false;
 };
 
-ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
+ImporterUtil.prototype.importAComponentFromPath = function (comp_path, singular) {
   var deferred = Q.defer();
   var self = this;
   var is_directory = fs.lstatSync(comp_path).isDirectory();
@@ -41,7 +41,7 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
 
     if (!is_directory && self._app_json.interfacedefs[comp_name]) return;
     var single_comp = null;
-    if (!is_directory && self._typeOfComponent(comp_path) === 'generic') {
+    if ((!is_directory && self._typeOfComponent(comp_path) === 'generic') || singular) {
       single_comp = comp_name;
     }
 
@@ -53,7 +53,7 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path) {
   })
   .then(function () {
     self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
-    deferred.resolve();
+    deferred.resolve(self._registry_paths);
   })
   .fail(function (error) {
     deferred.reject(new Error(error));
