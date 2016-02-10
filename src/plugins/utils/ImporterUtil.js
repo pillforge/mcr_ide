@@ -48,7 +48,7 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path, singular,
     if (singular) singular = comp_name;
     return self._importComponents(dir_path, singular, dummy)
       .then(function () {
-        self._importHeaderFiles(comp_name, dir_path);
+        self._importHeaderFiles(comp_name, dir_path, dummy);
         return;
       });
   })
@@ -66,12 +66,13 @@ ImporterUtil.prototype._callImportAComponentWithDummy = function(comp_name) {
   var self = this;
   var deferred = Q.defer();
   var dummy_name = 'Dummy' + comp_name;
+  var parameters = self._app_json.components[comp_name].parameters;
   var config_templ = nesc_util.getConfigurationTemplate();
   var config_content = config_templ({
     name: dummy_name,
     generic_components: [{
       type: comp_name,
-      parameters: '',
+      parameters: _.fill(new Array(parameters.length), 0).join(', '),
       name: comp_name
     }]
   });
@@ -143,13 +144,14 @@ ImporterUtil.prototype.importAllTosComponents = function() {
   return deferred.promise;
 };
 
-ImporterUtil.prototype._importHeaderFiles = function(comp_name, dir_path) {
+ImporterUtil.prototype._importHeaderFiles = function(comp_name, dir_path, dummy) {
   var self = this;
+  if (dummy) return;
   var comp_node = self._nodes[self._registry_paths.components[comp_name]];
   if (!comp_node) comp_node = self._nodes[self._registry_paths.interfacedefs[comp_name]];
   if (!comp_node) {
     console.log('Something is wrong');
-    return;
+    throw new Error('_importHeaderFiles');
   }
   var parent = self._core.getParent(comp_node);
   if (self._core.getRegistry(parent, 'headers')) return;

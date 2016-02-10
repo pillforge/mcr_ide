@@ -148,6 +148,20 @@ define([], function () {
           wiring.push(w_obj);
         }
 
+        // <parameters>
+        var parameters = [];
+        var parameters_node = comp.get('xmlns:parameters', ns);
+        if (parameters_node) {
+          var parameters_children = parameters_node.childNodes();
+          parameters_children.forEach(child => {
+            var type_int_node = child.get('xmlns:type-int', ns);
+            if (type_int_node) {
+              var param_value = type_int_node.attr('cname').value();
+              parameters.push(param_value);
+            }
+          });
+        }
+
         var jsobj = {
           name: comp_name,
           file_path: get_path(comp),
@@ -157,7 +171,7 @@ define([], function () {
           interface_types: [],
           tasks: [],
           function_declarations: [],
-          parameters: [],
+          parameters: parameters,
           wiring: wiring
         };
 

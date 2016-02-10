@@ -21,6 +21,15 @@ describe('ParseDump', function () {
       expect(task_basic.interface_parameters).to.be.equal('uint8_t');
       done();
     });
+    var amreceiverc_xml = fs.readFileSync(path.join(__dirname, 'ParseDump/AMReceiverC.nc.xml'));
+    it('generic configuration parameters', function (done) {
+      var app_json = pd.parse(amreceiverc_xml);
+      app_json.calls = {};
+      app_json.should.be.jsonSchema(schema);
+      var parameters = app_json.components.AMReceiverC.parameters;
+      expect(parameters).to.deep.equal(['unsigned char']);
+      done();
+    });
   });
 
 });

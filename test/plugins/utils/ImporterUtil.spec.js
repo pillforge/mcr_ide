@@ -315,7 +315,7 @@ describe('ImporterUtil', function () {
     });
   });
 
-  describe.skip('import AMReceiverC (generic configuration)', function () {
+  describe('import AMReceiverC (generic configuration)', function () {
     this.timeout(8000);
     before(function (done) {
       clearDbImportProjectSetContextAndCore()
