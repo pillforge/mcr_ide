@@ -112,7 +112,8 @@ describe('ImporterUtil', function () {
         })
         .nodeify(done);
     });
-    it('DemoSensorC - configuration', function (done) {
+    it('DemoSensorC - generic configuration', function (done) {
+      this.timeout(8000);
       importer_util.importAComponentFromPath(component_paths['DemoSensorC.nc'])
         .then(function (registry_paths) {
           return core.loadByPath(context.rootNode, registry_paths.components.DemoSensorC);
@@ -120,17 +121,18 @@ describe('ImporterUtil', function () {
         .then(function (demosensorc_node) {
           var meta_name = core.getAttribute(core.getMetaType(demosensorc_node), 'name');
           expect(meta_name).to.be.equal('Generic_Configuration');
-          // return core.loadChildren(demosensorc_node);
+          return core.loadChildren(demosensorc_node);
         })
-        // .then(function (children) {
-        //   var demosensor = findChildByName(children, 'DemoSensor');
-        //   return core.loadPointer(demosensor, 'ref');
-        // })
-        // .then(function (potentiometerc) {
-          // expect(potentiometerc).to.be.an('object');
-          // var meta_name = core.getAttribute(core.getMetaType(potentiometerc), 'name');
-          // expect(meta_name).to.be.equal('Generic_Configuration');
-        // })
+        .then(function (children) {
+          expect(children).have.length(3);
+          var demosensor = findChildByName(children, 'DemoSensor');
+          return core.loadPointer(demosensor, 'ref');
+        })
+        .then(function (potentiometerc) {
+          expect(potentiometerc).to.be.an('object');
+          var meta_name = core.getAttribute(core.getMetaType(potentiometerc), 'name');
+          expect(meta_name).to.be.equal('Generic_Configuration');
+        })
         .nodeify(done);
     });
   });
@@ -312,7 +314,7 @@ describe('ImporterUtil', function () {
     });
   });
 
-  describe('import AMReceiverC (generic configuration)', function () {
+  describe.skip('import AMReceiverC (generic configuration)', function () {
     this.timeout(8000);
     before(function (done) {
       clearDbImportProjectSetContextAndCore()

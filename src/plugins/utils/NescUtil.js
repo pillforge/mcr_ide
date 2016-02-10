@@ -13,7 +13,9 @@ return {
   addBlobs: addBlobs,
   generateNescCode: generateNescCode,
   generateEventsCommands: generateEventsCommands,
-  convertCalls: convertCalls
+  convertCalls: convertCalls,
+  getConfigurationTemplate: getConfigurationTemplate,
+  getTmp: getTmp
 };
 
 function getAppJson (file_path, target, wiring) {
@@ -34,7 +36,7 @@ function getAppJson (file_path, target, wiring) {
   } else {
     cmd = 'ncc' + ' -target=' + target + ' ' + file_path;
   }
-  var get_calls_file = '/tmp/' + Math.random().toString(36).substring(7) + '.json';
+  var get_calls_file = getTmp('.json');
   var opts = [];
   if (!file_path.includes(process.env.TOSDIR) && !is_makefile)
     opts.push('-I' + path.dirname(file_path));
@@ -96,8 +98,7 @@ function getMetaNodes (context) {
 function saveSourceAndDependencies (context, node) {
   var core = context.core;
   getMetaNodes(context);
-  var random_folder_name = Math.random().toString(36).substring(7);
-  var tmp_path = path.join('/tmp', random_folder_name);
+  var tmp_path = getTmp();
   var parent_node = core.getParent(node);
   return Q.nfcall(core.loadChildren, parent_node)
     .then(function (children) {
@@ -154,7 +155,7 @@ function addBlobs (context, directory, name) {
 
 function generateNescCode (context, node) {
   var core = context.core;
-  var configuration_dot = _getDotTemplate('../NescUtil/Configuration.dot');
+  var configuration_dot = getConfigurationTemplate();
   return Q.nfcall(core.loadChildren, node)
     .then(function (children) {
       var obj = {
@@ -241,6 +242,10 @@ function _getDotTemplate (template_path) {
   return dot.template(fs.readFileSync(template_path));
 }
 
+function getConfigurationTemplate () {
+  return _getDotTemplate('../NescUtil/Configuration.dot');
+}
+
 function generateEventsCommands (context, functions_array, interf_node) {
   var created_nodes = {};
   functions_array.forEach(function (func) {
@@ -305,6 +310,12 @@ function convertCalls (calls) {
   function test (e) {
     return e.join() == new_call.join();
   }
+}
+
+function getTmp (file_ext) {
+  if (!file_ext) file_ext = '';
+  var random_folder_name = Math.random().toString(36).substring(7);
+  return path.join('/tmp', random_folder_name + file_ext);
 }
 
 });

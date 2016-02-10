@@ -33,19 +33,20 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path, singular)
     } else {
       comp_name = self._getComponentName(dir_path);
     }
-
     self._app_json = nesc_util.getAppJson(comp_path, self._target, true);
     if (self._app_json === null) deferred.resolve();
 
+    if (self._typeOfComponent(comp_path) === 'generic') {
+      // Create a dummy non-generic component to fool nescc so we get calls graph
+      deferred.resolve(self._callImportAComponentWithDummy(comp_name));
+      return deferred.promise;
+    }
     self._importInterfacedefs(dir_path);
 
     if (!is_directory && self._app_json.interfacedefs[comp_name]) return;
-    var single_comp = null;
-    if ((!is_directory && self._typeOfComponent(comp_path) === 'generic') || singular) {
-      single_comp = comp_name;
-    }
 
-    return self._importComponents(dir_path, single_comp)
+    if (singular) singular = comp_name;
+    return self._importComponents(dir_path, singular)
       .then(function () {
         self._importHeaderFiles(comp_name, dir_path);
         return;
@@ -58,6 +59,26 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path, singular)
   .fail(function (error) {
     deferred.reject(new Error(error));
   });
+  return deferred.promise;
+};
+
+ImporterUtil.prototype._callImportAComponentWithDummy = function(comp_name) {
+  var self = this;
+  var deferred = Q.defer();
+  var dummy_name = 'Dummy' + comp_name;
+  var config_templ = nesc_util.getConfigurationTemplate();
+  var config_content = config_templ({
+    name: dummy_name,
+    generic_components: [{
+      type: comp_name,
+      parameters: '',
+      name: comp_name
+    }]
+  });
+  var dummy_dir = nesc_util.getTmp();
+  var dummy_path = path.join(dummy_dir, dummy_name + '.nc');
+  fs.outputFileSync(dummy_path, config_content);
+  deferred.resolve(self.importAComponentFromPath(dummy_path));
   return deferred.promise;
 };
 
