@@ -116,6 +116,7 @@ describe('ImporterUtil', function () {
       this.timeout(8000);
       importer_util.importAComponentFromPath(component_paths['DemoSensorC.nc'])
         .then(function (registry_paths) {
+          expect(registry_paths.components.DummyDemoSensorC).to.be.equal(undefined);
           return core.loadByPath(context.rootNode, registry_paths.components.DemoSensorC);
         })
         .then(function (demosensorc_node) {

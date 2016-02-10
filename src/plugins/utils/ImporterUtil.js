@@ -1,7 +1,7 @@
 define([ 'project_src/plugins/utils/NescUtil',
          'project_src/plugins/utils/ModuleUtil',
-         'q', 'path', 'fs-extra', 'async'],
-function (nesc_util, ModuleUtil, Q, path, fs, async) {
+         'q', 'path', 'fs-extra', 'async', 'lodash'],
+function (nesc_util, ModuleUtil, Q, path, fs, async, _) {
 
 'use strict';
 
@@ -18,7 +18,7 @@ var ImporterUtil = function (context, target) {
   this._areNodesLoaded = false;
 };
 
-ImporterUtil.prototype.importAComponentFromPath = function (comp_path, singular) {
+ImporterUtil.prototype.importAComponentFromPath = function (comp_path, singular, dummy) {
   var deferred = Q.defer();
   var self = this;
   var is_directory = fs.lstatSync(comp_path).isDirectory();
@@ -46,7 +46,7 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path, singular)
     if (!is_directory && self._app_json.interfacedefs[comp_name]) return;
 
     if (singular) singular = comp_name;
-    return self._importComponents(dir_path, singular)
+    return self._importComponents(dir_path, singular, dummy)
       .then(function () {
         self._importHeaderFiles(comp_name, dir_path);
         return;
@@ -78,7 +78,7 @@ ImporterUtil.prototype._callImportAComponentWithDummy = function(comp_name) {
   var dummy_dir = nesc_util.getTmp();
   var dummy_path = path.join(dummy_dir, dummy_name + '.nc');
   fs.outputFileSync(dummy_path, config_content);
-  deferred.resolve(self.importAComponentFromPath(dummy_path));
+  deferred.resolve(self.importAComponentFromPath(dummy_path, false, dummy_name));
   return deferred.promise;
 };
 
@@ -202,9 +202,10 @@ ImporterUtil.prototype._saveSource = function(new_node, comp_json, dir_path) {
   }
 };
 
-ImporterUtil.prototype._importComponents = function(dir_path, single_comp) {
+ImporterUtil.prototype._importComponents = function(dir_path, single_comp, dummy) {
   var self = this;
   var keys = Object.keys(self._app_json.components);
+  if (dummy) _.pull(keys, dummy);
   if (single_comp) keys = [single_comp];
   keys.forEach(function (c_name) {
     if (!self._registry_paths.components[c_name]) {
