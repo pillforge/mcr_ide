@@ -43,6 +43,7 @@ describe('NescUtil', function () {
         core = context.core;
         project = result.project;
       })
+      .then(setSenseNode)
       .nodeify(done);
   });
   after(function (done) {
@@ -55,8 +56,9 @@ describe('NescUtil', function () {
     })
     .nodeify(done);
   });
-  it('should import a project with apps, SenseAndSend and SenseAndSendAppC objects', function (done) {
-    Q.nfcall(context.core.loadChildren, context.rootNode)
+
+  function setSenseNode () {
+    return Q.nfcall(context.core.loadChildren, context.rootNode)
       .then(function (children) {
         expect(children).not.to.equal(null);
         for (var i = children.length - 1; i >= 0; i--) {
@@ -83,9 +85,8 @@ describe('NescUtil', function () {
           }
         }
         expect(found).to.equal(true);
-      })
-      .nodeify(done);
-  });
+      });
+  }
 
   it('should have defined properties', function (done) {
     expect(nesc_util).to.be.an('object');
@@ -237,6 +238,7 @@ describe('NescUtil', function () {
       nesc_util.generateNescCode(context, sense_and_send_appc_node)
         .then(function (result) {
           expect(result).to.contain('Automatically generated file');
+          expect(result).to.contain('configuration SenseAndSendAppC');
           expect(result).to.contain('components SenseAndSendC');
           expect(result).to.contain('Lsm330dlcC');
           expect(result).to.contain('components new TimerMilliC() as Timer0;');

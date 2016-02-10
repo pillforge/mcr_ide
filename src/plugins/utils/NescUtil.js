@@ -159,6 +159,7 @@ function generateNescCode (context, node) {
   return Q.nfcall(core.loadChildren, node)
     .then(function (children) {
       var obj = {
+        name: core.getAttribute(node, 'name'),
         provides_interfaces: [],
         uses_interfaces: [],
         components: [],
