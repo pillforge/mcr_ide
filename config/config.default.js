@@ -17,5 +17,7 @@ config.seedProjects.defaultProject = 'Meta';
 config.requirejsPaths.project_src = 'src';
 config.requirejsPaths.project_root = '.';
 
+config.storage.patchRootCommunicationEnabled = false;
+
 validateConfig(config);
 module.exports = config;
