@@ -249,7 +249,7 @@ describe('NescUtil', function () {
     });
   });
 
-  describe.skip('Msp430Adc12P', function() {
+  describe('Msp430Adc12P', function() {
     this.timeout(12000);
     before(function (done) {
       importProject('test/seeds/Msp430Adc12P.json').nodeify(done);
@@ -261,8 +261,7 @@ describe('NescUtil', function () {
           return nesc_util.generateNescCode(context, node);
         })
         .then(function (source) {
-          console.log(source);
-          expect(source).to.contain('interface Resource[uint8_t id];');
+          expect(source).to.contain('interface Resource[uint8_t id]');
         })
         .nodeify(done);
     });

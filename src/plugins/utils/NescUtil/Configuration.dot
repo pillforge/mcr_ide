@@ -5,10 +5,8 @@
  */
 
 configuration {{=it.name}} {
-{{~it.provides_interfaces :v}}
-  provides interface {{=v.type}} as {{=v.name}}; {{~}}
-{{~it.uses_interfaces :v}}
-  uses interface {{=v.type}} as {{=v.name}}; {{~}}
+  {{#def.interface:{name:'provides', it:it.provides_interfaces} }}
+  {{#def.interface:{name:'uses', it:it.uses_interfaces} }}
 }
 
 implementation {
@@ -21,3 +19,10 @@ implementation {
 {{~it.link_wires :v}}
   {{=v.from}}.{{=v.interf}} -> {{=v.to}}.{{=v.interf}}; {{~}}
 }
+
+{{##def.interface:p:
+{{~p.it :v}}
+  {{=p.name}} interface {{=v.type}}{{#def.par:v.interface_parameters }} as {{=v.name}}; {{~}}
+#}}
+
+{{##def.par:p:{{?p}}[{{=p}}]{{?}}#}}

@@ -156,7 +156,7 @@ function addBlobs (context, directory, name) {
 function generateNescCode (context, node) {
   var core = context.core;
   var configuration_dot = getConfigurationTemplate();
-  return Q.nfcall(core.loadChildren, node)
+  return core.loadChildren(node)
     .then(function (children) {
       var obj = {
         name: core.getAttribute(node, 'name'),
@@ -168,11 +168,14 @@ function generateNescCode (context, node) {
         link_wires: []
       };
       function putInterfaceToObj(type, child) {
-        return Q.nfcall(core.loadPointer, child, 'interface')
+        return core.loadPointer(child, 'interface')
           .then(function (interf_node) {
+            var params = core.getAttribute(child, 'interface_parameters');
+            if (params) params += ' id';
             obj[type].push({
               name: core.getAttribute(child, 'name'),
-              type: core.getAttribute(interf_node, 'name')
+              type: core.getAttribute(interf_node, 'name'),
+              interface_parameters: params
             });
           });
       }
