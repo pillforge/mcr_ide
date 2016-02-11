@@ -114,8 +114,10 @@ describe('ImporterUtil', function () {
     });
     it('DemoSensorC - generic configuration', function (done) {
       this.timeout(8000);
+      var registry_paths;
       importer_util.importAComponentFromPath(component_paths['DemoSensorC.nc'])
-        .then(function (registry_paths) {
+        .then(function (rp) {
+          registry_paths = rp;
           expect(registry_paths.components.DummyDemoSensorC).to.be.equal(undefined);
           return core.loadByPath(context.rootNode, registry_paths.components.DemoSensorC);
         })
@@ -133,6 +135,17 @@ describe('ImporterUtil', function () {
           expect(potentiometerc).to.be.an('object');
           var meta_name = core.getAttribute(core.getMetaType(potentiometerc), 'name');
           expect(meta_name).to.be.equal('Generic_Configuration');
+        })
+        .then(function () {
+          return core.loadByPath(context.rootNode, registry_paths.components.Msp430Adc12P);
+        })
+        .then(function (node) {
+          return core.loadChildren(node);
+        })
+        .then(function (children) {
+          var arbiter_node = findChildByName(children, 'Arbiter');
+          var args = core.getAttribute(arbiter_node, 'arguments');
+          expect(args).to.be.equal('"Msp430Adc12C.Resource"');
         })
         .nodeify(done);
     });

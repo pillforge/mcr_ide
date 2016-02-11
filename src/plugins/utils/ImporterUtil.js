@@ -286,6 +286,10 @@ ImporterUtil.prototype._importRefComponentsAndWirings = function(c_name, node, c
         base: base
       });
       self._core.setAttribute(new_node, 'name', name);
+      if (self._app_json.instance_components[end_node_json.name]) {
+        var args = self._app_json.instance_components[end_node_json.name].arguments;
+        self._core.setAttribute(new_node, 'arguments', '"' + args + '"');
+      }
       var ref_node = self._nodes[self._registry_paths.components[comp_name]];
       if (ref_node) self._core.setPointer(new_node, 'ref', ref_node);
       created_components[name] = {
