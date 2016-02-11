@@ -24,25 +24,7 @@ describe('NescUtil', function () {
   this.timeout(4000);
 
   before(function (done) {
-    testFixture.clearDBAndGetGMEAuth(gmeConfig, null)
-      .then(function (gmeAuth_) {
-        gmeAuth = gmeAuth_;
-        storage = testFixture.getMemoryStorage(logger, gmeConfig, gmeAuth_);
-        return storage.openDatabase();
-      })
-      .then(function () {
-        return testFixture.importProject(storage, {
-          projectSeed: 'test/seeds/SenseAndSend.json',
-          projectName: projectName,
-          gmeConfig: gmeConfig,
-          logger: logger
-        });
-      })
-      .then(function (result) {
-        context = result;
-        core = context.core;
-        project = result.project;
-      })
+    importProject('test/seeds/SenseAndSend.json')
       .then(setSenseNode)
       .nodeify(done);
   });
@@ -266,5 +248,38 @@ describe('NescUtil', function () {
         .nodeify(done);
     });
   });
+
+  describe.skip('Msp430Adc12P', function() {
+    this.timeout(12000);
+    before(function (done) {
+      importProject('test/seeds/Msp430Adc12P.json').nodeify(done);
+    });
+    it('should generate nesC code', function(done) {
+      var registry_paths = core.getRegistry(context.rootNode, 'paths');
+      core.loadByPath(context.rootNode, registry_paths.components.Msp430Adc12P)
+        .then(function (node) {
+          return nesc_util.generateNescCode(context, node);
+        })
+        .then(function (source) {
+          console.log(source);
+          expect(source).to.contain('interface Resource[uint8_t id];');
+        })
+        .nodeify(done);
+    });
+  });
+
+  function importProject(seed) {
+    return testFixture.clearDbImportProject({
+        logger: logger,
+        seed: seed,
+        projectName: projectName
+      })
+      .then(function (res) {
+        gmeAuth = res.gmeAuth;
+        storage = res.storage;
+        context = res.result;
+        core = context.core;
+      });
+  }
 
 });

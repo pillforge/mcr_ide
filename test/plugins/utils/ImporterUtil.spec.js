@@ -21,7 +21,7 @@ describe('ImporterUtil', function () {
 
   var importer_util;
   before(function (done) {
-    clearDbImportProjectSetContextAndCore().nodeify(done);
+    importProject().nodeify(done);
   });
   after(function (done) {
     Q.allDone([
@@ -45,14 +45,14 @@ describe('ImporterUtil', function () {
   describe('import several different nesC components', function () {
     var component_paths;
     before(function(done) {
-      clearDbImportProjectSetContextAndCore()
+      importProject()
         .then(function () {
           component_paths = importer_util._getComponents();
         })
         .nodeify(done);
     });
     beforeEach(function (done) {
-      clearDbImportProjectSetContextAndCore().nodeify(done);
+      importProject().nodeify(done);
     });
     it('SchedulerBasicP', function (done) {
       importer_util.importAComponentFromPath(component_paths['SchedulerBasicP.nc'])
@@ -143,7 +143,7 @@ describe('ImporterUtil', function () {
     var components;
     this.timeout(12000); // TODO
     before(function (done) {
-      clearDbImportProjectSetContextAndCore()
+      importProject()
         .then(function () {
           components = importer_util._getComponents(target);
           return importer_util.importAComponentFromPath(components['MainC.nc']);
@@ -283,7 +283,7 @@ describe('ImporterUtil', function () {
   describe('import a component from a directory that includes Makefile', function () {
     this.timeout(8000);
     before(function (done) {
-      clearDbImportProjectSetContextAndCore().nodeify(done);
+      importProject().nodeify(done);
     });
     it('imports SenseAndSend from Makefile', function (done) {
       importer_util.importAComponentFromPath(path.join(__dirname, './NescUtil/SenseAndSend/'))
@@ -298,7 +298,7 @@ describe('ImporterUtil', function () {
 
   describe('import AMPacket', function () {
     before(function (done) {
-      clearDbImportProjectSetContextAndCore()
+      importProject()
         .then(function () {
           importer_util = new ImporterUtil(context, target);
         })
@@ -318,7 +318,7 @@ describe('ImporterUtil', function () {
   describe('import AMReceiverC (generic configuration)', function () {
     this.timeout(8000);
     before(function (done) {
-      clearDbImportProjectSetContextAndCore()
+      importProject()
         .then(function () {
           importer_util = new ImporterUtil(context, target);
         })
@@ -338,7 +338,7 @@ describe('ImporterUtil', function () {
   describe('import header files once', function () {
     this.timeout(16000);
     before(function (done) {
-      clearDbImportProjectSetContextAndCore()
+      importProject()
         .then(function () {
           importer_util = new ImporterUtil(context, target);
         })
@@ -375,7 +375,7 @@ describe('ImporterUtil', function () {
   describe.skip('#importAllTosComponents', function () {
     this.timeout(800000);
     before(function (done) {
-      clearDbImportProjectSetContextAndCore()
+      importProject()
         .then(function () {
           importer_util = new ImporterUtil(context, target);
         })
@@ -437,23 +437,16 @@ describe('ImporterUtil', function () {
     return children_obj;
   }
 
-  function clearDbImportProjectSetContextAndCore () {
-    return testFixture.clearDBAndGetGMEAuth(gmeConfig, null)
-      .then(function (gmeAuth_) {
-        gmeAuth = gmeAuth_;
-        storage = testFixture.getMemoryStorage(logger, gmeConfig, gmeAuth_);
-        return storage.openDatabase();
+  function importProject() {
+    return testFixture.clearDbImportProject({
+        logger: logger,
+        seed: 'src/seeds/Meta/Meta.json',
+        projectName: projectName
       })
-      .then(function () {
-        return testFixture.importProject(storage, {
-          projectSeed: 'src/seeds/Meta/Meta.json',
-          projectName: projectName,
-          gmeConfig: gmeConfig,
-          logger: logger
-        });
-      })
-      .then(function (result) {
-        context = result;
+      .then(function (res) {
+        gmeAuth = res.gmeAuth;
+        storage = res.storage;
+        context = res.result;
         core = context.core;
         importer_util = new ImporterUtil(context, target);
       });
