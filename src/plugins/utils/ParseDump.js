@@ -22,18 +22,102 @@ define([], function () {
 
   // This is based on archive.py found in the tools/tinyos/ncc/nesdoc-py // of a tinyos installation
 
+  var libxmljs = require('libxmljs');
+  var fs = require('fs');
+  var path = require('path');
+  var _ = require('lodash');
+
+  // The namespace has to be defined and has to match the one in the XML file.
+  var ns = {
+    xmlns: "http://www.tinyos.net/nesC"
+  };
+
+  function populateInstanceComponents (components, qnameidx) {
+    var instance_components = {};
+    components.forEach(function (component) {
+      var comp_inst = component.get("xmlns:instance", ns);
+      if (comp_inst) {
+        var comp_name = component.attr('qname').value();
+        var arguments_node = comp_inst.get('xmlns:arguments', ns);
+        instance_components[comp_name] = {
+          name: comp_name,
+          base: get_path(qnameidx[comp_name]),
+          arguments: parseArguments(arguments_node)
+        };
+      }
+    });
+    return instance_components;
+  }
+
+  function parseArguments (arguments_node) {
+    if (!arguments_node) return '';
+    var args = [];
+    var arguments_node_children = arguments_node.childNodes();
+    arguments_node_children.forEach(child => {
+      switch (child.name()) {
+        case 'type-tag':
+        case 'type-int':
+          var name = parseTypeTagInt(child);
+          if (name) args.push(name);
+          break;
+        case 'value':
+          var val = parseValue(child);
+          if (val) args.push(val);
+          break;
+        default:
+          // console.log('todo', child.name());
+          break;
+      }
+    });
+    return args.join(', ');
+  }
+
+  function parseTypeTagInt (type_node) {
+    if (type_node) {
+      var typedef_ref = type_node.get('xmlns:typename/xmlns:typedef-ref', ns);
+      if (typedef_ref) {
+        return typedef_ref.attr('name').value();
+      }
+    }
+    return null;
+  }
+
+  function parseValue (value_node) {
+    if (value_node) {
+      var val = value_node.attr('cst').value();
+      var val_arr = val.split(':');
+      if (val_arr[1]) {
+        return val_arr[1];
+      }
+    }
+    return null;
+  }
+
+  /*
+   * Modified version of packagename in archive.py
+   * This version doesn't replace '/' with '.' and doesn't remove the file extension.
+   * The path returned will be used for locating the file in a local
+   * filesystem as well as in * WebGME
+   */
+  function get_path(comp) {
+    var loc = comp.attr('loc').value();
+    var col = loc.indexOf(':');
+    if (col !== -1) {
+      loc = loc.slice(col + 1);
+    }
+    if (loc.search(process.env.TOSROOT) === 0) {
+      loc = loc.slice(process.env.TOSROOT.length + 1);
+    }
+    // Not sure why this is necessary
+    // if (loc[0] === "/")
+    //   loc = null;
+    return loc;
+  }
+
   return {
     parse: function (xml) {
-      var libxmljs = require('libxmljs');
-      var fs = require('fs');
-      var path = require('path');
-      var _ = require('lodash');
-      var xml_doc = libxmljs.parseXml(xml, { noblanks: true });
 
-      // The namespace has to be defined and has to match the one in the XML file.
-      var ns = {
-        xmlns: "http://www.tinyos.net/nesC"
-      };
+      var xml_doc = libxmljs.parseXml(xml, { noblanks: true });
 
       var components = xml_doc.find('//xmlns:components/xmlns:component', ns);
       var interfacedefs = xml_doc.find('//xmlns:interfacedefs/xmlns:interfacedef', ns);
@@ -59,18 +143,6 @@ define([], function () {
         var incomponent = x.get("xmlns:component-ref", ns).attr('qname').value();
         speclist[incomponent] = speclist[incomponent] || [];
         speclist[incomponent].push(x);
-      });
-
-      var instance_components = {};
-      components.forEach(function(x) {
-        var comp_inst = x.get("xmlns:instance", ns);
-        if (comp_inst) {
-          var comp_name = x.attr('qname').value();
-          instance_components[comp_name] = {
-            name: comp_name,
-            base: get_path(qnameidx[comp_name])
-          };
-        }
       });
 
       var output_dict = {};
@@ -119,7 +191,7 @@ define([], function () {
       var app_json = {};
       app_json.components = output_dict;
       app_json.interfacedefs = interfacedefs_json;
-      app_json.instance_components = instance_components;
+      app_json.instance_components = populateInstanceComponents(components, qnameidx);
 
       function to_js(comp_name) {
         var specs = speclist[comp_name];
@@ -281,29 +353,7 @@ define([], function () {
           'event';
       }
 
-      /*
-       * Modified version of packagename in archive.py
-       * This version doesn't replace '/' with '.' and doesn't remove
-       * the file extension.
-       * The path returned will be used for locating the file in a local
-       * filesystem as well as in * WebGME
-       */
-      function get_path(comp) {
-        var loc = comp.attr('loc').value();
-        var col = loc.indexOf(':');
-        if (col !== -1) {
-          loc = loc.slice(col + 1);
-        }
-        if (loc.search(process.env.TOSROOT) === 0) {
-          loc = loc.slice(process.env.TOSROOT.length + 1);
-        }
 
-        // Not sure why this is necessary
-        // if (loc[0] === "/")
-        //   loc = null;
-
-        return loc;
-      }
 
       return app_json;
     }

@@ -28,6 +28,9 @@ describe('ParseDump', function () {
       app_json.should.be.jsonSchema(schema);
       var parameters = app_json.components.AMReceiverC.parameters;
       expect(parameters).to.deep.equal(['unsigned char']);
+      var instance_comp = app_json.instance_components['AlarmMilli32C.Transform'];
+      var args = instance_comp.arguments;
+      expect(args).to.be.equal('TMilli, uint32_t, T32khz, uint16_t, 5');
       done();
     });
   });
