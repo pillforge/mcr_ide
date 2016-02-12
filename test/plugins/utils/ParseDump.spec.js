@@ -31,6 +31,9 @@ describe('ParseDump', function () {
       var instance_comp = app_json.instance_components['AlarmMilli32C.Transform'];
       var args = instance_comp.arguments;
       expect(args).to.be.equal('TMilli, uint32_t, T32khz, uint16_t, 5');
+      var arbiter_instance_comp = app_json.instance_components.SendResourceC;
+      args = arbiter_instance_comp.arguments;
+      expect(args).to.be.equal('"RADIO_SEND_RESOURCE"');
       done();
     });
   });

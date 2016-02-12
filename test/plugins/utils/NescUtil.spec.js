@@ -21,7 +21,7 @@ describe('NescUtil', function () {
   var Q = testFixture.Q;
   var sense_and_send_appc_node;
 
-  this.timeout(4000);
+  this.timeout(24000);
 
   before(function (done) {
     importProject('test/seeds/SenseAndSend.json')
@@ -223,19 +223,19 @@ describe('NescUtil', function () {
           expect(result).to.contain('configuration SenseAndSendAppC');
           expect(result).to.contain('components SenseAndSendC');
           expect(result).to.contain('Lsm330dlcC');
-          expect(result).to.contain('components new TimerMilliC() as Timer0;');
-          expect(result).to.contain('components new AMSenderC(AM_SENSORDATAMSG)');
+          expect(result).to.contain('components new TimerMilliC() as Timer1;');
+          expect(result).to.contain('components new AMSenderC(6)');
           expect(result).to.contain('SenseAndSendC.Boot -> MainC.Boot;');
           expect(result).to.contain('SenseAndSendC.AccelRead -> Lsm330dlcC.AccelRead;');
           expect(result).to.contain('SenseAndSendC.AMSend -> AMSenderC.AMSend;');
           expect(result).to.contain('SenseAndSendC.Packet -> ActiveMessageC.Packet;');
           expect(result).to.contain('SenseAndSendC.RadioControl -> ActiveMessageC.RadioControl;');
-          expect(result).to.contain('SenseAndSendC.Timer -> Timer0.Timer;');
+          expect(result).to.contain('SenseAndSendC.Timer -> Timer1.Timer;');
         })
         .nodeify(done);
     });
     it('should generate uses/provides interfaces and equate wires', function (done) {
-      Q.nfcall(context.core.loadByPath, context.rootNode, '/1117823861/146569445/1943146269')
+      context.core.loadByPath(context.rootNode, '/z/Q/t')
         .then(function (mainc_node) {
           return nesc_util.generateNescCode(context, mainc_node);
         })
@@ -262,6 +262,8 @@ describe('NescUtil', function () {
         })
         .then(function (source) {
           expect(source).to.contain('interface Resource[uint8_t id]');
+          expect(source).to.contain('components Msp430Adc12ImplP');
+          expect(source).to.contain('components new SimpleRoundRobinArbiterC("Msp430Adc12C.Resource") as Arbiter');
         })
         .nodeify(done);
     });

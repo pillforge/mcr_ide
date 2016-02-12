@@ -72,7 +72,7 @@ ImporterUtil.prototype._callImportAComponentWithDummy = function(comp_name) {
     name: dummy_name,
     generic_components: [{
       type: comp_name,
-      parameters: _.fill(new Array(parameters.length), 0).join(', '),
+      arguments: _.fill(new Array(parameters.length), 0).join(', '),
       name: comp_name
     }]
   });
@@ -288,7 +288,7 @@ ImporterUtil.prototype._importRefComponentsAndWirings = function(c_name, node, c
       self._core.setAttribute(new_node, 'name', name);
       if (self._app_json.instance_components[end_node_json.name]) {
         var args = self._app_json.instance_components[end_node_json.name].arguments;
-        self._core.setAttribute(new_node, 'arguments', '"' + args + '"');
+        self._core.setAttribute(new_node, 'arguments', args);
       }
       var ref_node = self._nodes[self._registry_paths.components[comp_name]];
       if (ref_node) self._core.setPointer(new_node, 'ref', ref_node);

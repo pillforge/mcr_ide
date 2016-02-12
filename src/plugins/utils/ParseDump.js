@@ -86,8 +86,12 @@ define([], function () {
     if (value_node) {
       var val = value_node.attr('cst').value();
       var val_arr = val.split(':');
-      if (val_arr[1]) {
-        return val_arr[1];
+      if (val.length >=2) {
+        var pre_post = '';
+        if (val[0] === 'S') {
+          pre_post = '"';
+        }
+        return pre_post + val_arr[1] + pre_post;
       }
     }
     return null;

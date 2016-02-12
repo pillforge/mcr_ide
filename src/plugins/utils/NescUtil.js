@@ -187,6 +187,20 @@ function generateNescCode (context, node) {
             return putInterfaceToObj('provides_interfaces', child);
           } else if (['Uses_Interface'].indexOf(meta) > -1) {
             return putInterfaceToObj('uses_interfaces', child);
+          } else if (['ConfigurationRef', 'ModuleRef'].indexOf(meta) > -1) {
+            return core.loadPointer(child, 'ref')
+              .then(function (ref_node) {
+                var ref_meta = core.getAttribute(core.getMetaType(ref_node), 'name');
+                if (['Configuration', 'Module'].indexOf(ref_meta) > -1) {
+                  obj.components.push(name);
+                } else if (['Generic_Configuration', 'Generic_Module'].indexOf(ref_meta) > -1) {
+                  obj.generic_components.push({
+                    type: core.getAttribute(ref_node, 'name'),
+                    arguments: core.getAttribute(child, 'arguments'),
+                    name: name
+                  });
+                }
+              });
           } else if (['Configuration', 'Module'].indexOf(meta) > -1) {
             obj.components.push(name);
           } else if (['Generic_Configuration', 'Generic_Module'].indexOf(meta) > -1) {

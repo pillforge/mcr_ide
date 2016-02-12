@@ -1,6 +1,9 @@
 var testFixture = require('../../globals');
 describe('ModuleUtil', function () {
   'use strict';
+
+  this.timeout(24000);
+
   var gmeConfig = testFixture.getGmeConfig();
   var gmeAuth;
   var logger = testFixture.logger.fork('plugins/utils/ModuleUtil');
