@@ -32,6 +32,49 @@ define([], function () {
     xmlns: "http://www.tinyos.net/nesC"
   };
 
+  function populateInterfaceDefs (interfacedefs, functions) {
+    var interfacedefs_json = {};
+    for (var key in interfacedefs) {
+      var interfacedef = interfacedefs[key];
+      var qname = interfacedef.attr('qname').value();
+      interfacedefs_json[qname] = {
+        name: qname,
+        file_path: get_path(interfacedef),
+        functions: []
+      };
+      functions = interfacedef.find('xmlns:function', ns);
+      var funct_arr = interfacedefs_json[qname].functions;
+      for (var i = 0; i < functions.length; i++) {
+        var funct = functions[i];
+        funct_arr.push({
+          name: funct.attr('name').value(),
+          event_command: getEventCommand(funct),
+          parameters: []
+        });
+        var params = funct.find('xmlns:parameters', ns);
+        if (params) {
+          var vars = params[0].find('xmlns:variable', ns);
+          for (var j = 0; j < vars.length; j++) {
+            var par = vars[j];
+            var type_name = ''; //par.find('xmlns:type-var', ns)[0].attr('name').value();
+            var var_name = '';
+            if (par.attr('name')) {
+              var_name = par.attr('name').value();
+            }
+            funct_arr[i].parameters.push(type_name + ' ' + var_name);
+          }
+        }
+      }
+    }
+    return interfacedefs_json;
+  }
+
+  function getEventCommand (element) {
+    return element.attr('event') === null ?
+      (element.attr('command') === null ? '' : 'command') :
+      'event';
+  }
+
   function populateInstanceComponents (components, qnameidx) {
     var instance_components = {};
     components.forEach(function (component) {
@@ -158,43 +201,9 @@ define([], function () {
         }
       });
 
-      var interfacedefs_json = {};
-      for (var key in interfacedefs) {
-        var interfacedef = interfacedefs[key];
-        var qname = interfacedef.attr('qname').value();
-        interfacedefs_json[qname] = {
-          name: qname,
-          file_path: get_path(interfacedef),
-          functions: []
-        };
-        functions = interfacedef.find('xmlns:function', ns);
-        var funct_arr = interfacedefs_json[qname].functions;
-        for (var i = 0; i < functions.length; i++) {
-          var funct = functions[i];
-          funct_arr.push({
-            name: funct.attr('name').value(),
-            event_command: getEventCommand(funct),
-            parameters: []
-          });
-          var params = funct.find('xmlns:parameters', ns);
-          if (params) {
-            var vars = params[0].find('xmlns:variable', ns);
-            for (var j = 0; j < vars.length; j++) {
-              var par = vars[j];
-              var type_name = ''; //par.find('xmlns:type-var', ns)[0].attr('name').value();
-              var var_name = '';
-              if (par.attr('name')) {
-                var_name = par.attr('name').value();
-              }
-              funct_arr[i].parameters.push(type_name + ' ' + var_name);
-            }
-          }
-        }
-      }
-
       var app_json = {};
       app_json.components = output_dict;
-      app_json.interfacedefs = interfacedefs_json;
+      app_json.interfacedefs = populateInterfaceDefs(interfacedefs, functions);
       app_json.instance_components = populateInstanceComponents(components, qnameidx);
 
       function to_js(comp_name) {
@@ -350,13 +359,6 @@ define([], function () {
           };
         }
       }
-
-      function getEventCommand (element) {
-        return element.attr('event') === null ?
-          (element.attr('command') === null ? '' : 'command') :
-          'event';
-      }
-
 
 
       return app_json;

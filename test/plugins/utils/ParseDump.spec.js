@@ -10,6 +10,19 @@ describe('ParseDump', function () {
   require('chai').use(require('chai3-json-schema'));
   var schema = fs.readJsonSync(path.join(__dirname, 'NescUtil/AppSchema.json'));
 
+  describe('populate interface definitions', function () {
+    var scheduler_basicp_xml = fs.readFileSync(path.join(__dirname, 'ParseDump/SchedulerBasicP.nc.xml'));
+    it('interface_parameters', function (done) {
+      var idefs_json = pd.parse(scheduler_basicp_xml).interfacedefs;
+      var mcu_sleep = idefs_json.McuSleep;
+      expect(mcu_sleep.name).to.be.equal('McuSleep');
+      expect(mcu_sleep.file_path).to.be.equal('tos/interfaces/McuSleep.nc');
+      expect(mcu_sleep.functions[0].name).to.be.equal('sleep');
+      expect(mcu_sleep.functions[0].event_command).to.be.equal('command');
+      done();
+    });
+  });
+
   describe('#parse', function () {
     var scheduler_basicp_xml = fs.readFileSync(path.join(__dirname, 'ParseDump/SchedulerBasicP.nc.xml'));
     it('interface_parameters', function (done) {
