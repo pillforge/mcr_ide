@@ -10,6 +10,20 @@ describe('ParseDump', function () {
   require('chai').use(require('chai3-json-schema'));
   var schema = fs.readJsonSync(path.join(__dirname, 'NescUtil/AppSchema.json'));
 
+  describe('components', function () {
+    var scheduler_basicp_xml = fs.readFileSync(path.join(__dirname, 'ParseDump/SchedulerBasicP.nc.xml'));
+    it('description', function (done) {
+      var components_json = pd.parse(scheduler_basicp_xml).components;
+      var schedul = components_json.SchedulerBasicP;
+      expect(schedul.name).to.be.equal('SchedulerBasicP');
+      expect(schedul.file_path).to.be.equal('tos/system/SchedulerBasicP.nc');
+      expect(schedul.comp_type).to.be.equal('Module');
+      expect(schedul.generic).to.be.equal(false);
+      expect(schedul.safe).to.be.equal(true);
+      done();
+    });
+  });
+
   describe('populate interface definitions', function () {
     var scheduler_basicp_xml = fs.readFileSync(path.join(__dirname, 'ParseDump/SchedulerBasicP.nc.xml'));
     it('interface_parameters', function (done) {

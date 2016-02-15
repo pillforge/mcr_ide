@@ -21,7 +21,7 @@ describe('NescUtil', function () {
   var Q = testFixture.Q;
   var sense_and_send_appc_node;
 
-  this.timeout(24000);
+  this.timeout(36000);
 
   before(function (done) {
     importProject('test/seeds/SenseAndSend.json')
@@ -250,7 +250,7 @@ describe('NescUtil', function () {
   });
 
   describe('Msp430Adc12P', function() {
-    this.timeout(12000);
+    this.timeout(24000);
     before(function (done) {
       importProject('test/seeds/Msp430Adc12P.json').nodeify(done);
     });

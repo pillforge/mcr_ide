@@ -32,7 +32,183 @@ define([], function () {
     xmlns: "http://www.tinyos.net/nesC"
   };
 
-  function populateInterfaceDefs (interfacedefs, functions) {
+  var components, interfacedefs, interfaces, functions;
+  var refidx = {};
+  var qnameidx = {};
+
+  function populateComponents() {
+    var speclist = {};
+    interfaces.forEach(function(x) {
+      var incomponent = x.get("xmlns:component-ref", ns).attr('qname').value();
+      speclist[incomponent] = speclist[incomponent] || [];
+      speclist[incomponent].push(x);
+    });
+    var output_dict = {};
+    components.forEach(function(x) {
+      var comp_inst = x.get("xmlns:instance", ns);
+      if (!comp_inst) {
+        var comp_name = x.attr('qname').value();
+        output_dict[comp_name] = to_js(comp_name, speclist);
+      }
+    });
+    return output_dict;
+  }
+
+  function to_js(comp_name, speclist) {
+    var specs = speclist[comp_name];
+    var comp = qnameidx[comp_name];
+
+    var comp_type = 'Module';
+    var is_abstract = false;
+    var is_safe = false;
+
+    if (comp.get("xmlns:configuration", ns)) comp_type = 'Configuration';
+    if (comp.attr('abstract')) is_abstract = true;
+    if (comp.attr('safe')) is_safe = true;
+
+    var wiring = [];
+    var wiring_nodes = comp.find('xmlns:wiring/xmlns:wire', ns);
+    for (var i = wiring_nodes.length - 1; i >= 0; i--) {
+      var w_node = wiring_nodes[i];
+
+      var from = w_node.get('xmlns:from', ns);
+      var to = w_node.get('xmlns:to', ns);
+
+      var w_obj = {
+        from: get_c_obj(from),
+        to: get_c_obj(to)
+      };
+      wiring.push(w_obj);
+    }
+
+    // <parameters>
+    var parameters = [];
+    var parameters_node = comp.get('xmlns:parameters', ns);
+    if (parameters_node) {
+      var parameters_children = parameters_node.childNodes();
+      parameters_children.forEach(child => {
+        var type_int_node = child.get('xmlns:type-int', ns);
+        if (type_int_node) {
+          var param_value = type_int_node.attr('cname').value();
+          parameters.push(param_value);
+        }
+      });
+    }
+
+    var jsobj = {
+      name: comp_name,
+      file_path: get_path(comp),
+      comp_type: comp_type,
+      generic: is_abstract,
+      safe: is_safe,
+      interface_types: [],
+      tasks: [],
+      function_declarations: [],
+      parameters: parameters,
+      wiring: wiring
+    };
+
+    if (specs) {
+      specs.forEach(function(e) {
+        var provided = parseInt(e.attr('provided').value());
+        var intf_name = e.get('xmlns:instance/xmlns:interfacedef-ref', ns)
+                                                  .attr('qname').value();
+        var intf_as = e.attr('name').value();
+        // Check if it is a task definition: TaskBasic
+        if (intf_name === 'TaskBasic') {
+          var interface_ref = e.get('xmlns:type-interface/xmlns:interface-ref', ns);
+          var interface_ref_name = interface_ref.attr('name').value();
+          if (interface_ref_name !== 'TaskBasic') {
+            return jsobj.tasks.push(intf_as);
+          }
+        }
+
+        var argument_type_list = '';
+        var arguments_node = e.get('xmlns:instance/xmlns:arguments', ns);
+        if (arguments_node) {
+          var arg_arr = [];
+          var arguments_children = arguments_node.childNodes();
+          for (var i = arguments_children.length - 1; i >= 0; i--) {
+            if (arguments_children[i].type() == 'text') continue;
+            var argument_type = arguments_children[i].name();
+            var tr_xpath = './xmlns:typedef-ref | */xmlns:typedef-ref' +
+              ' | */*/xmlns:typedef-ref';
+            var arg_typedef_ref = arguments_children[i].get(tr_xpath, ns);
+            if (arg_typedef_ref) {
+              var arg_type_name = arg_typedef_ref.attr('name').value();
+              if (argument_type == 'type-pointer') {
+                arg_type_name = 'const ' + arg_type_name + '*';
+              }
+              arg_arr.unshift(arg_type_name);
+            }
+          }
+          argument_type_list = arg_arr.join(', ');
+        }
+
+        // <interface-parameters>
+        var interface_parameters_value = [];
+        var interface_parameters = e.get('xmlns:interface-parameters', ns);
+        if (interface_parameters) {
+          var interface_parameters_children = interface_parameters.childNodes();
+          interface_parameters_children.forEach(child => {
+            var typedef_ref = child.get('*/xmlns:typedef-ref', ns);
+            if (typedef_ref) {
+              interface_parameters_value.push(typedef_ref.attr('name').value()); 
+            }
+          });
+        }
+
+        // A javascript representation of an interface_type
+        var int_type = {
+          name: intf_name,
+          as: intf_as,
+          provided: provided,
+          arguments: argument_type_list,
+          interface_parameters: interface_parameters_value.join(' ')
+        };
+        jsobj.interface_types.push(int_type);
+      });
+    }
+
+    functions.forEach(function (func) {
+      var incomponent = func.get('xmlns:component-ref', ns);
+      if (incomponent) {
+        var name = func.attr('name').value();
+        if (comp_name === incomponent.attr('qname').value()) {
+          jsobj.function_declarations.push(name);
+        }
+      }
+    });
+
+    jsobj.interface_types = _.uniqBy(jsobj.interface_types, 'as');
+    jsobj.function_declarations = _.uniq(jsobj.function_declarations);
+    jsobj.tasks = _.uniq(jsobj.tasks);
+    return jsobj;
+
+    function get_c_obj(c) {
+      var ref = c.get('xmlns:interface-ref', ns).attr('ref').value();
+      var interf = refidx[ref];
+      var component_base = get_path(interf);
+      var name = refidx[ref].get('xmlns:component-ref', ns)
+        .attr('qname').value();
+
+      var c_arguments_node = c.get('xmlns:arguments/xmlns:value', ns);
+      var c_arg_value = null;
+      if (c_arguments_node) {
+        c_arg_value = c_arguments_node.attr('cst').value();
+      }
+
+      return {
+        component_base: component_base,
+        'interface': interf.attr('name').value(),
+        cst: c_arg_value,
+        ref: ref,
+        name: name
+      };
+    }
+  }
+
+  function populateInterfaceDefs () {
     var interfacedefs_json = {};
     for (var key in interfacedefs) {
       var interfacedef = interfacedefs[key];
@@ -75,7 +251,7 @@ define([], function () {
       'event';
   }
 
-  function populateInstanceComponents (components, qnameidx) {
+  function populateInstanceComponents () {
     var instance_components = {};
     components.forEach(function (component) {
       var comp_inst = component.get("xmlns:instance", ns);
@@ -166,13 +342,11 @@ define([], function () {
 
       var xml_doc = libxmljs.parseXml(xml, { noblanks: true });
 
-      var components = xml_doc.find('//xmlns:components/xmlns:component', ns);
-      var interfacedefs = xml_doc.find('//xmlns:interfacedefs/xmlns:interfacedef', ns);
-      var interfaces = xml_doc.find('//xmlns:interfaces/xmlns:interface', ns);
-      var functions = xml_doc.find('//xmlns:functions/xmlns:function', ns);
+      components = xml_doc.find('//xmlns:components/xmlns:component', ns);
+      interfacedefs = xml_doc.find('//xmlns:interfacedefs/xmlns:interfacedef', ns);
+      interfaces = xml_doc.find('//xmlns:interfaces/xmlns:interface', ns);
+      functions = xml_doc.find('//xmlns:functions/xmlns:function', ns);
 
-      var refidx = {};
-      var qnameidx = {};
       var add_to_refid = function (x) {
         refidx[x.attr('ref').value()] = x;
       };
@@ -185,182 +359,10 @@ define([], function () {
       components.forEach(add_to_qname);
       interfacedefs.forEach(add_to_qname);
 
-      var speclist = {};
-      interfaces.forEach(function(x) {
-        var incomponent = x.get("xmlns:component-ref", ns).attr('qname').value();
-        speclist[incomponent] = speclist[incomponent] || [];
-        speclist[incomponent].push(x);
-      });
-
-      var output_dict = {};
-      components.forEach(function(x) {
-        var comp_inst = x.get("xmlns:instance", ns);
-        if (!comp_inst) {
-          var comp_name = x.attr('qname').value();
-          to_js(comp_name);
-        }
-      });
-
       var app_json = {};
-      app_json.components = output_dict;
-      app_json.interfacedefs = populateInterfaceDefs(interfacedefs, functions);
-      app_json.instance_components = populateInstanceComponents(components, qnameidx);
-
-      function to_js(comp_name) {
-        var specs = speclist[comp_name];
-        var comp = qnameidx[comp_name];
-
-        var comp_type = 'Module';
-        var is_abstract = false;
-        var is_safe = false;
-
-        if (comp.get("xmlns:configuration", ns)) comp_type = 'Configuration';
-        if (comp.attr('abstract')) is_abstract = true;
-        if (comp.attr('safe')) is_safe = true;
-
-        var wiring = [];
-        var wiring_nodes = comp.find('xmlns:wiring/xmlns:wire', ns);
-        for (var i = wiring_nodes.length - 1; i >= 0; i--) {
-          var w_node = wiring_nodes[i];
-
-          var from = w_node.get('xmlns:from', ns);
-          var to = w_node.get('xmlns:to', ns);
-
-          var w_obj = {
-            from: get_c_obj(from),
-            to: get_c_obj(to)
-          };
-          wiring.push(w_obj);
-        }
-
-        // <parameters>
-        var parameters = [];
-        var parameters_node = comp.get('xmlns:parameters', ns);
-        if (parameters_node) {
-          var parameters_children = parameters_node.childNodes();
-          parameters_children.forEach(child => {
-            var type_int_node = child.get('xmlns:type-int', ns);
-            if (type_int_node) {
-              var param_value = type_int_node.attr('cname').value();
-              parameters.push(param_value);
-            }
-          });
-        }
-
-        var jsobj = {
-          name: comp_name,
-          file_path: get_path(comp),
-          comp_type: comp_type,
-          generic: is_abstract,
-          safe: is_safe,
-          interface_types: [],
-          tasks: [],
-          function_declarations: [],
-          parameters: parameters,
-          wiring: wiring
-        };
-
-        if (specs) {
-          specs.forEach(function(e) {
-            var provided = parseInt(e.attr('provided').value());
-            var intf_name = e.get('xmlns:instance/xmlns:interfacedef-ref', ns)
-                                                      .attr('qname').value();
-            var intf_as = e.attr('name').value();
-            // Check if it is a task definition: TaskBasic
-            if (intf_name === 'TaskBasic') {
-              var interface_ref = e.get('xmlns:type-interface/xmlns:interface-ref', ns);
-              var interface_ref_name = interface_ref.attr('name').value();
-              if (interface_ref_name !== 'TaskBasic') {
-                return jsobj.tasks.push(intf_as);
-              }
-            }
-
-            var argument_type_list = '';
-            var arguments_node = e.get('xmlns:instance/xmlns:arguments', ns);
-            if (arguments_node) {
-              var arg_arr = [];
-              var arguments_children = arguments_node.childNodes();
-              for (var i = arguments_children.length - 1; i >= 0; i--) {
-                if (arguments_children[i].type() == 'text') continue;
-                var argument_type = arguments_children[i].name();
-                var tr_xpath = './xmlns:typedef-ref | */xmlns:typedef-ref' +
-                  ' | */*/xmlns:typedef-ref';
-                var arg_typedef_ref = arguments_children[i].get(tr_xpath, ns);
-                if (arg_typedef_ref) {
-                  var arg_type_name = arg_typedef_ref.attr('name').value();
-                  if (argument_type == 'type-pointer') {
-                    arg_type_name = 'const ' + arg_type_name + '*';
-                  }
-                  arg_arr.unshift(arg_type_name);
-                }
-              }
-              argument_type_list = arg_arr.join(', ');
-            }
-
-            // <interface-parameters>
-            var interface_parameters_value = [];
-            var interface_parameters = e.get('xmlns:interface-parameters', ns);
-            if (interface_parameters) {
-              var interface_parameters_children = interface_parameters.childNodes();
-              interface_parameters_children.forEach(child => {
-                var typedef_ref = child.get('*/xmlns:typedef-ref', ns);
-                if (typedef_ref) {
-                  interface_parameters_value.push(typedef_ref.attr('name').value()); 
-                }
-              });
-            }
-            
-            // A javascript representation of an interface_type
-            var int_type = {
-              name: intf_name,
-              as: intf_as,
-              provided: provided,
-              arguments: argument_type_list,
-              interface_parameters: interface_parameters_value.join(' ')
-            };
-            jsobj.interface_types.push(int_type);
-          });
-        }
-
-        functions.forEach(function (func) {
-          var incomponent = func.get('xmlns:component-ref', ns);
-          if (incomponent) {
-            var name = func.attr('name').value();
-            if (comp_name === incomponent.attr('qname').value()) {
-              jsobj.function_declarations.push(name);
-            }
-          }
-        });
-
-        jsobj.interface_types = _.uniqBy(jsobj.interface_types, 'as');
-        jsobj.function_declarations = _.uniq(jsobj.function_declarations);
-        jsobj.tasks = _.uniq(jsobj.tasks);
-        output_dict[comp_name] = jsobj;
-
-        function get_c_obj(c) {
-          var ref = c.get('xmlns:interface-ref', ns).attr('ref').value();
-          var interf = refidx[ref];
-          var component_base = get_path(interf);
-          var name = refidx[ref].get('xmlns:component-ref', ns)
-            .attr('qname').value();
-
-          var c_arguments_node = c.get('xmlns:arguments/xmlns:value', ns);
-          var c_arg_value = null;
-          if (c_arguments_node) {
-            c_arg_value = c_arguments_node.attr('cst').value();
-          }
-
-          return {
-            component_base: component_base,
-            'interface': interf.attr('name').value(),
-            cst: c_arg_value,
-            ref: ref,
-            name: name
-          };
-        }
-      }
-
-
+      app_json.components = populateComponents();
+      app_json.interfacedefs = populateInterfaceDefs();
+      app_json.instance_components = populateInstanceComponents();
       return app_json;
     }
   };

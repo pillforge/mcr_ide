@@ -95,6 +95,7 @@ describe('ImporterUtil', function () {
         .nodeify(done);
     });
     it('ActiveMessageC - configuration', function (done) {
+      this.timeout(4000);
       importer_util.importAComponentFromPath(component_paths['ActiveMessageC.nc'], true)
         .then(function (registry_paths) {
           return core.loadByPath(context.rootNode, registry_paths.components.ActiveMessageC);
@@ -329,7 +330,7 @@ describe('ImporterUtil', function () {
   });
 
   describe('import AMReceiverC (generic configuration)', function () {
-    this.timeout(8000);
+    this.timeout(16000);
     before(function (done) {
       importProject()
         .then(function () {
