@@ -16,7 +16,7 @@ describe('ParseDump', function () {
       var components_json = pd.parse(scheduler_basicp_xml).components;
       var schedul = components_json.SchedulerBasicP;
       expect(schedul.name).to.be.equal('SchedulerBasicP');
-      expect(schedul.file_path).to.be.equal('tos/system/SchedulerBasicP.nc');
+      expect(schedul.file_path).to.contain('tos/system/SchedulerBasicP.nc');
       expect(schedul.comp_type).to.be.equal('Module');
       expect(schedul.generic).to.be.equal(false);
       expect(schedul.safe).to.be.equal(true);
@@ -30,7 +30,7 @@ describe('ParseDump', function () {
       var idefs_json = pd.parse(scheduler_basicp_xml).interfacedefs;
       var mcu_sleep = idefs_json.McuSleep;
       expect(mcu_sleep.name).to.be.equal('McuSleep');
-      expect(mcu_sleep.file_path).to.be.equal('tos/interfaces/McuSleep.nc');
+      expect(mcu_sleep.file_path).to.contain('tos/interfaces/McuSleep.nc');
       expect(mcu_sleep.functions[0].name).to.be.equal('sleep');
       expect(mcu_sleep.functions[0].event_command).to.be.equal('command');
       done();

@@ -113,42 +113,48 @@ describe('ImporterUtil', function () {
         })
         .nodeify(done);
     });
-    it('DemoSensorC - generic configuration', function (done) {
-      this.timeout(8000);
+    describe('DemoSensorC', function() {
       var registry_paths;
-      importer_util.importAComponentFromPath(component_paths['DemoSensorC.nc'])
-        .then(function (rp) {
-          registry_paths = rp;
-          expect(registry_paths.components.DummyDemoSensorC).to.be.equal(undefined);
-          return core.loadByPath(context.rootNode, registry_paths.components.DemoSensorC);
-        })
-        .then(function (demosensorc_node) {
-          var meta_name = core.getAttribute(core.getMetaType(demosensorc_node), 'name');
-          expect(meta_name).to.be.equal('Generic_Configuration');
-          return core.loadChildren(demosensorc_node);
-        })
-        .then(function (children) {
-          expect(children).have.length(3);
-          var demosensor = findChildByName(children, 'DemoSensor');
-          return core.loadPointer(demosensor, 'ref');
-        })
-        .then(function (potentiometerc) {
-          expect(potentiometerc).to.be.an('object');
-          var meta_name = core.getAttribute(core.getMetaType(potentiometerc), 'name');
-          expect(meta_name).to.be.equal('Generic_Configuration');
-        })
-        .then(function () {
-          return core.loadByPath(context.rootNode, registry_paths.components.Msp430Adc12P);
-        })
-        .then(function (node) {
-          return core.loadChildren(node);
-        })
-        .then(function (children) {
-          var arbiter_node = findChildByName(children, 'Arbiter');
-          var args = core.getAttribute(arbiter_node, 'arguments');
-          expect(args).to.be.equal('"Msp430Adc12C.Resource"');
-        })
-        .nodeify(done);
+      it('DemoSensorC - generic configuration', function (done) {
+        this.timeout(8000);
+        importer_util.importAComponentFromPath(component_paths['DemoSensorC.nc'])
+          .then(function (rp) {
+            registry_paths = rp;
+            expect(registry_paths.components.DummyDemoSensorC).to.be.equal(undefined);
+            return core.loadByPath(context.rootNode, registry_paths.components.DemoSensorC);
+          })
+          .then(function (demosensorc_node) {
+            var meta_name = core.getAttribute(core.getMetaType(demosensorc_node), 'name');
+            expect(meta_name).to.be.equal('Generic_Configuration');
+            return core.loadChildren(demosensorc_node);
+          })
+          .then(function (children) {
+            expect(children).have.length(3);
+            var demosensor = findChildByName(children, 'DemoSensor');
+            return core.loadPointer(demosensor, 'ref');
+          })
+          .then(function (potentiometerc) {
+            expect(potentiometerc).to.be.an('object');
+            var meta_name = core.getAttribute(core.getMetaType(potentiometerc), 'name');
+            expect(meta_name).to.be.equal('Generic_Configuration');
+            return core.loadChildren(potentiometerc);
+          })
+          .then(function (children) {
+            children.should.have.length(15);
+          })
+          .then(function () {
+            return core.loadByPath(context.rootNode, registry_paths.components.Msp430Adc12P);
+          })
+          .then(function (node) {
+            return core.loadChildren(node);
+          })
+          .then(function (children) {
+            var arbiter_node = findChildByName(children, 'Arbiter');
+            var args = core.getAttribute(arbiter_node, 'arguments');
+            expect(args).to.be.equal('"Msp430Adc12C.Resource"');
+          })
+          .nodeify(done);
+      });
     });
   });
 

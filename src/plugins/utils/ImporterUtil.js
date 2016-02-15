@@ -29,18 +29,22 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path, singular,
     var comp_name;
     if (!is_directory) {
       comp_name = path.basename(comp_path, path.extname(comp_path));
-      if (self._doesExist(comp_path, comp_name)) deferred.resolve();
+      if (self._doesExist(comp_path, comp_name)) return 'no appjson';
     } else {
       comp_name = self._getComponentName(dir_path);
     }
+    if(self._registry_paths.components[comp_name]) {
+      return 'exist';
+    }
+
     self._app_json = nesc_util.getAppJson(comp_path, self._target, true);
-    if (self._app_json === null) deferred.resolve();
+    if (self._app_json === null) return 'no appjson';
 
     if (self._typeOfComponent(comp_path) === 'generic') {
       // Create a dummy non-generic component to fool nescc so we get calls graph
-      deferred.resolve(self._callImportAComponentWithDummy(comp_name));
-      return deferred.promise;
+      return self._callImportAComponentWithDummy(comp_name);
     }
+
     self._importInterfacedefs(dir_path);
 
     if (!is_directory && self._app_json.interfacedefs[comp_name]) return;
@@ -49,12 +53,16 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path, singular,
     return self._importComponents(dir_path, singular, dummy)
       .then(function () {
         self._importHeaderFiles(comp_name, dir_path, dummy);
-        return;
+        return 'regular';
       });
   })
-  .then(function () {
-    self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
-    deferred.resolve(self._registry_paths);
+  .then(function (kase) {
+    if (kase === 'exist' || kase === 'no appjson') {
+      deferred.resolve();
+    } else {
+      self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
+      deferred.resolve(self._registry_paths);
+    }
   })
   .fail(function (error) {
     deferred.reject(new Error(error));
