@@ -36,8 +36,10 @@ ModuleUtil.prototype._generateModuleHelper = function() {
   return this._deleteExistingObjects()
     .then(function () {
       var created_interfaces = this._generateInterfaces();
-      if (this._app_json.components[this._module_name].comp_type === 'Module' &&
-          !this._app_json.components[this._module_name].generic) { // TODO
+      if (this._app_json.components[this._module_name].comp_type === 'Module') {
+        if (this._app_json.components[this._module_name].generic) {
+          this._module_name += '__0';
+        }
         this._generateCallgraph(created_interfaces);
         this._generateVariables(created_interfaces);
       }

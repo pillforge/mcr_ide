@@ -156,6 +156,19 @@ describe('ImporterUtil', function () {
           .nodeify(done);
       });
     });
+    describe('SwitchToggleC - generic module', function() {
+      it('import', function(done) {
+        importer_util.importAComponentFromPath(component_paths['SwitchToggleC.nc'])
+          .then(function (rp) {
+            return core.loadByPath(context.rootNode, rp.components.SwitchToggleC);
+          })
+          .then(core.loadChildren)
+          .then(function (children) {
+            children.should.have.length(21);
+          })
+          .nodeify(done);
+      });
+    });
   });
 
   describe('#importAComponentFromPath', function () {

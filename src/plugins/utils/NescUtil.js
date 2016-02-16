@@ -53,6 +53,7 @@ function getAppJson (file_path, target, wiring) {
     '-fnesc-dump=interfacedefs',
     '-fnesc-dump=interfaces',
     '-fsyntax-only',
+    '-fnesc-separator=__',
     '-get-calls=' + get_calls_file
   ]).map(function (e) { return "'" + e + "'"; }).join(' ');
   cmd += ' ' + opts;
