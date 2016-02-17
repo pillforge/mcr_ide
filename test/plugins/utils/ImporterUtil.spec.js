@@ -165,6 +165,11 @@ describe('ImporterUtil', function () {
           .then(core.loadChildren)
           .then(function (children) {
             children.should.have.length(21);
+            var children_obj = getChildrenByType(children);
+            expect(children_obj.Task).to.be.an('array', 'Task');
+            children_obj.Task.should.have.length(1, 'Task');
+            var name = core.getAttribute(children_obj.Task[0], 'name');
+            name.should.be.equal('sendEvent');
           })
           .nodeify(done);
       });

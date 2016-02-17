@@ -1,5 +1,5 @@
-define(['q', 'project_src/plugins/utils/NescUtil', 'path', 'fs-extra'],
-function (Q, nesc_util, path, fs) {
+define(['q', 'project_src/plugins/utils/NescUtil', 'path', 'fs-extra', 'lodash'],
+function (Q, nesc_util, path, fs, _) {
 
 'use strict';
 
@@ -35,11 +35,12 @@ ModuleUtil.prototype.generateModule = function(module_node, app_json) {
 ModuleUtil.prototype._generateModuleHelper = function() {
   return this._deleteExistingObjects()
     .then(function () {
+      this._module_name_for_calls = this._module_name;
+      if (this._app_json.components[this._module_name].generic) {
+        this._module_name_for_calls = this._module_name + '__0';
+      }
       var created_interfaces = this._generateInterfaces();
       if (this._app_json.components[this._module_name].comp_type === 'Module') {
-        if (this._app_json.components[this._module_name].generic) {
-          this._module_name += '__0';
-        }
         this._generateCallgraph(created_interfaces);
         this._generateVariables(created_interfaces);
       }
@@ -60,7 +61,7 @@ ModuleUtil.prototype._deleteExistingObjects = function() {
 };
 
 ModuleUtil.prototype._generateVariables = function(created_interfaces) {
-  var module_calls = this._app_json.calls[this._module_name];
+  var module_calls = this._app_json.calls[this._module_name_for_calls];
   this._cur_pos.x += 60;
   this._cur_pos.y += 60;
   for (var variable in module_calls.variables) {
@@ -100,7 +101,7 @@ ModuleUtil.prototype._generateVariables = function(created_interfaces) {
 };
 
 ModuleUtil.prototype._generateCallgraph = function(created_interfaces) {
-  var module_calls = this._app_json.calls[this._module_name];
+  var module_calls = this._app_json.calls[this._module_name_for_calls];
   if (!module_calls) {
     throw new Error(this._module_name + ' No app_json.calls');
   }
@@ -191,20 +192,9 @@ ModuleUtil.prototype._generateInterfaces = function () {
       childr: created_evcmd
     };
   }.bind(this));
-  var functions = this._app_json.components[this._module_name].function_declarations;
-  functions.forEach(function (func) {
-    var func_node = self._core.createNode({
-      parent: self._module_node,
-      base: self._context.META.Function_Declaration
-    });
-    self._core.setAttribute(func_node, 'name', func);
-    self._core.setRegistry(func_node, 'position', {x: self._cur_pos.x, y: self._cur_pos.y});
-    self._updateCurPos(5);
-    created_interfaces[func] = func_node;
-  });
   var tasks = [];
-  if (this._app_json.calls[this._module_name])
-    tasks = this._app_json.calls[this._module_name].t_variables;
+  if (this._app_json.calls[this._module_name_for_calls])
+    tasks = this._app_json.calls[this._module_name_for_calls].t_variables;
   tasks.forEach(function (task) {
     var task_node = this._core.createNode({
       parent: this._module_node,
@@ -215,6 +205,18 @@ ModuleUtil.prototype._generateInterfaces = function () {
     this._updateCurPos(5);
     created_interfaces[task] = task_node;
   }.bind(this));
+  var functions = this._app_json.components[this._module_name].function_declarations;
+  functions = _.difference(functions, tasks);
+  functions.forEach(function (func) {
+    var func_node = self._core.createNode({
+      parent: self._module_node,
+      base: self._context.META.Function_Declaration
+    });
+    self._core.setAttribute(func_node, 'name', func);
+    self._core.setRegistry(func_node, 'position', {x: self._cur_pos.x, y: self._cur_pos.y});
+    self._updateCurPos(5);
+    created_interfaces[func] = func_node;
+  });
   return created_interfaces;
 };
 
