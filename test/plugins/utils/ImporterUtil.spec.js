@@ -174,6 +174,43 @@ describe('ImporterUtil', function () {
           .nodeify(done);
       });
     });
+    describe('Msp430Timer32khzMapC - configuration', function() {
+      it('should set parameters', function(done) {
+        importer_util.importAComponentFromPath(component_paths['Msp430Timer32khzMapC.nc'])
+          .then(function (rp) {
+            return core.loadByPath(context.rootNode, rp.components.Msp430Timer32khzMapC);
+          })
+          .then(core.loadChildren)
+          .then(function (children) {
+            children.should.have.length(10);
+            var paths_names = {};
+            children.forEach(child => {
+              var p = core.getPath(child);
+              var n = core.getAttribute(child, 'name');
+              paths_names[p] = n;
+            });
+            var children_obj = getChildrenByType(children);
+            var connections = children_obj.Equate_Interface.map(function (eq_interf) {
+              return [
+                paths_names[core.getPointerPath(eq_interf, 'src')],
+                paths_names[core.getPointerPath(eq_interf, 'dst')],
+                eq_interf
+              ];
+            });
+            var obj = {};
+            connections.forEach(conn => {
+              obj[conn[0]] = obj[conn[0]] || [];
+              obj[conn[0]].push(core.getAttribute(conn[2], 'src_params'));
+              obj[conn[1]] = obj[conn[1]] || [];
+              obj[conn[1]].push(core.getAttribute(conn[2], 'dst_params'));
+            });
+            expect(obj.Msp430Compare.sort()).to.be.deep.equal(['0', '1'], 'Msp430Compare');
+            expect(obj.Msp430Timer.sort()).to.be.deep.equal(['0', '1'], 'Msp430Timer');
+            expect(obj.Msp430TimerControl.sort()).to.be.deep.equal(['0', '1'], 'Msp430TimerControl');
+          })
+          .nodeify(done);
+      });
+    });
   });
 
   describe('#importAComponentFromPath', function () {

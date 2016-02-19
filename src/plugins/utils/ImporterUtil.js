@@ -273,6 +273,12 @@ ImporterUtil.prototype._importRefComponentsAndWirings = function(c_name, node, c
       });
       self._core.setPointer(wire_node, 'src', src_end);
       self._core.setPointer(wire_node, 'dst', dst_end);
+      if (wire.from.cst) {
+        self._core.setAttribute(wire_node, 'src_params', wire.from.cst);
+      }
+      if (wire.to.cst) {
+        self._core.setAttribute(wire_node, 'dst_params', wire.to.cst);
+      }
     } else {
       // TinySchedulerC-TaskBasic TODO
     }

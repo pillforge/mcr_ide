@@ -196,6 +196,10 @@ define([], function () {
       var c_arg_value = null;
       if (c_arguments_node) {
         c_arg_value = c_arguments_node.attr('cst').value();
+        if (c_arg_value) {
+          var vals = c_arg_value.split(':');
+          c_arg_value = vals[vals.length-1];
+        }
       }
 
       return {
