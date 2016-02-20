@@ -1,4 +1,4 @@
-describe('ParseDump', function () {
+describe.only('ParseDump', function () {
   'use strict';
   var testFixture = require('../../globals');
   var pd = testFixture.requirejs('project_src/plugins/utils/ParseDump');
@@ -10,10 +10,17 @@ describe('ParseDump', function () {
   require('chai').use(require('chai3-json-schema'));
   var schema = fs.readJsonSync(path.join(__dirname, 'NescUtil/AppSchema.json'));
 
-  describe('components', function () {
-    var scheduler_basicp_xml = fs.readFileSync(path.join(__dirname, 'ParseDump/SchedulerBasicP.nc.xml'));
-    it('description', function (done) {
-      var components_json = pd.parse(scheduler_basicp_xml).components;
+  describe('#parse SchedulerBasicP', function() {
+    var app_json;
+    before(function (done) {
+      var scheduler_basicp_xml = fs.readFileSync(path.join(__dirname, 'ParseDump/SchedulerBasicP.nc.xml'));
+      app_json = pd.parse(scheduler_basicp_xml);
+      app_json.calls = {};
+      app_json.should.be.jsonSchema(schema);
+      done();
+    });
+    it('components description', function (done) {
+      var components_json = app_json.components;
       var schedul = components_json.SchedulerBasicP;
       expect(schedul.name).to.be.equal('SchedulerBasicP');
       expect(schedul.file_path).to.contain('tos/system/SchedulerBasicP.nc');
@@ -22,12 +29,8 @@ describe('ParseDump', function () {
       expect(schedul.safe).to.be.equal(true);
       done();
     });
-  });
-
-  describe('populate interface definitions', function () {
-    var scheduler_basicp_xml = fs.readFileSync(path.join(__dirname, 'ParseDump/SchedulerBasicP.nc.xml'));
-    it('interface_parameters', function (done) {
-      var idefs_json = pd.parse(scheduler_basicp_xml).interfacedefs;
+    it('populate interface definitions interface_parameters', function (done) {
+      var idefs_json = app_json.interfacedefs;
       var mcu_sleep = idefs_json.McuSleep;
       expect(mcu_sleep.name).to.be.equal('McuSleep');
       expect(mcu_sleep.file_path).to.contain('tos/interfaces/McuSleep.nc');
@@ -35,24 +38,27 @@ describe('ParseDump', function () {
       expect(mcu_sleep.functions[0].event_command).to.be.equal('command');
       done();
     });
-  });
-
-  describe('#parse', function () {
-    var scheduler_basicp_xml = fs.readFileSync(path.join(__dirname, 'ParseDump/SchedulerBasicP.nc.xml'));
     it('interface_parameters', function (done) {
-      var app_json = pd.parse(scheduler_basicp_xml);
-      app_json.calls = {};
-      app_json.should.be.jsonSchema(schema);
       var ifaces = app_json.components.SchedulerBasicP.interface_types;
       var task_basic = _.find(ifaces, _.matchesProperty('name', 'TaskBasic'));
       expect(task_basic.interface_parameters).to.be.equal('uint8_t');
       done();
     });
-    var amreceiverc_xml = fs.readFileSync(path.join(__dirname, 'ParseDump/AMReceiverC.nc.xml'));
-    it('generic configuration parameters', function (done) {
-      var app_json = pd.parse(amreceiverc_xml);
+  });
+
+  describe('#parse AMReceiverC', function () {
+    var app_json;
+    before(function (done) {
+      var amreceiverc_xml = fs.readFileSync(path.join(__dirname, 'ParseDump/AMReceiverC.nc.xml'));
+      app_json = pd.parse(amreceiverc_xml);
       app_json.calls = {};
       app_json.should.be.jsonSchema(schema);
+      done();
+    });
+    it('interfacedefs', function(done) {
+      done();
+    });
+    it('generic configuration parameters', function (done) {
       var parameters = app_json.components.AMReceiverC.parameters;
       expect(parameters).to.deep.equal(['unsigned char']);
       var instance_comp = app_json.instance_components['AlarmMilli32C.Transform'];
