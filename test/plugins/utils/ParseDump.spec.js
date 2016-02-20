@@ -1,4 +1,4 @@
-describe.only('ParseDump', function () {
+describe('ParseDump', function () {
   'use strict';
   var testFixture = require('../../globals');
   var pd = testFixture.requirejs('project_src/plugins/utils/ParseDump');
@@ -56,6 +56,11 @@ describe.only('ParseDump', function () {
       done();
     });
     it('interfacedefs', function(done) {
+      var funcs = app_json.interfacedefs.HplMsp430GeneralIO.functions;
+      var set_resistor = _.find(funcs, ['name', 'setResistor']);
+      var set_drive_strength = _.find(funcs, ['name', 'setDriveStrength']);
+      expect(set_resistor.parameters).to.be.equal('uint8_t');
+      expect(set_drive_strength.parameters).to.be.equal('uint8_t');
       done();
     });
     it('generic configuration parameters', function (done) {

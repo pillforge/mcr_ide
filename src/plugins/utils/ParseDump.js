@@ -1,26 +1,6 @@
-/*
- * Copyright (C) 2014 Vanderbilt University, All rights reserved.
- *
- * Author: Addisu Z. Taddese
- */
-
-// If given a single file, this module generates a JSON file that easily
-// be converted into a WebGME object. If given a set of files,
-// the module analyzes each file while making sure a component
-// is not processed twice. That is, if 'a' is already processed as a result of
-// being referenced in another component, the file that contains
-// the component does not need to be processed again.
-//
-// TODO: 
-// - Parse generic component paremeter lists
-// - Include function declerations in a component's spec
-// - Add components and their wiring withing a component
-// - Process interface defs
-
+// https://github.com/pillforge/nesc/tree/master/doc/dump
 define([], function () {
   'use strict';
-
-  // This is based on archive.py found in the tools/tinyos/ncc/nesdoc-py // of a tinyos installation
 
   var libxmljs = require('libxmljs');
   var fs = require('fs');
@@ -229,21 +209,8 @@ define([], function () {
         funct_arr.push({
           name: funct.attr('name').value(),
           event_command: getEventCommand(funct),
-          parameters: []
+          parameters: parseParameters(funct.get('xmlns:parameters', ns))
         });
-        var params = funct.find('xmlns:parameters', ns);
-        if (params) {
-          var vars = params[0].find('xmlns:variable', ns);
-          for (var j = 0; j < vars.length; j++) {
-            var par = vars[j];
-            var type_name = ''; //par.find('xmlns:type-var', ns)[0].attr('name').value();
-            var var_name = '';
-            if (par.attr('name')) {
-              var_name = par.attr('name').value();
-            }
-            funct_arr[i].parameters.push(type_name + ' ' + var_name);
-          }
-        }
       }
     }
     return interfacedefs_json;
@@ -272,6 +239,47 @@ define([], function () {
     return instance_components;
   }
 
+  function parseParameters (parameters_node) {
+    if (!parameters_node) return '';
+    var params = [];
+    var parameters_node_children = parameters_node.childNodes();
+    parameters_node_children.forEach(child => {
+      switch(child.name()) {
+        case 'variable':
+          var vari = parseVariable(child);
+          if (vari) params.push(vari);
+          break;
+        default:
+          // console.log('todo');
+          break;
+      }
+    });
+    return params.join(', ');
+  }
+
+  /*
+   *  <element name="nesc:variable"/>
+   *  <element name="nesc:constant"/>
+   *  <element name="nesc:function"/>
+   *  <element name="nesc:typedef"/>
+   *  <element name="nesc:interface"/>
+   *  <element name="nesc:internal-component"/>
+   */
+  function parseVariable (variable_node) {
+    if (!variable_node) return '';
+    var type_node = variable_node.get("xmlns:*[starts-with(name(), 'type-')]", ns);
+    return parseType(type_node);
+  }
+
+  function parseType (type_node) {
+    if (!type_node) return null;
+    var typedef_ref_node = type_node.get('xmlns:typename/xmlns:typedef-ref', ns);
+    if (typedef_ref_node) {
+      return typedef_ref_node.attr('name').value();
+    }
+    return null;
+  }
+
   function parseArguments (arguments_node) {
     if (!arguments_node) return '';
     var args = [];
@@ -280,7 +288,7 @@ define([], function () {
       switch (child.name()) {
         case 'type-tag':
         case 'type-int':
-          var name = parseTypeTagInt(child);
+          var name = parseType(child);
           if (name) args.push(name);
           break;
         case 'value':
@@ -293,16 +301,6 @@ define([], function () {
       }
     });
     return args.join(', ');
-  }
-
-  function parseTypeTagInt (type_node) {
-    if (type_node) {
-      var typedef_ref = type_node.get('xmlns:typename/xmlns:typedef-ref', ns);
-      if (typedef_ref) {
-        return typedef_ref.attr('name').value();
-      }
-    }
-    return null;
   }
 
   function parseValue (value_node) {
