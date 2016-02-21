@@ -274,6 +274,7 @@ function generateEventsCommands (context, functions_array, interf_node) {
       base: context.META[base]
     });
     context.core.setAttribute(new_node, 'name', func.name);
+    context.core.setAttribute(new_node, 'parameters', func.parameters);
     var x = base == 'Event' ? 500 : 20;
     context.core.setRegistry(new_node, 'position', {x: x, y: 50});
     created_nodes[func.name] = new_node;

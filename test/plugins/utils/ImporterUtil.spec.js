@@ -42,7 +42,7 @@ describe('ImporterUtil', function () {
     });
   });
 
-  describe('import several different nesC components', function () {
+  describe('import several nesC components', function () {
     var component_paths;
     before(function(done) {
       importProject()
@@ -152,6 +152,16 @@ describe('ImporterUtil', function () {
             var arbiter_node = findChildByName(children, 'Arbiter');
             var args = core.getAttribute(arbiter_node, 'arguments');
             expect(args).to.be.equal('"Msp430Adc12C.Resource"');
+
+            // check interfacedef function parameters
+            return core.loadByPath(context.rootNode, registry_paths.interfacedefs.HplMsp430GeneralIO);
+          })
+          .then(core.loadChildren)
+          .then(function (children) {
+            var set_resistor = findChildByName(children, 'setResistor');
+            var set_drive_strength = findChildByName(children, 'setDriveStrength');
+            core.getAttribute(set_resistor, 'parameters').should.be.equal('uint8_t');
+            core.getAttribute(set_drive_strength, 'parameters').should.be.equal('uint8_t');
           })
           .nodeify(done);
       });
