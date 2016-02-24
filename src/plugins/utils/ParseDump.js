@@ -1,4 +1,5 @@
 // https://github.com/pillforge/nesc/tree/master/doc/dump
+// It might be better to convert xml to json first, all together
 define([], function () {
   'use strict';
 
@@ -200,8 +201,10 @@ define([], function () {
       interfacedefs_json[qname] = {
         name: qname,
         file_path: get_path(interfacedef),
+        parameters: parseParameters(interfacedef.get('xmlns:parameters', ns)),
         functions: []
       };
+
       functions = interfacedef.find('xmlns:function', ns);
       var funct_arr = interfacedefs_json[qname].functions;
       for (var i = 0; i < functions.length; i++) {
@@ -247,7 +250,11 @@ define([], function () {
       switch(child.name()) {
         case 'variable':
           var vari = parseVariable(child);
-          if (vari) params.push(vari);
+          if (vari) params.push(vari.val);
+          break;
+        case 'typedef':
+          var typed = parseVariable(child);
+          if (typed) params.push(typed.name);
           break;
         default:
           // console.log('todo');
@@ -266,9 +273,13 @@ define([], function () {
    *  <element name="nesc:internal-component"/>
    */
   function parseVariable (variable_node) {
-    if (!variable_node) return '';
+    if (!variable_node) return null;
+    var name = variable_node.attr('name').value();
     var type_node = variable_node.get("xmlns:*[starts-with(name(), 'type-')]", ns);
-    return parseType(type_node);
+    return {
+      name: name,
+      val: parseType(type_node)
+    };
   }
 
   function parseType (type_node) {

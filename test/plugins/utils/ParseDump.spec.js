@@ -74,6 +74,13 @@ describe('ParseDump', function () {
       expect(args).to.be.equal('"RADIO_SEND_RESOURCE"');
       done();
     });
+    describe('interfacedefs', function() {
+      it('parameters', function(done) {
+        var idef = app_json.interfacedefs.BusyWait;
+        idef.parameters.should.be.equal('precision_tag, size_type');
+        done();
+      });
+    });
   });
 
 });

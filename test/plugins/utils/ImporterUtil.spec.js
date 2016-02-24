@@ -152,7 +152,6 @@ describe('ImporterUtil', function () {
             var arbiter_node = findChildByName(children, 'Arbiter');
             var args = core.getAttribute(arbiter_node, 'arguments');
             expect(args).to.be.equal('"Msp430Adc12C.Resource"');
-
             // check interfacedef function parameters
             return core.loadByPath(context.rootNode, registry_paths.interfacedefs.HplMsp430GeneralIO);
           })
@@ -162,6 +161,12 @@ describe('ImporterUtil', function () {
             var set_drive_strength = findChildByName(children, 'setDriveStrength');
             core.getAttribute(set_resistor, 'parameters').should.be.equal('uint8_t');
             core.getAttribute(set_drive_strength, 'parameters').should.be.equal('uint8_t');
+            // check interfacedef parameters
+            return core.loadByPath(context.rootNode, registry_paths.interfacedefs.Alarm);
+          })
+          .then(function (node) {
+            var params = core.getAttribute(node, 'parameters');
+            expect(params).to.be.equal('precision_tag, size_type');
           })
           .nodeify(done);
       });

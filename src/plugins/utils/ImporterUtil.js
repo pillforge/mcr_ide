@@ -189,6 +189,7 @@ ImporterUtil.prototype._importInterfacedefs = function (dir_path) {
         base: base
       });
       this._core.setAttribute(new_node, 'name', interf_name);
+      this._core.setAttribute(new_node, 'parameters', interf_json.parameters);
       this._saveSource(new_node, interf_json, dir_path);
       nesc_util.generateEventsCommands(this._context, interf_json.functions, new_node);
       this._registry_paths.interfacedefs[interf_name] = this._core.getPath(new_node);
