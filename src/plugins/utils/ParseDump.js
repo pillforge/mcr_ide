@@ -62,20 +62,6 @@ define([], function () {
       wiring.push(w_obj);
     }
 
-    // <parameters>
-    var parameters = [];
-    var parameters_node = comp.get('xmlns:parameters', ns);
-    if (parameters_node) {
-      var parameters_children = parameters_node.childNodes();
-      parameters_children.forEach(child => {
-        var type_int_node = child.get('xmlns:type-int', ns);
-        if (type_int_node) {
-          var param_value = type_int_node.attr('cname').value();
-          parameters.push(param_value);
-        }
-      });
-    }
-
     var jsobj = {
       name: comp_name,
       file_path: get_path(comp),
@@ -85,7 +71,7 @@ define([], function () {
       interface_types: [],
       tasks: [],
       function_declarations: [],
-      parameters: parameters,
+      parameters: parseParameters(comp.get('xmlns:parameters', ns)),
       wiring: wiring
     };
 
@@ -201,7 +187,7 @@ define([], function () {
       interfacedefs_json[qname] = {
         name: qname,
         file_path: get_path(interfacedef),
-        parameters: parseParameters(interfacedef.get('xmlns:parameters', ns)),
+        parameters: parseParameters(interfacedef.get('xmlns:parameters', ns)).join(', '),
         functions: []
       };
 
@@ -212,7 +198,7 @@ define([], function () {
         funct_arr.push({
           name: funct.attr('name').value(),
           event_command: getEventCommand(funct),
-          parameters: parseParameters(funct.get('xmlns:parameters', ns))
+          parameters: parseParameters(funct.get('xmlns:parameters', ns)).join(', ')
         });
       }
     }
@@ -243,7 +229,7 @@ define([], function () {
   }
 
   function parseParameters (parameters_node) {
-    if (!parameters_node) return '';
+    if (!parameters_node) return [];
     var params = [];
     var parameters_node_children = parameters_node.childNodes();
     parameters_node_children.forEach(child => {
@@ -256,12 +242,16 @@ define([], function () {
           var typed = parseVariable(child);
           if (typed) params.push(typed.name);
           break;
+        case 'constant':
+          var cons = parseVariable(child);
+          if (cons) params.push(cons.val + ' ' + cons.name);
+          break;
         default:
           // console.log('todo');
           break;
       }
     });
-    return params.join(', ');
+    return params;
   }
 
   /*

@@ -65,7 +65,7 @@ describe('ParseDump', function () {
     });
     it('generic configuration parameters', function (done) {
       var parameters = app_json.components.AMReceiverC.parameters;
-      expect(parameters).to.deep.equal(['unsigned char']);
+      expect(parameters).to.deep.equal(['am_id_t amId']);
       var instance_comp = app_json.instance_components['AlarmMilli32C.Transform'];
       var args = instance_comp.arguments;
       expect(args).to.be.equal('TMilli, uint32_t, T32khz, uint16_t, 5');
@@ -78,6 +78,13 @@ describe('ParseDump', function () {
       it('parameters', function(done) {
         var idef = app_json.interfacedefs.BusyWait;
         idef.parameters.should.be.equal('precision_tag, size_type');
+        done();
+      });
+    });
+    describe('components', function() {
+      it('parameters', function(done) {
+        var comp_json = app_json.components.Msp430AlarmC;
+        comp_json.parameters.should.be.deep.equal(['frequency_tag']);
         done();
       });
     });

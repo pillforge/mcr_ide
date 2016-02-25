@@ -167,6 +167,12 @@ describe('ImporterUtil', function () {
           .then(function (node) {
             var params = core.getAttribute(node, 'parameters');
             expect(params).to.be.equal('precision_tag, size_type');
+            // check module parameters
+            return core.loadByPath(context.rootNode, registry_paths.components.Msp430AlarmC);
+          })
+          .then(function (node) {
+            var params = core.getAttribute(node, 'parameters');
+            params.should.be.deep.equal('frequency_tag');
           })
           .nodeify(done);
       });

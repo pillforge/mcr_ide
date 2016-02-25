@@ -36,7 +36,6 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path, singular,
     if(self._registry_paths.components[comp_name]) {
       return 'exist';
     }
-
     self._app_json = nesc_util.getAppJson(comp_path, self._target, true);
     if (self._app_json === null) return 'no appjson';
 
@@ -230,6 +229,7 @@ ImporterUtil.prototype._importComponents = function(dir_path, single_comp, dummy
       });
       self._core.setAttribute(new_node, 'name', c_name);
       self._core.setAttribute(new_node, 'safe', comp_json.safe);
+      self._core.setAttribute(new_node, 'parameters', comp_json.parameters.join(', '));
       self._saveSource(new_node, comp_json, dir_path);
       self._registry_paths.components[c_name] = self._core.getPath(new_node);
       self._nodes[self._registry_paths.components[c_name]] = new_node;
