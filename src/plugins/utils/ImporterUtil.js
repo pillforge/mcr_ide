@@ -229,7 +229,9 @@ ImporterUtil.prototype._importComponents = function(dir_path, single_comp, dummy
       });
       self._core.setAttribute(new_node, 'name', c_name);
       self._core.setAttribute(new_node, 'safe', comp_json.safe);
-      self._core.setAttribute(new_node, 'parameters', comp_json.parameters.join(', '));
+      if (comp_json.generic) {
+        self._core.setAttribute(new_node, 'parameters', comp_json.parameters.join(', '));
+      }
       self._saveSource(new_node, comp_json, dir_path);
       self._registry_paths.components[c_name] = self._core.getPath(new_node);
       self._nodes[self._registry_paths.components[c_name]] = new_node;
@@ -244,12 +246,68 @@ ImporterUtil.prototype._importComponents = function(dir_path, single_comp, dummy
         .then(function (created_interfaces) {
           if (comp_json.comp_type === 'Configuration') {
             self._importRefComponentsAndWirings(c_name, new_node, created_interfaces);
+            return self._updatePositions(c_name, new_node);
           }
         });
     } else {
       return Q.fcall(function () {});
     }
   }));
+};
+
+ImporterUtil.prototype._updatePositions = function (c_name, node) {
+  var self = this;
+  var core = self._core;
+  var deferred = Q.defer();
+  core.loadChildren(node)
+    .then(function (children) {
+      var children_obj = getChildrenByType(children);
+      children_obj.ModuleRef = children_obj.ModuleRef || [];
+      children_obj.ConfigurationRef = children_obj.ConfigurationRef || [];
+      children_obj.Uses_Interface = children_obj.Uses_Interface || [];
+      children_obj.Provides_Interface = children_obj.Provides_Interface || [];
+
+      var cur_mod_x = 450;
+      var cur_mod_y = 100;
+      var all = _.concat(
+        children_obj.ModuleRef,
+        children_obj.ConfigurationRef,
+        children_obj.Uses_Interface,
+        children_obj.Provides_Interface
+      );
+      var counter = Math.floor(all.length/3);
+      all.forEach(child => {
+        core.setRegistry(child, 'position', {x: cur_mod_x, y: cur_mod_y});
+        var number_of_children = core.getChildrenRelids(child).length;
+        cur_mod_y += number_of_children * 15 + 50;
+        counter--;
+        if (counter === 0) {
+          counter = Math.floor(all.length/3);
+          if (cur_mod_x === 450) {
+            cur_mod_x = 100;
+            cur_mod_y = 100;
+          }
+          else if (cur_mod_x === 100) {
+            cur_mod_x = 800;
+            cur_mod_y = 100;
+          }
+        }
+      });
+      deferred.resolve();
+    })
+    .fail(function (error) {
+      deferred.reject(new Error(error));
+    });
+  return deferred.promise;
+  function getChildrenByType (children) {
+    var children_obj = {};
+    children.forEach(function (child) {
+      var type = core.getAttribute(core.getMetaType(child), 'name');
+      children_obj[type] = children_obj[type] || [];
+      children_obj[type].push(child);
+    });
+    return children_obj;
+  }
 };
 
 ImporterUtil.prototype._importRefComponentsAndWirings = function(c_name, node, created_interfaces) {
