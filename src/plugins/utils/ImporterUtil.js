@@ -46,7 +46,7 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path, singular,
 
     self._importInterfacedefs(dir_path);
 
-    if (!is_directory && self._app_json.interfacedefs[comp_name]) return;
+    if (!is_directory && self._app_json.interfacedefs[comp_name]) return 'regular';
 
     if (singular) singular = comp_name;
     return self._importComponents(dir_path, singular, dummy)
@@ -58,9 +58,11 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path, singular,
   .then(function (kase) {
     if (kase === 'exist' || kase === 'no appjson') {
       deferred.resolve();
-    } else {
+    } if (kase === 'regular') {
       self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
       deferred.resolve(self._registry_paths);
+    } else {
+      deferred.resolve(kase);
     }
   })
   .fail(function (error) {
