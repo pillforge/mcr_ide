@@ -177,7 +177,7 @@ describe('ImporterUtil', function () {
           .nodeify(done);
       });
     });
-    describe.only('SwitchToggleC - generic module', function() {
+    describe('SwitchToggleC - generic module', function() {
       it('import', function(done) {
         importer_util.importAComponentFromPath(component_paths['SwitchToggleC.nc'])
           .then(function (rp) {

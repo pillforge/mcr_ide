@@ -21,6 +21,7 @@ var ImporterUtil = function (context, target) {
 ImporterUtil.prototype.importAComponentFromPath = function (comp_path, singular, dummy) {
   var deferred = Q.defer();
   var self = this;
+  var already_existing_folders = _.cloneDeep(self._registry_paths.folders);
   var is_directory = fs.lstatSync(comp_path).isDirectory();
   var dir_path = is_directory ? comp_path : path.dirname(comp_path);
   self._app_name = path.basename(dir_path);
@@ -59,8 +60,15 @@ ImporterUtil.prototype.importAComponentFromPath = function (comp_path, singular,
     if (kase === 'exist' || kase === 'no appjson') {
       deferred.resolve();
     } if (kase === 'regular') {
-      self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
-      deferred.resolve(self._registry_paths);
+      var diff = _.omit(self._registry_paths.folders, Object.keys(already_existing_folders));
+      self._updateFolderPositions(diff)
+        .then(function () {
+          self._core.setRegistry(self._context.rootNode, 'paths', self._registry_paths);
+          deferred.resolve(self._registry_paths);
+        })
+        .fail(function (error) {
+          deferred.reject(new Error(error));
+        });
     } else {
       deferred.resolve(kase);
     }
@@ -255,6 +263,54 @@ ImporterUtil.prototype._importComponents = function(dir_path, single_comp, dummy
       return Q.fcall(function () {});
     }
   }));
+};
+
+ImporterUtil.prototype._updateFolderPositions = function (folders) {
+  var self = this;
+  var core = self._core;
+  return Q.all(Object.keys(folders).map(fold => {
+      return _updateFolderPos(self._nodes[folders[fold]]);
+    }));
+  function _updateFolderPos(node) {
+    var n = core.getAttribute(node, 'name');
+    return core.loadChildren(node)
+      .then(function (children) {
+        var children_obj = getChildrenByBase(children);
+        var cur_mod_y = 100;
+        children_obj.Folder.forEach(fold => {
+          core.setRegistry(fold, 'position', {x: 50, y: cur_mod_y});
+          cur_mod_y += 100;
+        });
+        var cur_mod_x = 150;
+        cur_mod_y = 100;
+        var curr_max = 5;
+        children_obj.others.forEach(obj => {
+          core.setRegistry(obj, 'position', {x: cur_mod_x, y: cur_mod_y});
+          var number_of_children = core.getChildrenRelids(obj).length;
+          curr_max = Math.max(curr_max, number_of_children);
+          cur_mod_x += 150;
+          if (cur_mod_x > 1000) {
+            cur_mod_x = 150;
+            cur_mod_y += 25 * curr_max;
+          }
+        });
+        return Q.fcall(function () {});
+      });
+  }
+  function getChildrenByBase (children) {
+    var children_obj = {
+      Folder: [],
+      others: []
+    };
+    children.forEach(function (child) {
+      if (core.isTypeOf(child, self._context.META.Folder)) {
+        children_obj.Folder.push(child);
+      } else {
+        children_obj.others.push(child);
+      }
+    });
+    return children_obj;
+  }
 };
 
 ImporterUtil.prototype._updatePositions = function (c_name, node) {
