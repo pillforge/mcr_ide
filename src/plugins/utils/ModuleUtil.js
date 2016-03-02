@@ -11,7 +11,7 @@ var ModuleUtil = function (context, registry_paths, nodes) {
   nesc_util.getMetaNodes(context);
 };
 
-ModuleUtil.prototype.generateModule = function(module_node, app_json) {
+ModuleUtil.prototype.generateModule = function(module_node, target, app_json) {
   this._module_node = module_node;
   this._module_name = this._core.getAttribute(module_node, 'name');
   this._cur_pos = {
@@ -23,7 +23,7 @@ ModuleUtil.prototype.generateModule = function(module_node, app_json) {
     return nesc_util.saveSourceAndDependencies(this._context, this._module_node)
       .then(function (tmp_path) {
         var file_path = path.join(tmp_path, this._module_name + '.nc');
-        this._app_json = nesc_util.getAppJson(file_path, 'exp430');
+        this._app_json = nesc_util.getAppJson(file_path, target);
         return this._generateModuleHelper();
       }.bind(this));
   } else {

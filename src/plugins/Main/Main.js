@@ -57,7 +57,7 @@ define([ 'plugin/PluginConfig',
       case 'generateModule':
         self.logger.info('generateModule');
         var module_util = new ModuleUtil(self);
-        module_util.generateModule(self.activeNode)
+        module_util.generateModule(self.activeNode, 'exp430')
           .then (function () {
             return self.save('Internal structure of a module is generated');
           })

@@ -108,7 +108,7 @@ describe('ModuleUtil', function () {
     };
     var all_children;
     before(function (done) {
-      module_util.generateModule(sense_and_sendc_node)
+      module_util.generateModule(sense_and_sendc_node, 'exp430')
         .then(function () {
           return Q.nfcall(context.core.loadChildren, sense_and_sendc_node);
         })

@@ -252,7 +252,7 @@ ImporterUtil.prototype._importComponents = function(dir_path, single_comp, dummy
     var new_node = self._nodes[self._registry_paths.components[c_name]];
     var comp_json = self._app_json.components[c_name];
     if (new_node) {
-      return module_util.generateModule(new_node, self._app_json)
+      return module_util.generateModule(new_node, self._target, self._app_json)
         .then(function (created_interfaces) {
           if (comp_json.comp_type === 'Configuration') {
             self._importRefComponentsAndWirings(c_name, new_node, created_interfaces);
