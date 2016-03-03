@@ -21,7 +21,7 @@ program
   .option('-n --new', 'Create new project')
   .option('-p --project [string]', 'Project [mandatory]')
   .option('-b --branch [string]', 'Branch [default is master]')
-  .option('-t --target', 'Target platform')
+  .option('-t --target', 'Target platform [default is exp430')
   .option('-r --recursive', 'Recursive')
   .option('-a --all', 'Import all TOS')
   .parse(process.argv);
@@ -50,7 +50,8 @@ if (program.new) {
 var obj = {};
 if (program.all) {
   obj = {
-    goal: 'importTos'
+    goal: 'importTos',
+    target: program.target || 'exp430'
   };
   run_plugin();
 } else if (program.recursive) {
@@ -61,7 +62,8 @@ if (program.all) {
       if (fs.existsSync(path.join(dir_path, file, 'Makefile'))) {
         obj = {
           goal: 'importApp',
-          app_path: path.join(dir_path, file)
+          app_path: path.join(dir_path, file),
+          target: program.target || 'exp430'
         };
         run_plugin();
       }
@@ -71,7 +73,8 @@ if (program.all) {
   var app_path = path.resolve(process.cwd(), program.args[0]);
   obj = {
     goal: 'importApp',
-    app_path: app_path
+    app_path: app_path,
+    target: program.target || 'exp430'
   };
   run_plugin();
 }

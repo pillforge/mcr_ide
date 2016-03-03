@@ -449,6 +449,7 @@ ImporterUtil.prototype._mkdirp = function (file_path) {
         base: self._context.META.Folder
       });
       self._core.setAttribute(dir_node, 'name', dir);
+      self._core.setAttribute(dir_node, 'target', self._target);
       self._registry_paths.folders[curr_path] = self._core.getPath(dir_node);
       self._nodes[self._registry_paths.folders[curr_path]] = dir_node;
     }

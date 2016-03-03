@@ -235,7 +235,8 @@ describe('NescUtil', function () {
         .nodeify(done);
     });
     it('should generate uses/provides interfaces and equate wires', function (done) {
-      context.core.loadByPath(context.rootNode, '/z/Q/t')
+      var registry_paths = context.core.getRegistry(context.rootNode, 'paths');
+      context.core.loadByPath(context.rootNode, registry_paths.components.MainC)
         .then(function (mainc_node) {
           return nesc_util.generateNescCode(context, mainc_node);
         })

@@ -42,6 +42,11 @@ define([ 'plugin/PluginConfig',
   Main.prototype.main = function (callback) {
     var self = this;
     var path = require('path');
+    var target = self._getTarget(self.activeNode);
+
+    if ( (self._currentConfig.goal === 'compileApp'|| self._currentConfig.goal === 'generateModule') && !target) {
+      return callCallback('No target', false);
+    }
 
     switch (self._currentConfig.goal) {
       case 'generateNescCode':
@@ -57,7 +62,7 @@ define([ 'plugin/PluginConfig',
       case 'generateModule':
         self.logger.info('generateModule');
         var module_util = new ModuleUtil(self);
-        module_util.generateModule(self.activeNode, 'exp430')
+        module_util.generateModule(self.activeNode, target)
           .then (function () {
             return self.save('Internal structure of a module is generated');
           })
@@ -67,10 +72,10 @@ define([ 'plugin/PluginConfig',
         break;
       case 'compileApp':
         self.logger.info('compileApp');
-        NescUtil.compileApp(self, self.activeNode, 'exp430')
+        NescUtil.compileApp(self, self.activeNode, target)
           .then(function (tmp_path) {
             var name = self.core.getAttribute(self.activeNode, 'name');
-            return NescUtil.addBlobs(self, path.join(tmp_path, 'build/exp430'), name);
+            return NescUtil.addBlobs(self, path.join(tmp_path, 'build', target), name);
           })
           .then(function (download_url) {
             self.createMessage(self.activeNode, {
@@ -85,7 +90,7 @@ define([ 'plugin/PluginConfig',
         break;
       case 'importApp':
         self.logger.info('importApp for', self._currentConfig.app_path);
-        var importer_util = new ImporterUtil(self, 'exp430');
+        var importer_util = new ImporterUtil(self, self._currentConfig.target);
         importer_util.importAComponentFromPath(self._currentConfig.app_path)
           .then(function () {
             return self.save(self._currentConfig.app_path + ' ..imported');
@@ -98,11 +103,11 @@ define([ 'plugin/PluginConfig',
           });
         break;
       case 'importTos':
-        self.logger.info('import Tos for', 'exp430');
-        importer_util = new ImporterUtil(self, 'exp430');
+        self.logger.info('import Tos for', self._currentConfig.target);
+        importer_util = new ImporterUtil(self, self._currentConfig.target);
         importer_util.importAllTosComponents()
           .then(function () {
-            return self.save('Tos imported for exp430');
+            return self.save('Tos imported for ' + self._currentConfig.target);
           })
           .then(function () {
             callCallback(null, true);
@@ -118,6 +123,14 @@ define([ 'plugin/PluginConfig',
       callback(err, self.result);
     }
 
+  };
+
+  Main.prototype._getTarget = function (node) {
+    var p = this.core.getParent(node);
+    if (p) {
+      return this.core.getAttribute(p, 'target');
+    }
+    return null;
   };
 
   return Main;
